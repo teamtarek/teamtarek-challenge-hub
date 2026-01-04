@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { Leaderboard } from "@/components/Leaderboard";
+import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,6 +33,7 @@ const formatDateRange = (start: string, end: string | null) => {
 
 const ChallengePage = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuth();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -49,18 +52,32 @@ const ChallengePage = () => {
       if (!error && data) {
         setChallenge(data);
         
-        // Check if already registered
-        const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
-        if (registeredChallenges[data.id]) {
-          setIsRegistered(true);
-          setActiveTab("leaderboard");
+        // Check if already registered (for logged-in user or localStorage)
+        if (user) {
+          const { data: regData } = await supabase
+            .from("registrations")
+            .select("id")
+            .eq("challenge_id", data.id)
+            .eq("user_id", user.id)
+            .maybeSingle();
+          
+          if (regData) {
+            setIsRegistered(true);
+            setActiveTab("leaderboard");
+          }
+        } else {
+          const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
+          if (registeredChallenges[data.id]) {
+            setIsRegistered(true);
+            setActiveTab("leaderboard");
+          }
         }
       }
       setLoading(false);
     };
 
     fetchChallenge();
-  }, [slug]);
+  }, [slug, user]);
 
   const handleRegistrationSuccess = () => {
     setIsRegistered(true);
@@ -97,17 +114,7 @@ const ChallengePage = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container py-6">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Dumbbell className="w-8 h-8 text-primary" />
-              <span className="text-xl font-bold tracking-tight">Team Tarek</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="container py-8">
         {/* Back Link */}
@@ -159,6 +166,11 @@ const ChallengePage = () => {
             {!isRegistered ? (
               <div className="challenge-card">
                 <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
+                {!user && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    <Link to="/auth" className="text-primary hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
+                  </p>
+                )}
                 <RegistrationForm
                   challengeId={challenge.id}
                   challengeName={challenge.name}

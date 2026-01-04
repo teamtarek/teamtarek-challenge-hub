@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
 import { z } from "zod";
@@ -19,8 +20,9 @@ interface RegistrationFormProps {
 }
 
 export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: RegistrationFormProps) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.user_metadata?.display_name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -39,6 +41,7 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
       challenge_id: challengeId,
       participant_name: validation.data.name,
       email: validation.data.email,
+      user_id: user?.id || null,
     });
 
     setLoading(false);
@@ -55,10 +58,12 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
     setSuccess(true);
     toast.success("Erfolgreich registriert!");
     
-    // Store registration in localStorage for leaderboard access
-    const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
-    registeredChallenges[challengeId] = { name: validation.data.name, email: validation.data.email };
-    localStorage.setItem("registeredChallenges", JSON.stringify(registeredChallenges));
+    // Store registration in localStorage for leaderboard access (for non-logged-in users)
+    if (!user) {
+      const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
+      registeredChallenges[challengeId] = { name: validation.data.name, email: validation.data.email };
+      localStorage.setItem("registeredChallenges", JSON.stringify(registeredChallenges));
+    }
     
     onSuccess();
   };
@@ -98,7 +103,11 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
           onChange={(e) => setEmail(e.target.value)}
           className="input-minimal"
           required
+          disabled={!!user?.email}
         />
+        {user?.email && (
+          <p className="text-xs text-muted-foreground">E-Mail aus deinem Profil</p>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
