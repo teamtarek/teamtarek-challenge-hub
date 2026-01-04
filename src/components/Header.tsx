@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, User, LogIn } from "lucide-react";
+import { Dumbbell, User, LogIn, Shield } from "lucide-react";
 
 export const Header = () => {
   const { user, loading } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   return (
     <header className="border-b border-border">
@@ -17,6 +19,14 @@ export const Header = () => {
           
           {!loading && (
             <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               {user ? (
                 <Link to="/profil">
                   <Button variant="outline" size="sm" className="gap-2">

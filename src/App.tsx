@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ChallengePage from "./pages/ChallengePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/challenge/:slug" element={<ChallengePage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/profil" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
