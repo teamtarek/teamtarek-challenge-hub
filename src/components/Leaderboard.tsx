@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award } from "lucide-react";
 
 interface Registration {
@@ -7,6 +8,10 @@ interface Registration {
   participant_name: string;
   score: number;
   created_at: string;
+  user_id: string | null;
+  profiles: {
+    avatar_url: string | null;
+  } | null;
 }
 
 interface LeaderboardProps {
@@ -21,13 +26,22 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
     const fetchRegistrations = async () => {
       const { data, error } = await supabase
         .from("registrations")
-        .select("id, participant_name, score, created_at")
+        .select(`
+          id, 
+          participant_name, 
+          score, 
+          created_at,
+          user_id,
+          profiles (
+            avatar_url
+          )
+        `)
         .eq("challenge_id", challengeId)
         .order("score", { ascending: false })
         .order("created_at", { ascending: true });
 
       if (!error && data) {
-        setRegistrations(data);
+        setRegistrations(data as unknown as Registration[]);
       }
       setLoading(false);
     };
@@ -69,6 +83,10 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
     }
   };
 
+  const getInitials = (name: string) => {
+    return name.slice(0, 2).toUpperCase();
+  };
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -100,6 +118,12 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           <div className="flex items-center justify-center w-8">
             {getRankIcon(index + 1)}
           </div>
+          <Avatar className="w-10 h-10 border border-border">
+            <AvatarImage src={registration.profiles?.avatar_url || undefined} alt={registration.participant_name} />
+            <AvatarFallback className="bg-muted text-sm">
+              {getInitials(registration.participant_name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1">
             <p className="font-medium">{registration.participant_name}</p>
           </div>
