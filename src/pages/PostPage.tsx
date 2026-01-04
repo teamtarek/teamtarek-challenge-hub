@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, Send, Trash2, MessageSquare } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -21,6 +21,8 @@ interface Post {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  like_count: number;
+  user_has_liked: boolean;
 }
 
 interface Comment {
@@ -32,6 +34,8 @@ interface Comment {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  like_count: number;
+  user_has_liked: boolean;
 }
 
 const PostPage = () => {
@@ -44,6 +48,8 @@ const PostPage = () => {
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [likingPost, setLikingPost] = useState(false);
+  const [likingComment, setLikingComment] = useState<string | null>(null);
 
   const fetchPost = async () => {
     if (!postId) return;
@@ -66,9 +72,20 @@ const PostPage = () => {
       .eq("user_id", postData.user_id)
       .maybeSingle();
 
+    // Fetch likes for this post
+    const { data: likesData } = await supabase
+      .from("likes")
+      .select("user_id")
+      .eq("post_id", postId);
+
+    const likeCount = likesData?.length || 0;
+    const userHasLiked = user ? likesData?.some((l) => l.user_id === user.id) || false : false;
+
     setPost({
       ...postData,
       profiles: profile,
+      like_count: likeCount,
+      user_has_liked: userHasLiked,
     });
   };
 
@@ -81,7 +98,7 @@ const PostPage = () => {
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
 
-    if (!commentsData) {
+    if (!commentsData || commentsData.length === 0) {
       setComments([]);
       return;
     }
@@ -98,12 +115,32 @@ const PostPage = () => {
       return acc;
     }, {} as Record<string, { display_name: string | null; avatar_url: string | null }>);
 
-    const commentsWithProfiles: Comment[] = commentsData.map((c) => ({
+    // Fetch likes for comments
+    const commentIds = commentsData.map((c) => c.id);
+    const { data: likesData } = await supabase
+      .from("likes")
+      .select("comment_id, user_id")
+      .in("comment_id", commentIds);
+
+    const likeCountMap: Record<string, number> = {};
+    const userLikesMap: Record<string, boolean> = {};
+    (likesData || []).forEach((l) => {
+      if (l.comment_id) {
+        likeCountMap[l.comment_id] = (likeCountMap[l.comment_id] || 0) + 1;
+        if (user && l.user_id === user.id) {
+          userLikesMap[l.comment_id] = true;
+        }
+      }
+    });
+
+    const commentsWithData: Comment[] = commentsData.map((c) => ({
       ...c,
       profiles: profilesMap[c.user_id] || null,
+      like_count: likeCountMap[c.id] || 0,
+      user_has_liked: userLikesMap[c.id] || false,
     }));
 
-    setComments(commentsWithProfiles);
+    setComments(commentsWithData);
   };
 
   useEffect(() => {
@@ -114,9 +151,9 @@ const PostPage = () => {
     };
     loadData();
 
-    // Subscribe to realtime comments
+    // Subscribe to realtime updates
     const channel = supabase
-      .channel(`comments-${postId}`)
+      .channel(`post-${postId}-updates`)
       .on(
         "postgres_changes",
         {
@@ -127,12 +164,20 @@ const PostPage = () => {
         },
         () => fetchComments()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "likes" },
+        () => {
+          fetchPost();
+          fetchComments();
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [postId]);
+  }, [postId, user]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,6 +230,70 @@ const PostPage = () => {
       toast.success("Beitrag gelöscht.");
       navigate("/community");
     }
+  };
+
+  const handleLikePost = async () => {
+    if (!user || !post) {
+      toast.error("Bitte melde dich an, um zu liken.");
+      return;
+    }
+
+    setLikingPost(true);
+
+    if (post.user_has_liked) {
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("post_id", post.id);
+
+      if (error) {
+        toast.error("Like konnte nicht entfernt werden.");
+      }
+    } else {
+      const { error } = await supabase.from("likes").insert({
+        user_id: user.id,
+        post_id: post.id,
+      });
+
+      if (error) {
+        toast.error("Like konnte nicht gesetzt werden.");
+      }
+    }
+
+    setLikingPost(false);
+  };
+
+  const handleLikeComment = async (commentId: string, hasLiked: boolean) => {
+    if (!user) {
+      toast.error("Bitte melde dich an, um zu liken.");
+      return;
+    }
+
+    setLikingComment(commentId);
+
+    if (hasLiked) {
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("comment_id", commentId);
+
+      if (error) {
+        toast.error("Like konnte nicht entfernt werden.");
+      }
+    } else {
+      const { error } = await supabase.from("likes").insert({
+        user_id: user.id,
+        comment_id: commentId,
+      });
+
+      if (error) {
+        toast.error("Like konnte nicht gesetzt werden.");
+      }
+    }
+
+    setLikingComment(null);
   };
 
   const getInitials = (name: string | null) => {
@@ -256,6 +365,24 @@ const PostPage = () => {
               )}
             </div>
             <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
+            
+            {/* Post Like Button */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <button
+                onClick={handleLikePost}
+                disabled={likingPost}
+                className={`flex items-center gap-2 text-sm transition-colors ${
+                  post.user_has_liked
+                    ? "text-red-500"
+                    : "text-muted-foreground hover:text-red-500"
+                }`}
+              >
+                <Heart
+                  className={`w-5 h-5 ${post.user_has_liked ? "fill-current" : ""}`}
+                />
+                <span>{post.like_count} {post.like_count === 1 ? "Like" : "Likes"}</span>
+              </button>
+            </div>
           </article>
 
           {/* Comments Section */}
@@ -340,6 +467,22 @@ const PostPage = () => {
                         )}
                       </div>
                       <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
+                      
+                      {/* Comment Like Button */}
+                      <button
+                        onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
+                        disabled={likingComment === comment.id}
+                        className={`flex items-center gap-1 mt-2 text-xs transition-colors ${
+                          comment.user_has_liked
+                            ? "text-red-500"
+                            : "text-muted-foreground hover:text-red-500"
+                        }`}
+                      >
+                        <Heart
+                          className={`w-3.5 h-3.5 ${comment.user_has_liked ? "fill-current" : ""}`}
+                        />
+                        <span>{comment.like_count}</span>
+                      </button>
                     </div>
                   </div>
                 ))}

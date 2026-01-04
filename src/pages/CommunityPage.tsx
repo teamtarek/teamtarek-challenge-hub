@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MessageSquare, Plus, Loader2, ArrowLeft } from "lucide-react";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -31,6 +31,8 @@ interface Post {
     avatar_url: string | null;
   } | null;
   comment_count: number;
+  like_count: number;
+  user_has_liked: boolean;
 }
 
 const CommunityPage = () => {
@@ -41,6 +43,7 @@ const CommunityPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [likingPost, setLikingPost] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     const { data: postsData, error } = await supabase
@@ -77,15 +80,35 @@ const CommunityPage = () => {
       .from("comments")
       .select("post_id");
 
-    const countMap: Record<string, number> = {};
+    const commentCountMap: Record<string, number> = {};
     (commentCounts || []).forEach((c) => {
-      countMap[c.post_id] = (countMap[c.post_id] || 0) + 1;
+      commentCountMap[c.post_id] = (commentCountMap[c.post_id] || 0) + 1;
+    });
+
+    // Fetch like counts for posts
+    const postIds = postsData.map((p) => p.id);
+    const { data: likesData } = await supabase
+      .from("likes")
+      .select("post_id, user_id")
+      .in("post_id", postIds);
+
+    const likeCountMap: Record<string, number> = {};
+    const userLikesMap: Record<string, boolean> = {};
+    (likesData || []).forEach((l) => {
+      if (l.post_id) {
+        likeCountMap[l.post_id] = (likeCountMap[l.post_id] || 0) + 1;
+        if (user && l.user_id === user.id) {
+          userLikesMap[l.post_id] = true;
+        }
+      }
     });
 
     const postsWithData: Post[] = postsData.map((p) => ({
       ...p,
       profiles: profilesMap[p.user_id] || null,
-      comment_count: countMap[p.id] || 0,
+      comment_count: commentCountMap[p.id] || 0,
+      like_count: likeCountMap[p.id] || 0,
+      user_has_liked: userLikesMap[p.id] || false,
     }));
 
     setPosts(postsWithData);
@@ -97,10 +120,15 @@ const CommunityPage = () => {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel("posts-changes")
+      .channel("posts-likes-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "posts" },
+        () => fetchPosts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "likes" },
         () => fetchPosts()
       )
       .subscribe();
@@ -108,7 +136,7 @@ const CommunityPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [user]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,6 +166,43 @@ const CommunityPage = () => {
       setDialogOpen(false);
     }
     setCreating(false);
+  };
+
+  const handleLikePost = async (e: React.MouseEvent, postId: string, hasLiked: boolean) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error("Bitte melde dich an, um zu liken.");
+      return;
+    }
+
+    setLikingPost(postId);
+
+    if (hasLiked) {
+      // Remove like
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("post_id", postId);
+
+      if (error) {
+        toast.error("Like konnte nicht entfernt werden.");
+      }
+    } else {
+      // Add like
+      const { error } = await supabase.from("likes").insert({
+        user_id: user.id,
+        post_id: postId,
+      });
+
+      if (error) {
+        toast.error("Like konnte nicht gesetzt werden.");
+      }
+    }
+
+    setLikingPost(null);
   };
 
   const getInitials = (name: string | null) => {
@@ -260,6 +325,21 @@ const CommunityPage = () => {
                             locale: de,
                           })}
                         </span>
+                        <span>•</span>
+                        <button
+                          onClick={(e) => handleLikePost(e, post.id, post.user_has_liked)}
+                          disabled={likingPost === post.id}
+                          className={`flex items-center gap-1 transition-colors ${
+                            post.user_has_liked 
+                              ? "text-red-500" 
+                              : "hover:text-red-500"
+                          }`}
+                        >
+                          <Heart 
+                            className={`w-4 h-4 ${post.user_has_liked ? "fill-current" : ""}`} 
+                          />
+                          {post.like_count}
+                        </button>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <MessageSquare className="w-4 h-4" />
