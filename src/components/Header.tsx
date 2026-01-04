@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, User, LogIn, Shield } from "lucide-react";
+import { Dumbbell, User, LogIn, Shield, MessageSquare } from "lucide-react";
 
 export const Header = () => {
   const { user, loading } = useAuth();
@@ -19,6 +19,12 @@ export const Header = () => {
           
           {!loading && (
             <div className="flex items-center gap-3">
+              <Link to="/community">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Community
+                </Button>
+              </Link>
               {isAdmin && (
                 <Link to="/admin">
                   <Button variant="outline" size="sm" className="gap-2">
