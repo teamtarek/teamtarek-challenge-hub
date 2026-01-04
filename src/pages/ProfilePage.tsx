@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +6,11 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, User, Trophy, Calendar } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera } from "lucide-react";
 import { toast } from "sonner";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 interface Profile {
   display_name: string | null;
@@ -31,15 +34,18 @@ interface Registration {
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<Profile | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [age, setAge] = useState("");
   const [favoriteExercise, setFavoriteExercise] = useState("");
   const [hatedExercise, setHatedExercise] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -64,6 +70,7 @@ const ProfilePage = () => {
         setAge(profileData.age?.toString() || "");
         setFavoriteExercise(profileData.favorite_exercise || "");
         setHatedExercise(profileData.hated_exercise || "");
+        setAvatarUrl(profileData.avatar_url);
       }
 
       // Fetch registrations with challenge info
@@ -92,6 +99,57 @@ const ProfilePage = () => {
     fetchData();
   }, [user]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bitte wähle eine Bilddatei aus.");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Das Bild darf maximal 5MB groß sein.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Avatar konnte nicht hochgeladen werden.");
+      setUploadingAvatar(false);
+      return;
+    }
+
+    // Get public URL
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/avatars/${filePath}`;
+
+    // Update profile with avatar URL
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: publicUrl })
+      .eq("user_id", user.id);
+
+    if (updateError) {
+      toast.error("Profil konnte nicht aktualisiert werden.");
+    } else {
+      setAvatarUrl(publicUrl + "?t=" + Date.now()); // Add timestamp to bust cache
+      toast.success("Avatar hochgeladen!");
+    }
+
+    setUploadingAvatar(false);
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -119,6 +177,16 @@ const ProfilePage = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const getInitials = () => {
+    if (displayName) {
+      return displayName.slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "?";
   };
 
   if (authLoading || loading) {
@@ -153,6 +221,44 @@ const ProfilePage = () => {
         {/* Profile Form */}
         <div className="challenge-card mb-8">
           <h2 className="text-xl font-semibold mb-4">Profil bearbeiten</h2>
+          
+          {/* Avatar Section */}
+          <div className="flex items-center gap-6 mb-6">
+            <div className="relative">
+              <Avatar className="w-24 h-24 border-2 border-border">
+                <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
+                <AvatarFallback className="bg-secondary text-xl">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {uploadingAvatar ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+            </div>
+            <div>
+              <p className="font-medium">{displayName || user?.email}</p>
+              <p className="text-sm text-muted-foreground">
+                Klicke auf das Kamera-Symbol, um ein Profilbild hochzuladen
+              </p>
+            </div>
+          </div>
+
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="display-name">Anzeigename</Label>
