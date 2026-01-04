@@ -9,9 +9,7 @@ interface Registration {
   score: number;
   created_at: string;
   user_id: string | null;
-  profiles: {
-    avatar_url: string | null;
-  } | null;
+  avatar_url: string | null;
 }
 
 interface LeaderboardProps {
@@ -31,17 +29,40 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           participant_name, 
           score, 
           created_at,
-          user_id,
-          profiles (
-            avatar_url
-          )
+          user_id
         `)
         .eq("challenge_id", challengeId)
         .order("score", { ascending: false })
         .order("created_at", { ascending: true });
 
       if (!error && data) {
-        setRegistrations(data as unknown as Registration[]);
+        // Fetch profiles for users with user_id
+        const userIds = data
+          .filter((r) => r.user_id)
+          .map((r) => r.user_id as string);
+
+        let profilesMap: Record<string, string | null> = {};
+        
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, avatar_url")
+            .in("user_id", userIds);
+
+          if (profiles) {
+            profilesMap = profiles.reduce((acc, p) => {
+              acc[p.user_id] = p.avatar_url;
+              return acc;
+            }, {} as Record<string, string | null>);
+          }
+        }
+
+        const registrationsWithAvatars = data.map((r) => ({
+          ...r,
+          avatar_url: r.user_id ? profilesMap[r.user_id] || null : null,
+        }));
+
+        setRegistrations(registrationsWithAvatars);
       }
       setLoading(false);
     };
@@ -119,7 +140,7 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
             {getRankIcon(index + 1)}
           </div>
           <Avatar className="w-10 h-10 border border-border">
-            <AvatarImage src={registration.profiles?.avatar_url || undefined} alt={registration.participant_name} />
+            <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
             <AvatarFallback className="bg-muted text-sm">
               {getInitials(registration.participant_name)}
             </AvatarFallback>
