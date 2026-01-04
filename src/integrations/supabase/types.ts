@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           challenge_id: string
@@ -52,6 +79,7 @@ export type Database = {
           id: string
           participant_name: string
           score: number | null
+          user_id: string | null
         }
         Insert: {
           challenge_id: string
@@ -60,6 +88,7 @@ export type Database = {
           id?: string
           participant_name: string
           score?: number | null
+          user_id?: string | null
         }
         Update: {
           challenge_id?: string
@@ -68,6 +97,7 @@ export type Database = {
           id?: string
           participant_name?: string
           score?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChallengeCard } from "@/components/ChallengeCard";
-import { Dumbbell } from "lucide-react";
+import { Header } from "@/components/Header";
 
 interface Challenge {
   id: string;
@@ -34,15 +34,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container py-6">
-          <div className="flex items-center gap-3">
-            <Dumbbell className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold tracking-tight">Team Tarek</span>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero */}
       <section className="container py-16 md:py-24">
