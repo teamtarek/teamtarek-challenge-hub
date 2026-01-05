@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search, Image, Video, X } from "lucide-react";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search, Image, Video, X, Pencil } from "lucide-react";
 import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -64,6 +64,7 @@ const CommunityPage = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("outdoor-training");
@@ -74,6 +75,7 @@ const CommunityPage = () => {
   const [filterCategory, setFilterCategory] = useState<Category | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [likingPost, setLikingPost] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     let query = supabase
@@ -205,6 +207,31 @@ const CommunityPage = () => {
   const handleRemoveImage = () => {
     setNewImageFile(null);
     setNewImagePreview(null);
+    setExistingImageUrl(null);
+  };
+
+  const openEditDialog = (post: Post) => {
+    setEditingPost(post);
+    setNewTitle(post.title);
+    setNewContent(post.content);
+    setNewCategory(post.category);
+    setNewVideoUrl(post.video_url || "");
+    setExistingImageUrl(post.image_url);
+    setNewImageFile(null);
+    setNewImagePreview(null);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingPost(null);
+    setNewTitle("");
+    setNewContent("");
+    setNewCategory("outdoor-training");
+    setNewImageFile(null);
+    setNewImagePreview(null);
+    setNewVideoUrl("");
+    setExistingImageUrl(null);
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -226,9 +253,9 @@ const CommunityPage = () => {
 
     setCreating(true);
 
-    let imageUrl: string | null = null;
+    let imageUrl: string | null = existingImageUrl;
 
-    // Upload image if selected
+    // Upload image if a new one is selected
     if (newImageFile) {
       setUploadingImage(true);
       const fileExt = newImageFile.name.split(".").pop();
@@ -253,26 +280,42 @@ const CommunityPage = () => {
       setUploadingImage(false);
     }
 
-    const { error } = await supabase.from("posts").insert({
-      user_id: user.id,
-      title: newTitle.trim(),
-      content: newContent.trim(),
-      category: newCategory,
-      image_url: imageUrl,
-      video_url: newVideoUrl.trim() || null,
-    } as any);
+    if (editingPost) {
+      // Update existing post
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          title: newTitle.trim(),
+          content: newContent.trim(),
+          category: newCategory,
+          image_url: imageUrl,
+          video_url: newVideoUrl.trim() || null,
+        } as any)
+        .eq("id", editingPost.id);
 
-    if (error) {
-      toast.error("Beitrag konnte nicht erstellt werden.");
+      if (error) {
+        toast.error("Beitrag konnte nicht aktualisiert werden.");
+      } else {
+        toast.success("Beitrag aktualisiert!");
+        closeDialog();
+      }
     } else {
-      toast.success("Beitrag erstellt!");
-      setNewTitle("");
-      setNewContent("");
-      setNewCategory("outdoor-training");
-      setNewImageFile(null);
-      setNewImagePreview(null);
-      setNewVideoUrl("");
-      setDialogOpen(false);
+      // Create new post
+      const { error } = await supabase.from("posts").insert({
+        user_id: user.id,
+        title: newTitle.trim(),
+        content: newContent.trim(),
+        category: newCategory,
+        image_url: imageUrl,
+        video_url: newVideoUrl.trim() || null,
+      } as any);
+
+      if (error) {
+        toast.error("Beitrag konnte nicht erstellt werden.");
+      } else {
+        toast.success("Beitrag erstellt!");
+        closeDialog();
+      }
     }
     setCreating(false);
   };
@@ -337,16 +380,16 @@ const CommunityPage = () => {
               <h1 className="text-3xl font-bold">Community</h1>
             </div>
 
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => !open && closeDialog()}>
               <DialogTrigger asChild>
-                <Button className="gap-2">
+                <Button className="gap-2" onClick={() => { setEditingPost(null); setDialogOpen(true); }}>
                   <Plus className="w-4 h-4" />
                   Neuer Beitrag
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Neuen Beitrag erstellen</DialogTitle>
+                  <DialogTitle>{editingPost ? "Beitrag bearbeiten" : "Neuen Beitrag erstellen"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleCreatePost} className="space-y-4">
                   <div className="space-y-2">
@@ -389,10 +432,10 @@ const CommunityPage = () => {
                   {/* Image Upload */}
                   <div className="space-y-2">
                     <Label>Bild (optional)</Label>
-                    {newImagePreview ? (
+                    {(newImagePreview || existingImageUrl) ? (
                       <div className="relative">
                         <img
-                          src={newImagePreview}
+                          src={newImagePreview || existingImageUrl || ""}
                           alt="Vorschau"
                           className="w-full max-h-48 object-cover rounded-lg"
                         />
@@ -451,10 +494,10 @@ const CommunityPage = () => {
                     {creating || uploadingImage ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {uploadingImage ? "Bild wird hochgeladen..." : "Erstellen..."}
+                        {uploadingImage ? "Bild wird hochgeladen..." : editingPost ? "Aktualisieren..." : "Erstellen..."}
                       </>
                     ) : (
-                      "Beitrag erstellen"
+                      editingPost ? "Beitrag aktualisieren" : "Beitrag erstellen"
                     )}
                   </Button>
                 </form>
@@ -561,6 +604,18 @@ const CommunityPage = () => {
                           <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground flex items-center gap-1">
                             <Video className="w-3 h-3" /> Video
                           </span>
+                        )}
+                        {user && post.user_id === user.id && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openEditDialog(post);
+                            }}
+                            className="text-xs px-2 py-0.5 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground flex items-center gap-1 transition-colors"
+                          >
+                            <Pencil className="w-3 h-3" /> Bearbeiten
+                          </button>
                         )}
                       </div>
                       <h2 className="font-semibold text-lg truncate">
