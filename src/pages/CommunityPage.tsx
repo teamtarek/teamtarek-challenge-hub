@@ -15,10 +15,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MessageSquare, Plus, Loader2, ArrowLeft, Heart } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+
+const CATEGORIES = [
+  { value: "outdoor-training", label: "Outdoor Training" },
+  { value: "challenges", label: "Challenges" },
+  { value: "coaches-corner", label: "Coaches Corner (Q&A)" },
+] as const;
+
+type Category = typeof CATEGORIES[number]["value"];
 
 interface Post {
   id: string;
@@ -26,6 +41,7 @@ interface Post {
   content: string;
   created_at: string;
   user_id: string;
+  category: Category;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
@@ -43,13 +59,21 @@ const CommunityPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [newCategory, setNewCategory] = useState<Category>("outdoor-training");
+  const [filterCategory, setFilterCategory] = useState<Category | "all">("all");
   const [likingPost, setLikingPost] = useState<string | null>(null);
 
   const fetchPosts = async () => {
-    const { data: postsData, error } = await supabase
+    let query = supabase
       .from("posts")
-      .select("id, title, content, created_at, user_id")
+      .select("id, title, content, created_at, user_id, category")
       .order("created_at", { ascending: false });
+
+    if (filterCategory !== "all") {
+      query = query.eq("category", filterCategory);
+    }
+
+    const { data: postsData, error } = await query;
 
     if (error) {
       console.error("Error fetching posts:", error);
@@ -136,7 +160,7 @@ const CommunityPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, filterCategory]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +179,7 @@ const CommunityPage = () => {
       user_id: user.id,
       title: newTitle.trim(),
       content: newContent.trim(),
+      category: newCategory,
     });
 
     if (error) {
@@ -163,6 +188,7 @@ const CommunityPage = () => {
       toast.success("Beitrag erstellt!");
       setNewTitle("");
       setNewContent("");
+      setNewCategory("outdoor-training");
       setDialogOpen(false);
     }
     setCreating(false);
