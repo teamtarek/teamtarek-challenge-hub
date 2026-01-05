@@ -35,6 +35,10 @@ const CATEGORIES = [
 
 type Category = typeof CATEGORIES[number]["value"];
 
+const getCategoryLabel = (value: string) => {
+  return CATEGORIES.find((c) => c.value === value)?.label || value;
+};
+
 interface Post {
   id: string;
   title: string;
@@ -73,7 +77,10 @@ const CommunityPage = () => {
       query = query.eq("category", filterCategory);
     }
 
-    const { data: postsData, error } = await query;
+    const { data: postsData, error } = await query as { 
+      data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string }[] | null; 
+      error: any 
+    };
 
     if (error) {
       console.error("Error fetching posts:", error);
@@ -129,6 +136,7 @@ const CommunityPage = () => {
 
     const postsWithData: Post[] = postsData.map((p) => ({
       ...p,
+      category: p.category as Category,
       profiles: profilesMap[p.user_id] || null,
       comment_count: commentCountMap[p.id] || 0,
       like_count: likeCountMap[p.id] || 0,
@@ -180,7 +188,7 @@ const CommunityPage = () => {
       title: newTitle.trim(),
       content: newContent.trim(),
       category: newCategory,
-    });
+    } as any);
 
     if (error) {
       toast.error("Beitrag konnte nicht erstellt werden.");
@@ -267,6 +275,21 @@ const CommunityPage = () => {
                 </DialogHeader>
                 <form onSubmit={handleCreatePost} className="space-y-4">
                   <div className="space-y-2">
+                    <Label htmlFor="category">Kategorie</Label>
+                    <Select value={newCategory} onValueChange={(v) => setNewCategory(v as Category)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kategorie wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="title">Titel</Label>
                     <Input
                       id="title"
@@ -300,6 +323,27 @@ const CommunityPage = () => {
                 </form>
               </DialogContent>
             </Dialog>
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              variant={filterCategory === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterCategory("all")}
+            >
+              Alle
+            </Button>
+            {CATEGORIES.map((cat) => (
+              <Button
+                key={cat.value}
+                variant={filterCategory === cat.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterCategory(cat.value)}
+              >
+                {cat.label}
+              </Button>
+            ))}
           </div>
 
           {loading ? (
@@ -336,6 +380,11 @@ const CommunityPage = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                          {getCategoryLabel(post.category)}
+                        </span>
+                      </div>
                       <h2 className="font-semibold text-lg truncate">
                         {post.title}
                       </h2>
