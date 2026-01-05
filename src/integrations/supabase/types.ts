@@ -193,27 +193,33 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          murph_version: string | null
           participant_name: string
           score: number | null
           user_id: string | null
+          year: number | null
         }
         Insert: {
           challenge_id: string
           created_at?: string
           email: string
           id?: string
+          murph_version?: string | null
           participant_name: string
           score?: number | null
           user_id?: string | null
+          year?: number | null
         }
         Update: {
           challenge_id?: string
           created_at?: string
           email?: string
           id?: string
+          murph_version?: string | null
           participant_name?: string
           score?: number | null
           user_id?: string | null
+          year?: number | null
         }
         Relationships: [
           {
