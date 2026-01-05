@@ -70,7 +70,7 @@ const AdminPage = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<string>("");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [times, setTimes] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -80,13 +80,18 @@ const AdminPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newParticipantName, setNewParticipantName] = useState("");
   const [newParticipantEmail, setNewParticipantEmail] = useState("");
-  const [newParticipantTime, setNewParticipantTime] = useState("");
+  const [newParticipantValue, setNewParticipantValue] = useState("");
   const [newParticipantYear, setNewParticipantYear] = useState(new Date().getFullYear().toString());
   const [newParticipantVersion, setNewParticipantVersion] = useState("Standard");
   const [addingParticipant, setAddingParticipant] = useState(false);
 
   const murphVersions = ["Standard", "Female Version", "Beginner Version"];
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+
+  // Check if current challenge is Murph
+  const selectedChallengeData = challenges.find((c) => c.id === selectedChallenge);
+  const isMurphChallenge = selectedChallengeData?.slug?.toLowerCase().includes("murph") || 
+                           selectedChallengeData?.name?.toLowerCase().includes("murph");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -133,21 +138,25 @@ const AdminPage = () => {
     if (selectedYear !== "all") {
       query = query.eq("year", parseInt(selectedYear, 10));
     }
-    if (selectedVersion !== "all") {
+    if (selectedVersion !== "all" && isMurphChallenge) {
       query = query.eq("murph_version", selectedVersion);
     }
 
     const { data, error } = await query
-      .order("score", { ascending: true, nullsFirst: false })
+      .order("score", { ascending: isMurphChallenge, nullsFirst: false })
       .order("created_at", { ascending: true });
 
     if (!error && data) {
       setRegistrations(data);
-      const initialTimes: Record<string, string> = {};
+      const initialValues: Record<string, string> = {};
       data.forEach((reg) => {
-        initialTimes[reg.id] = secondsToTimeString(reg.score);
+        if (isMurphChallenge) {
+          initialValues[reg.id] = secondsToTimeString(reg.score);
+        } else {
+          initialValues[reg.id] = reg.score?.toString() ?? "0";
+        }
       });
-      setTimes(initialTimes);
+      setValues(initialValues);
     }
   };
 
@@ -155,26 +164,32 @@ const AdminPage = () => {
     fetchRegistrations();
   }, [selectedChallenge, selectedYear, selectedVersion]);
 
-  const handleTimeChange = (registrationId: string, value: string) => {
-    setTimes((prev) => ({
+  const handleValueChange = (registrationId: string, value: string) => {
+    setValues((prev) => ({
       ...prev,
       [registrationId]: value,
     }));
   };
 
-  const handleSaveTime = async (registrationId: string) => {
+  const handleSaveValue = async (registrationId: string) => {
     setSaving(registrationId);
-    const seconds = timeStringToSeconds(times[registrationId] || "");
+    let scoreValue: number;
+    
+    if (isMurphChallenge) {
+      scoreValue = timeStringToSeconds(values[registrationId] || "");
+    } else {
+      scoreValue = parseInt(values[registrationId] || "0", 10);
+    }
 
     const { error } = await supabase
       .from("registrations")
-      .update({ score: seconds })
+      .update({ score: scoreValue })
       .eq("id", registrationId);
 
     if (error) {
-      toast.error("Fehler beim Speichern der Zeit");
+      toast.error(isMurphChallenge ? "Fehler beim Speichern der Zeit" : "Fehler beim Speichern der Punktzahl");
     } else {
-      toast.success("Zeit gespeichert");
+      toast.success(isMurphChallenge ? "Zeit gespeichert" : "Punktzahl gespeichert");
       await fetchRegistrations();
     }
     setSaving(null);
@@ -188,15 +203,27 @@ const AdminPage = () => {
 
     setAddingParticipant(true);
 
-    const { error } = await supabase.from("registrations").insert({
+    let scoreValue: number;
+    if (isMurphChallenge) {
+      scoreValue = timeStringToSeconds(newParticipantValue);
+    } else {
+      scoreValue = parseInt(newParticipantValue || "0", 10);
+    }
+
+    const insertData: any = {
       challenge_id: selectedChallenge,
       participant_name: newParticipantName.trim(),
       email: newParticipantEmail.trim(),
-      score: timeStringToSeconds(newParticipantTime),
-      year: parseInt(newParticipantYear, 10),
-      murph_version: newParticipantVersion,
+      score: scoreValue,
       user_id: null,
-    });
+    };
+
+    if (isMurphChallenge) {
+      insertData.year = parseInt(newParticipantYear, 10);
+      insertData.murph_version = newParticipantVersion;
+    }
+
+    const { error } = await supabase.from("registrations").insert(insertData);
 
     if (error) {
       toast.error("Fehler beim Hinzufügen des Teilnehmers");
@@ -205,7 +232,7 @@ const AdminPage = () => {
       toast.success("Teilnehmer hinzugefügt");
       setNewParticipantName("");
       setNewParticipantEmail("");
-      setNewParticipantTime("");
+      setNewParticipantValue("");
       setNewParticipantYear(new Date().getFullYear().toString());
       setNewParticipantVersion("Standard");
       setDialogOpen(false);
@@ -277,27 +304,29 @@ const AdminPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Murph Version</Label>
-              <Select value={selectedVersion} onValueChange={setSelectedVersion}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Version" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle</SelectItem>
-                  {murphVersions.map((version) => (
-                    <SelectItem key={version} value={version}>
-                      {version}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {isMurphChallenge && (
+              <div className="space-y-2">
+                <Label>Murph Version</Label>
+                <Select value={selectedVersion} onValueChange={setSelectedVersion}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle</SelectItem>
+                    {murphVersions.map((version) => (
+                      <SelectItem key={version} value={version}>
+                        {version}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Teilnehmer & Zeiten</h2>
+              <h2 className="text-xl font-semibold">Teilnehmer & {isMurphChallenge ? "Zeiten" : "Punktzahlen"}</h2>
               
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -331,44 +360,50 @@ const AdminPage = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="time">Zeit (MM:SS oder H:MM:SS)</Label>
+                      <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
                       <Input
-                        id="time"
-                        placeholder="45:30"
-                        value={newParticipantTime}
-                        onChange={(e) => setNewParticipantTime(e.target.value)}
+                        id="value"
+                        placeholder={isMurphChallenge ? "45:30" : "0"}
+                        type={isMurphChallenge ? "text" : "number"}
+                        min={isMurphChallenge ? undefined : 0}
+                        value={newParticipantValue}
+                        onChange={(e) => setNewParticipantValue(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="year">Jahr</Label>
-                      <Select value={newParticipantYear} onValueChange={setNewParticipantYear}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Jahr" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {years.map((year) => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="version">Murph Version</Label>
-                      <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Version" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {murphVersions.map((version) => (
-                            <SelectItem key={version} value={version}>
-                              {version}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {isMurphChallenge && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="year">Jahr</Label>
+                          <Select value={newParticipantYear} onValueChange={setNewParticipantYear}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Jahr" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {years.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="version">Murph Version</Label>
+                          <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Version" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {murphVersions.map((version) => (
+                                <SelectItem key={version} value={version}>
+                                  {version}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
                     <Button
                       className="w-full"
                       onClick={handleAddParticipant}
@@ -404,25 +439,29 @@ const AdminPage = () => {
                       <p className="text-sm text-muted-foreground">
                         {registration.email}
                       </p>
-                      <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                        <span>{registration.year}</span>
-                        <span>•</span>
-                        <span>{registration.murph_version || "Standard"}</span>
-                      </div>
+                      {isMurphChallenge && (
+                        <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                          <span>{registration.year}</span>
+                          <span>•</span>
+                          <span>{registration.murph_version || "Standard"}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Input
-                        placeholder="MM:SS"
+                        placeholder={isMurphChallenge ? "MM:SS" : "0"}
+                        type={isMurphChallenge ? "text" : "number"}
+                        min={isMurphChallenge ? undefined : 0}
                         className="w-28"
-                        value={times[registration.id] || ""}
+                        value={values[registration.id] || ""}
                         onChange={(e) =>
-                          handleTimeChange(registration.id, e.target.value)
+                          handleValueChange(registration.id, e.target.value)
                         }
                       />
-                      <span className="text-muted-foreground text-sm">Zeit</span>
+                      <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
                       <Button
                         size="sm"
-                        onClick={() => handleSaveTime(registration.id)}
+                        onClick={() => handleSaveValue(registration.id)}
                         disabled={saving === registration.id}
                       >
                         {saving === registration.id ? (
