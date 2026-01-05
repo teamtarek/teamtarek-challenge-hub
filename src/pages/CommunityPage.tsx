@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Tag } from "lucide-react";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -65,6 +65,7 @@ const CommunityPage = () => {
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("outdoor-training");
   const [filterCategory, setFilterCategory] = useState<Category | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [likingPost, setLikingPost] = useState<string | null>(null);
 
   const fetchPosts = async () => {
@@ -325,45 +326,76 @@ const CommunityPage = () => {
             </Dialog>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <Button
-              variant={filterCategory === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterCategory("all")}
-            >
-              Alle
-            </Button>
-            {CATEGORIES.map((cat) => (
+          {/* Search and Category Filter */}
+          <div className="space-y-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Beiträge durchsuchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
               <Button
-                key={cat.value}
-                variant={filterCategory === cat.value ? "default" : "outline"}
+                variant={filterCategory === "all" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterCategory(cat.value)}
+                onClick={() => setFilterCategory("all")}
               >
-                {cat.label}
+                Alle
               </Button>
-            ))}
-          </div>
-
-          {loading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-32 bg-secondary animate-pulse rounded-lg"
-                />
+              {CATEGORIES.map((cat) => (
+                <Button
+                  key={cat.value}
+                  variant={filterCategory === cat.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterCategory(cat.value)}
+                >
+                  {cat.label}
+                </Button>
               ))}
             </div>
-          ) : posts.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Noch keine Beiträge vorhanden.</p>
-              <p className="text-sm mt-1">Sei der Erste und starte eine Diskussion!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {posts.map((post) => (
+          </div>
+
+          {(() => {
+            const filteredPosts = posts.filter((post) => {
+              if (!searchQuery.trim()) return true;
+              const query = searchQuery.toLowerCase();
+              return (
+                post.title.toLowerCase().includes(query) ||
+                post.content.toLowerCase().includes(query)
+              );
+            });
+
+            if (loading) {
+              return (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 bg-secondary animate-pulse rounded-lg"
+                    />
+                  ))}
+                </div>
+              );
+            }
+
+            if (filteredPosts.length === 0) {
+              return (
+                <div className="text-center py-16 text-muted-foreground">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{searchQuery ? "Keine Beiträge gefunden." : "Noch keine Beiträge vorhanden."}</p>
+                  <p className="text-sm mt-1">
+                    {searchQuery ? "Versuche einen anderen Suchbegriff." : "Sei der Erste und starte eine Diskussion!"}
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-4">
+                {filteredPosts.map((post) => (
                 <Link
                   key={post.id}
                   to={`/community/${post.id}`}
@@ -425,8 +457,9 @@ const CommunityPage = () => {
                   </div>
                 </Link>
               ))}
-            </div>
-          )}
+              </div>
+            );
+          })()}
         </div>
       </main>
     </div>
