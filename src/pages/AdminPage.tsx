@@ -78,12 +78,15 @@ const AdminPage = () => {
   
   // New participant form
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [useExistingParticipant, setUseExistingParticipant] = useState(false);
+  const [selectedExistingParticipant, setSelectedExistingParticipant] = useState<string>("");
   const [newParticipantName, setNewParticipantName] = useState("");
   const [newParticipantEmail, setNewParticipantEmail] = useState("");
   const [newParticipantValue, setNewParticipantValue] = useState("");
   const [newParticipantYear, setNewParticipantYear] = useState(new Date().getFullYear().toString());
   const [newParticipantVersion, setNewParticipantVersion] = useState("Standard");
   const [addingParticipant, setAddingParticipant] = useState(false);
+  const [existingParticipants, setExistingParticipants] = useState<{ email: string; participant_name: string }[]>([]);
 
   const murphVersions = ["Standard", "Female Version", "Beginner Version"];
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
@@ -126,6 +129,28 @@ const AdminPage = () => {
       fetchChallenges();
     }
   }, [isAdmin]);
+
+  // Fetch unique participants for the selected challenge (for adding results to existing participants)
+  const fetchExistingParticipants = async () => {
+    if (!selectedChallenge) return;
+    
+    const { data, error } = await supabase
+      .from("registrations")
+      .select("email, participant_name")
+      .eq("challenge_id", selectedChallenge);
+    
+    if (!error && data) {
+      // Get unique participants by email
+      const uniqueParticipants = Array.from(
+        new Map(data.map((p) => [p.email, p])).values()
+      );
+      setExistingParticipants(uniqueParticipants);
+    }
+  };
+
+  useEffect(() => {
+    fetchExistingParticipants();
+  }, [selectedChallenge]);
 
   const fetchRegistrations = async () => {
     if (!selectedChallenge) return;
@@ -196,8 +221,35 @@ const AdminPage = () => {
   };
 
   const handleAddParticipant = async () => {
-    if (!newParticipantName.trim() || !newParticipantEmail.trim()) {
+    let participantName = newParticipantName.trim();
+    let participantEmail = newParticipantEmail.trim();
+    
+    // If using existing participant, get their data
+    if (useExistingParticipant && selectedExistingParticipant) {
+      const existing = existingParticipants.find((p) => p.email === selectedExistingParticipant);
+      if (existing) {
+        participantName = existing.participant_name;
+        participantEmail = existing.email;
+      }
+    }
+    
+    if (!participantName || !participantEmail) {
       toast.error("Name und E-Mail sind erforderlich");
+      return;
+    }
+
+    // Check if this participant already has a result for this year
+    const yearToCheck = parseInt(newParticipantYear, 10);
+    const { data: existingResult } = await supabase
+      .from("registrations")
+      .select("id")
+      .eq("challenge_id", selectedChallenge)
+      .eq("email", participantEmail)
+      .eq("year", yearToCheck)
+      .maybeSingle();
+    
+    if (existingResult) {
+      toast.error(`Dieser Teilnehmer hat bereits ein Ergebnis für ${yearToCheck}`);
       return;
     }
 
@@ -212,11 +264,11 @@ const AdminPage = () => {
 
     const insertData: any = {
       challenge_id: selectedChallenge,
-      participant_name: newParticipantName.trim(),
-      email: newParticipantEmail.trim(),
+      participant_name: participantName,
+      email: participantEmail,
       score: scoreValue,
       user_id: null,
-      year: parseInt(newParticipantYear, 10),
+      year: yearToCheck,
     };
 
     if (isMurphChallenge) {
@@ -229,14 +281,17 @@ const AdminPage = () => {
       toast.error("Fehler beim Hinzufügen des Teilnehmers");
       console.error(error);
     } else {
-      toast.success("Teilnehmer hinzugefügt");
+      toast.success("Ergebnis hinzugefügt");
       setNewParticipantName("");
       setNewParticipantEmail("");
       setNewParticipantValue("");
       setNewParticipantYear(new Date().getFullYear().toString());
       setNewParticipantVersion("Standard");
+      setUseExistingParticipant(false);
+      setSelectedExistingParticipant("");
       setDialogOpen(false);
       await fetchRegistrations();
+      await fetchExistingParticipants();
     }
 
     setAddingParticipant(false);
@@ -337,28 +392,78 @@ const AdminPage = () => {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Neuen Teilnehmer hinzufügen</DialogTitle>
+                    <DialogTitle>Ergebnis hinzufügen</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        placeholder="Max Mustermann"
-                        value={newParticipantName}
-                        onChange={(e) => setNewParticipantName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-Mail *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="max@beispiel.de"
-                        value={newParticipantEmail}
-                        onChange={(e) => setNewParticipantEmail(e.target.value)}
-                      />
-                    </div>
+                    {/* Toggle for new vs existing participant */}
+                    {existingParticipants.length > 0 && (
+                      <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
+                        <Label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={!useExistingParticipant}
+                            onChange={() => {
+                              setUseExistingParticipant(false);
+                              setSelectedExistingParticipant("");
+                            }}
+                            className="w-4 h-4"
+                          />
+                          Neuer Teilnehmer
+                        </Label>
+                        <Label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={useExistingParticipant}
+                            onChange={() => setUseExistingParticipant(true)}
+                            className="w-4 h-4"
+                          />
+                          Bestehender Teilnehmer
+                        </Label>
+                      </div>
+                    )}
+
+                    {useExistingParticipant ? (
+                      <div className="space-y-2">
+                        <Label>Teilnehmer auswählen *</Label>
+                        <Select
+                          value={selectedExistingParticipant}
+                          onValueChange={setSelectedExistingParticipant}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Teilnehmer auswählen" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {existingParticipants.map((p) => (
+                              <SelectItem key={p.email} value={p.email}>
+                                {p.participant_name} ({p.email})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Name *</Label>
+                          <Input
+                            id="name"
+                            placeholder="Max Mustermann"
+                            value={newParticipantName}
+                            onChange={(e) => setNewParticipantName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">E-Mail *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="max@beispiel.de"
+                            value={newParticipantEmail}
+                            onChange={(e) => setNewParticipantEmail(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
                       <Input
