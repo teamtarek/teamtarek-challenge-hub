@@ -216,10 +216,10 @@ const AdminPage = () => {
       email: newParticipantEmail.trim(),
       score: scoreValue,
       user_id: null,
+      year: parseInt(newParticipantYear, 10),
     };
 
     if (isMurphChallenge) {
-      insertData.year = parseInt(newParticipantYear, 10);
       insertData.murph_version = newParticipantVersion;
     }
 
@@ -370,39 +370,37 @@ const AdminPage = () => {
                         onChange={(e) => setNewParticipantValue(e.target.value)}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="year">Jahr</Label>
+                      <Select value={newParticipantYear} onValueChange={setNewParticipantYear}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Jahr" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {isMurphChallenge && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="year">Jahr</Label>
-                          <Select value={newParticipantYear} onValueChange={setNewParticipantYear}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Jahr" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {years.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="version">Murph Version</Label>
-                          <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Version" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {murphVersions.map((version) => (
-                                <SelectItem key={version} value={version}>
-                                  {version}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </>
+                      <div className="space-y-2">
+                        <Label htmlFor="version">Murph Version</Label>
+                        <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Version" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {murphVersions.map((version) => (
+                              <SelectItem key={version} value={version}>
+                                {version}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     )}
                     <Button
                       className="w-full"
