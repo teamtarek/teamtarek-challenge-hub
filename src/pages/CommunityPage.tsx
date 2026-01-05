@@ -22,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search } from "lucide-react";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search, Image, Video, X } from "lucide-react";
+import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -46,6 +47,8 @@ interface Post {
   created_at: string;
   user_id: string;
   category: Category;
+  image_url: string | null;
+  video_url: string | null;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
@@ -64,6 +67,10 @@ const CommunityPage = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("outdoor-training");
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [newVideoUrl, setNewVideoUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [filterCategory, setFilterCategory] = useState<Category | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [likingPost, setLikingPost] = useState<string | null>(null);
@@ -71,7 +78,7 @@ const CommunityPage = () => {
   const fetchPosts = async () => {
     let query = supabase
       .from("posts")
-      .select("id, title, content, created_at, user_id, category")
+      .select("id, title, content, created_at, user_id, category, image_url, video_url")
       .order("created_at", { ascending: false });
 
     if (filterCategory !== "all") {
@@ -79,7 +86,7 @@ const CommunityPage = () => {
     }
 
     const { data: postsData, error } = await query as { 
-      data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string }[] | null; 
+      data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string; image_url: string | null; video_url: string | null }[] | null; 
       error: any 
     };
 
@@ -138,6 +145,8 @@ const CommunityPage = () => {
     const postsWithData: Post[] = postsData.map((p) => ({
       ...p,
       category: p.category as Category,
+      image_url: p.image_url,
+      video_url: p.video_url,
       profiles: profilesMap[p.user_id] || null,
       comment_count: commentCountMap[p.id] || 0,
       like_count: likeCountMap[p.id] || 0,
@@ -171,6 +180,33 @@ const CommunityPage = () => {
     };
   }, [user, filterCategory]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bitte wähle eine Bilddatei aus.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Bild darf maximal 5MB groß sein.");
+      return;
+    }
+
+    setNewImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setNewImageFile(null);
+    setNewImagePreview(null);
+  };
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -183,12 +219,47 @@ const CommunityPage = () => {
       return;
     }
 
+    if (newVideoUrl && !isValidVideoUrl(newVideoUrl)) {
+      toast.error("Bitte gib einen gültigen YouTube- oder Vimeo-Link ein.");
+      return;
+    }
+
     setCreating(true);
+
+    let imageUrl: string | null = null;
+
+    // Upload image if selected
+    if (newImageFile) {
+      setUploadingImage(true);
+      const fileExt = newImageFile.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from("post-images")
+        .upload(fileName, newImageFile);
+
+      if (uploadError) {
+        toast.error("Bild konnte nicht hochgeladen werden.");
+        setCreating(false);
+        setUploadingImage(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("post-images")
+        .getPublicUrl(fileName);
+
+      imageUrl = urlData.publicUrl;
+      setUploadingImage(false);
+    }
+
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
       title: newTitle.trim(),
       content: newContent.trim(),
       category: newCategory,
+      image_url: imageUrl,
+      video_url: newVideoUrl.trim() || null,
     } as any);
 
     if (error) {
@@ -198,6 +269,9 @@ const CommunityPage = () => {
       setNewTitle("");
       setNewContent("");
       setNewCategory("outdoor-training");
+      setNewImageFile(null);
+      setNewImagePreview(null);
+      setNewVideoUrl("");
       setDialogOpen(false);
     }
     setCreating(false);
@@ -270,7 +344,7 @@ const CommunityPage = () => {
                   Neuer Beitrag
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Neuen Beitrag erstellen</DialogTitle>
                 </DialogHeader>
@@ -307,15 +381,77 @@ const CommunityPage = () => {
                       placeholder="Teile deine Gedanken..."
                       value={newContent}
                       onChange={(e) => setNewContent(e.target.value)}
-                      rows={5}
+                      rows={4}
                       maxLength={5000}
                     />
                   </div>
-                  <Button type="submit" disabled={creating} className="w-full">
-                    {creating ? (
+
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <Label>Bild (optional)</Label>
+                    {newImagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={newImagePreview}
+                          alt="Vorschau"
+                          className="w-full max-h-48 object-cover rounded-lg"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8"
+                          onClick={handleRemoveImage}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => document.getElementById("image-upload")?.click()}
+                        >
+                          <Image className="w-4 h-4 mr-2" />
+                          Bild auswählen
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Video URL */}
+                  <div className="space-y-2">
+                    <Label htmlFor="video-url">Video-Link (optional)</Label>
+                    <div className="flex items-center gap-2">
+                      <Video className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <Input
+                        id="video-url"
+                        placeholder="YouTube oder Vimeo Link..."
+                        value={newVideoUrl}
+                        onChange={(e) => setNewVideoUrl(e.target.value)}
+                      />
+                    </div>
+                    {newVideoUrl && isValidVideoUrl(newVideoUrl) && (
+                      <div className="mt-2">
+                        <VideoEmbed url={newVideoUrl} />
+                      </div>
+                    )}
+                  </div>
+
+                  <Button type="submit" disabled={creating || uploadingImage} className="w-full">
+                    {creating || uploadingImage ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Erstellen...
+                        {uploadingImage ? "Bild wird hochgeladen..." : "Erstellen..."}
                       </>
                     ) : (
                       "Beitrag erstellen"
@@ -416,6 +552,16 @@ const CommunityPage = () => {
                         <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                           {getCategoryLabel(post.category)}
                         </span>
+                        {post.image_url && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground flex items-center gap-1">
+                            <Image className="w-3 h-3" /> Bild
+                          </span>
+                        )}
+                        {post.video_url && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground flex items-center gap-1">
+                            <Video className="w-3 h-3" /> Video
+                          </span>
+                        )}
                       </div>
                       <h2 className="font-semibold text-lg truncate">
                         {post.title}
