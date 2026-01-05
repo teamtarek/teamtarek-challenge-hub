@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart } from "lucide-react";
+import { VideoEmbed } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -30,6 +31,8 @@ interface Post {
   created_at: string;
   user_id: string;
   category: Category;
+  image_url: string | null;
+  video_url: string | null;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
@@ -69,10 +72,10 @@ const PostPage = () => {
 
     const { data: postData, error } = await supabase
       .from("posts")
-      .select("id, title, content, created_at, user_id, category")
+      .select("id, title, content, created_at, user_id, category, image_url, video_url")
       .eq("id", postId)
       .maybeSingle() as { 
-        data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string } | null; 
+        data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string; image_url: string | null; video_url: string | null } | null; 
         error: any 
       };
 
@@ -100,6 +103,8 @@ const PostPage = () => {
     setPost({
       ...postData,
       category: postData.category as Category,
+      image_url: postData.image_url,
+      video_url: postData.video_url,
       profiles: profile,
       like_count: likeCount,
       user_has_liked: userHasLiked,
@@ -387,6 +392,24 @@ const PostPage = () => {
               )}
             </div>
             <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
+            
+            {/* Post Image */}
+            {post.image_url && (
+              <div className="mt-4">
+                <img
+                  src={post.image_url}
+                  alt="Beitragsbild"
+                  className="w-full max-h-96 object-contain rounded-lg bg-secondary"
+                />
+              </div>
+            )}
+
+            {/* Post Video */}
+            {post.video_url && (
+              <div className="mt-4">
+                <VideoEmbed url={post.video_url} />
+              </div>
+            )}
             
             {/* Post Like Button */}
             <div className="mt-4 pt-4 border-t border-border">
