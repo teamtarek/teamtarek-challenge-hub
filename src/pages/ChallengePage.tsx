@@ -9,6 +9,15 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Import challenge hero images
+import springChallenge from "@/assets/challenges/spring-challenge.jpg";
+import murph from "@/assets/challenges/murph.jpg";
+import deadlyDozen from "@/assets/challenges/deadly-dozen.jpg";
+import summerChallenge from "@/assets/challenges/summer-challenge.jpg";
+import kettlebell from "@/assets/challenges/kettlebell.jpg";
+import winterChallenge from "@/assets/challenges/winter-challenge.jpg";
+import heroBg from "@/assets/hero-bg.jpg";
+
 interface Challenge {
   id: string;
   slug: string;
@@ -17,6 +26,18 @@ interface Challenge {
   start_date: string;
   end_date: string | null;
 }
+
+const getChallengeHeroImage = (slug: string): string => {
+  const imageMap: Record<string, string> = {
+    "spring-challenge-2026": springChallenge,
+    "murph-2026": murph,
+    "deadly-dozen": deadlyDozen,
+    "summer-challenge-2026": summerChallenge,
+    "kettlebell-swing-2026": kettlebell,
+    "winter-challenge-2026": winterChallenge,
+  };
+  return imageMap[slug] || heroBg;
+};
 
 const formatDateRange = (start: string, end: string | null) => {
   const startDate = new Date(start);
@@ -87,7 +108,7 @@ const ChallengePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -111,35 +132,50 @@ const ChallengePage = () => {
   const end = challenge.end_date ? new Date(challenge.end_date) : start;
   const isActive = now >= start && now <= end;
   const isUpcoming = now < start;
+  const heroImage = getChallengeHeroImage(challenge.slug);
 
   return (
     <div className="min-h-screen">
       <Header />
 
-      <div className="container py-8">
-        {/* Back Link */}
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Alle Challenges
-        </Link>
+      {/* Hero Section */}
+      <section 
+        className="relative min-h-[50vh] flex items-end"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        
+        {/* Content */}
+        <div className="relative z-10 container pb-12">
+          {/* Back Link */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Alle Challenges
+          </Link>
 
-        {/* Challenge Header */}
-        <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className={`challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
               {isActive ? "AKTIV" : isUpcoming ? "BALD" : "BEENDET"}
             </span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">{challenge.name}</h1>
-          <div className="flex items-center gap-2 text-muted-foreground font-mono">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">{challenge.name}</h1>
+          <div className="flex items-center gap-2 text-foreground/70 uppercase tracking-wider text-sm">
             <Calendar className="w-5 h-5" />
             {formatDateRange(challenge.start_date, challenge.end_date)}
           </div>
         </div>
+      </section>
 
+      {/* Content */}
+      <div className="container py-12">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-2xl">
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -168,7 +204,7 @@ const ChallengePage = () => {
                 <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
                 {!user && (
                   <p className="text-sm text-muted-foreground mb-4">
-                    <Link to="/auth" className="text-primary hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
+                    <Link to="/auth" className="text-foreground hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
                   </p>
                 )}
                 <RegistrationForm
@@ -202,7 +238,7 @@ const ChallengePage = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 mt-16">
         <div className="container">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground text-center uppercase tracking-wider">
             © 2026 Team Tarek. Alle Rechte vorbehalten.
           </p>
         </div>
