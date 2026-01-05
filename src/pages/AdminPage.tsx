@@ -15,7 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2 } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Challenge {
   id: string;
@@ -41,6 +48,13 @@ const AdminPage = () => {
   const [scores, setScores] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  
+  // New participant form
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newParticipantName, setNewParticipantName] = useState("");
+  const [newParticipantEmail, setNewParticipantEmail] = useState("");
+  const [newParticipantScore, setNewParticipantScore] = useState("0");
+  const [addingParticipant, setAddingParticipant] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -76,27 +90,27 @@ const AdminPage = () => {
     }
   }, [isAdmin]);
 
+  const fetchRegistrations = async () => {
+    if (!selectedChallenge) return;
+
+    const { data, error } = await supabase
+      .from("registrations")
+      .select("id, participant_name, email, score, created_at")
+      .eq("challenge_id", selectedChallenge)
+      .order("score", { ascending: false })
+      .order("created_at", { ascending: true });
+
+    if (!error && data) {
+      setRegistrations(data);
+      const initialScores: Record<string, string> = {};
+      data.forEach((reg) => {
+        initialScores[reg.id] = reg.score?.toString() ?? "0";
+      });
+      setScores(initialScores);
+    }
+  };
+
   useEffect(() => {
-    const fetchRegistrations = async () => {
-      if (!selectedChallenge) return;
-
-      const { data, error } = await supabase
-        .from("registrations")
-        .select("id, participant_name, email, score, created_at")
-        .eq("challenge_id", selectedChallenge)
-        .order("score", { ascending: false })
-        .order("created_at", { ascending: true });
-
-      if (!error && data) {
-        setRegistrations(data);
-        const initialScores: Record<string, string> = {};
-        data.forEach((reg) => {
-          initialScores[reg.id] = reg.score?.toString() ?? "0";
-        });
-        setScores(initialScores);
-      }
-    };
-
     fetchRegistrations();
   }, [selectedChallenge]);
 
@@ -120,19 +134,40 @@ const AdminPage = () => {
       toast.error("Fehler beim Speichern der Punktzahl");
     } else {
       toast.success("Punktzahl gespeichert");
-      // Refresh registrations
-      const { data } = await supabase
-        .from("registrations")
-        .select("id, participant_name, email, score, created_at")
-        .eq("challenge_id", selectedChallenge)
-        .order("score", { ascending: false })
-        .order("created_at", { ascending: true });
-
-      if (data) {
-        setRegistrations(data);
-      }
+      await fetchRegistrations();
     }
     setSaving(null);
+  };
+
+  const handleAddParticipant = async () => {
+    if (!newParticipantName.trim() || !newParticipantEmail.trim()) {
+      toast.error("Name und E-Mail sind erforderlich");
+      return;
+    }
+
+    setAddingParticipant(true);
+
+    const { error } = await supabase.from("registrations").insert({
+      challenge_id: selectedChallenge,
+      participant_name: newParticipantName.trim(),
+      email: newParticipantEmail.trim(),
+      score: parseInt(newParticipantScore || "0", 10),
+      user_id: null,
+    });
+
+    if (error) {
+      toast.error("Fehler beim Hinzufügen des Teilnehmers");
+      console.error(error);
+    } else {
+      toast.success("Teilnehmer hinzugefügt");
+      setNewParticipantName("");
+      setNewParticipantEmail("");
+      setNewParticipantScore("0");
+      setDialogOpen(false);
+      await fetchRegistrations();
+    }
+
+    setAddingParticipant(false);
   };
 
   if (authLoading || adminLoading || loadingData) {
@@ -180,7 +215,66 @@ const AdminPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Teilnehmer & Punktzahlen</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Teilnehmer & Punktzahlen</h2>
+              
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button disabled={!selectedChallenge}>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Teilnehmer hinzufügen
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Neuen Teilnehmer hinzufügen</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name *</Label>
+                      <Input
+                        id="name"
+                        placeholder="Max Mustermann"
+                        value={newParticipantName}
+                        onChange={(e) => setNewParticipantName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-Mail *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="max@beispiel.de"
+                        value={newParticipantEmail}
+                        onChange={(e) => setNewParticipantEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="score">Punktzahl</Label>
+                      <Input
+                        id="score"
+                        type="number"
+                        min="0"
+                        value={newParticipantScore}
+                        onChange={(e) => setNewParticipantScore(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      onClick={handleAddParticipant}
+                      disabled={addingParticipant}
+                    >
+                      {addingParticipant ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Plus className="w-4 h-4 mr-2" />
+                      )}
+                      Hinzufügen
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
 
             {registrations.length === 0 ? (
               <p className="text-muted-foreground">
