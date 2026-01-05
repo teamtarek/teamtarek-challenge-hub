@@ -11,12 +11,25 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
+const CATEGORIES = [
+  { value: "outdoor-training", label: "Outdoor Training" },
+  { value: "challenges", label: "Challenges" },
+  { value: "coaches-corner", label: "Coaches Corner (Q&A)" },
+] as const;
+
+type Category = typeof CATEGORIES[number]["value"];
+
+const getCategoryLabel = (value: string) => {
+  return CATEGORIES.find((c) => c.value === value)?.label || value;
+};
+
 interface Post {
   id: string;
   title: string;
   content: string;
   created_at: string;
   user_id: string;
+  category: Category;
   profiles: {
     display_name: string | null;
     avatar_url: string | null;
@@ -56,9 +69,12 @@ const PostPage = () => {
 
     const { data: postData, error } = await supabase
       .from("posts")
-      .select("id, title, content, created_at, user_id")
+      .select("id, title, content, created_at, user_id, category")
       .eq("id", postId)
-      .maybeSingle();
+      .maybeSingle() as { 
+        data: { id: string; title: string; content: string; created_at: string; user_id: string; category: string } | null; 
+        error: any 
+      };
 
     if (error || !postData) {
       navigate("/community");
@@ -83,6 +99,7 @@ const PostPage = () => {
 
     setPost({
       ...postData,
+      category: postData.category as Category,
       profiles: profile,
       like_count: likeCount,
       user_has_liked: userHasLiked,
@@ -341,6 +358,11 @@ const PostPage = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    {getCategoryLabel(post.category)}
+                  </span>
+                </div>
                 <h1 className="text-2xl font-bold">{post.title}</h1>
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                   <span>{post.profiles?.display_name || "Anonym"}</span>
