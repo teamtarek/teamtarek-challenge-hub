@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       challenges: {
         Row: {
+          category: string
           created_at: string
           description: string | null
           end_date: string | null
@@ -25,6 +26,7 @@ export type Database = {
           start_date: string
         }
         Insert: {
+          category?: string
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -34,6 +36,7 @@ export type Database = {
           start_date: string
         }
         Update: {
+          category?: string
           created_at?: string
           description?: string | null
           end_date?: string | null
