@@ -16,11 +16,17 @@ import { Loader2, CheckCircle } from "lucide-react";
 import { z } from "zod";
 
 const MURPH_VERSIONS = ["Standard", "Female Version", "Beginner Version"] as const;
+const VALIDATION_TYPES = ["coach", "video"] as const;
 
 const registrationSchema = z.object({
   name: z.string().trim().min(2, "Name muss mindestens 2 Zeichen haben").max(100, "Name darf maximal 100 Zeichen haben"),
   email: z.string().trim().email("Bitte eine gültige E-Mail-Adresse eingeben").max(255, "E-Mail darf maximal 255 Zeichen haben"),
 });
+
+const videoUrlSchema = z.string().url("Bitte eine gültige URL eingeben").refine(
+  (url) => url.includes("youtube.com") || url.includes("youtu.be") || url.includes("vimeo.com"),
+  "Bitte eine YouTube oder Vimeo URL eingeben"
+);
 
 interface RegistrationFormProps {
   challengeId: string;
@@ -33,6 +39,8 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [murphVersion, setMurphVersion] = useState<string>("Standard");
+  const [validationType, setValidationType] = useState<string>("coach");
+  const [videoUrl, setVideoUrl] = useState("");
   const [year] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -48,6 +56,19 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
       return;
     }
 
+    // Validate video URL if video validation is selected
+    if (validationType === "video") {
+      if (!videoUrl.trim()) {
+        toast.error("Bitte einen Video-Link eingeben");
+        return;
+      }
+      const videoValidation = videoUrlSchema.safeParse(videoUrl);
+      if (!videoValidation.success) {
+        toast.error(videoValidation.error.errors[0].message);
+        return;
+      }
+    }
+
     setLoading(true);
 
     const insertData: any = {
@@ -56,6 +77,9 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
       email: validation.data.email,
       user_id: user?.id || null,
       year: year,
+      validation_type: validationType,
+      video_url: validationType === "video" ? videoUrl.trim() : null,
+      is_verified: false,
     };
 
     if (isMurphChallenge) {
@@ -156,6 +180,40 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
           disabled
           className="input-minimal bg-muted"
         />
+      </div>
+
+      {/* Validation Type Section */}
+      <div className="space-y-3 p-4 bg-muted/50 rounded-lg border border-border">
+        <p className="text-sm text-muted-foreground">
+          Alle Ergebnisse müssen entweder durch ein Video validiert werden (bei YouTube hochladen (auf Privat stellen) und Link hier posten) oder durch einen autorisierten Coach abgenommen sein. Bitte entsprechende Option auswählen. Alle eingereichten Ergebnisse werden durch einen autorisierten Coach überprüft.
+        </p>
+        
+        <div className="space-y-2">
+          <Label>Validierungsart</Label>
+          <Select value={validationType} onValueChange={setValidationType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Validierungsart wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="coach">Autorisiert durch Coach (z.B. in Person ausgeführt)</SelectItem>
+              <SelectItem value="video">Videobeweis</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {validationType === "video" && (
+          <div className="space-y-2">
+            <Label htmlFor="videoUrl">Video-Link (YouTube / Vimeo)</Label>
+            <Input
+              id="videoUrl"
+              type="url"
+              placeholder="https://youtube.com/watch?v=..."
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              className="input-minimal"
+            />
+          </div>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>

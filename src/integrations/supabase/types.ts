@@ -193,10 +193,13 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_verified: boolean | null
           murph_version: string | null
           participant_name: string
           score: number | null
           user_id: string | null
+          validation_type: string | null
+          video_url: string | null
           year: number | null
         }
         Insert: {
@@ -204,10 +207,13 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          is_verified?: boolean | null
           murph_version?: string | null
           participant_name: string
           score?: number | null
           user_id?: string | null
+          validation_type?: string | null
+          video_url?: string | null
           year?: number | null
         }
         Update: {
@@ -215,10 +221,13 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_verified?: boolean | null
           murph_version?: string | null
           participant_name?: string
           score?: number | null
           user_id?: string | null
+          validation_type?: string | null
+          video_url?: string | null
           year?: number | null
         }
         Relationships: [
