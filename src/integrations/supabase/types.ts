@@ -193,13 +193,17 @@ export type Database = {
       registrations: {
         Row: {
           challenge_id: string
+          completion_date: string | null
           created_at: string
           email: string
           id: string
           is_verified: boolean | null
+          kettlebell_weight_kg: number | null
           murph_version: string | null
           participant_name: string
           score: number | null
+          total_reps: number | null
+          total_time_seconds: number | null
           user_id: string | null
           validation_type: string | null
           video_url: string | null
@@ -207,13 +211,17 @@ export type Database = {
         }
         Insert: {
           challenge_id: string
+          completion_date?: string | null
           created_at?: string
           email: string
           id?: string
           is_verified?: boolean | null
+          kettlebell_weight_kg?: number | null
           murph_version?: string | null
           participant_name: string
           score?: number | null
+          total_reps?: number | null
+          total_time_seconds?: number | null
           user_id?: string | null
           validation_type?: string | null
           video_url?: string | null
@@ -221,13 +229,17 @@ export type Database = {
         }
         Update: {
           challenge_id?: string
+          completion_date?: string | null
           created_at?: string
           email?: string
           id?: string
           is_verified?: boolean | null
+          kettlebell_weight_kg?: number | null
           murph_version?: string | null
           participant_name?: string
           score?: number | null
+          total_reps?: number | null
+          total_time_seconds?: number | null
           user_id?: string | null
           validation_type?: string | null
           video_url?: string | null
