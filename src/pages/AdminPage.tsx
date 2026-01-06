@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,9 @@ interface Registration {
   murph_version: string | null;
   year: number | null;
   created_at: string;
+  validation_type: string | null;
+  video_url: string | null;
+  is_verified: boolean;
 }
 
 // Helper functions for time conversion
@@ -72,6 +75,7 @@ const AdminPage = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedVersion, setSelectedVersion] = useState<string>("all");
@@ -157,7 +161,7 @@ const AdminPage = () => {
 
     let query = supabase
       .from("registrations")
-      .select("id, participant_name, email, score, murph_version, year, created_at")
+      .select("id, participant_name, email, score, murph_version, year, created_at, validation_type, video_url, is_verified")
       .eq("challenge_id", selectedChallenge);
 
     if (selectedYear !== "all") {
@@ -218,6 +222,23 @@ const AdminPage = () => {
       await fetchRegistrations();
     }
     setSaving(null);
+  };
+
+  const handleToggleVerified = async (registrationId: string, currentStatus: boolean) => {
+    setVerifying(registrationId);
+    
+    const { error } = await supabase
+      .from("registrations")
+      .update({ is_verified: !currentStatus })
+      .eq("id", registrationId);
+
+    if (error) {
+      toast.error("Fehler beim Aktualisieren des Verifizierungsstatus");
+    } else {
+      toast.success(currentStatus ? "Verifizierung aufgehoben" : "Ergebnis verifiziert");
+      await fetchRegistrations();
+    }
+    setVerifying(null);
   };
 
   const handleAddParticipant = async () => {
@@ -533,45 +554,99 @@ const AdminPage = () => {
                 {registrations.map((registration) => (
                   <div
                     key={registration.id}
-                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-secondary rounded-lg"
+                    className={`flex flex-col gap-4 p-4 rounded-lg ${
+                      registration.is_verified ? "bg-green-500/10 border border-green-500/30" : "bg-secondary"
+                    }`}
                   >
-                    <div className="flex-1">
-                      <p className="font-medium">
-                        {registration.participant_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {registration.email}
-                      </p>
-                      {isMurphChallenge && (
-                        <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                          <span>{registration.year}</span>
-                          <span>•</span>
-                          <span>{registration.murph_version || "Standard"}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            {registration.participant_name}
+                          </p>
+                          {registration.is_verified && (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          )}
                         </div>
-                      )}
+                        <p className="text-sm text-muted-foreground">
+                          {registration.email}
+                        </p>
+                        {isMurphChallenge && (
+                          <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                            <span>{registration.year}</span>
+                            <span>•</span>
+                            <span>{registration.murph_version || "Standard"}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder={isMurphChallenge ? "MM:SS" : "0"}
+                          type={isMurphChallenge ? "text" : "number"}
+                          min={isMurphChallenge ? undefined : 0}
+                          className="w-28"
+                          value={values[registration.id] || ""}
+                          onChange={(e) =>
+                            handleValueChange(registration.id, e.target.value)
+                          }
+                        />
+                        <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveValue(registration.id)}
+                          disabled={saving === registration.id}
+                        >
+                          {saving === registration.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder={isMurphChallenge ? "MM:SS" : "0"}
-                        type={isMurphChallenge ? "text" : "number"}
-                        min={isMurphChallenge ? undefined : 0}
-                        className="w-28"
-                        value={values[registration.id] || ""}
-                        onChange={(e) =>
-                          handleValueChange(registration.id, e.target.value)
-                        }
-                      />
-                      <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                    
+                    {/* Validation Info & Verification */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-border">
+                      <div className="flex items-center gap-3">
+                        {registration.validation_type === "video" ? (
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs">
+                              <Video className="w-3 h-3" />
+                              Videobeweis
+                            </span>
+                            {registration.video_url && (
+                              <a
+                                href={registration.video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                Video ansehen
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/10 text-orange-500 text-xs">
+                            <User className="w-3 h-3" />
+                            Coach-Bestätigung
+                          </span>
+                        )}
+                      </div>
+                      
                       <Button
                         size="sm"
-                        onClick={() => handleSaveValue(registration.id)}
-                        disabled={saving === registration.id}
+                        variant={registration.is_verified ? "outline" : "default"}
+                        onClick={() => handleToggleVerified(registration.id, registration.is_verified)}
+                        disabled={verifying === registration.id}
+                        className={registration.is_verified ? "border-green-500 text-green-500 hover:bg-green-500/10" : ""}
                       >
-                        {saving === registration.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                        {verifying === registration.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
                         ) : (
-                          <Save className="w-4 h-4" />
+                          <CheckCircle className="w-4 h-4 mr-2" />
                         )}
+                        {registration.is_verified ? "Verifiziert" : "Als geprüft markieren"}
                       </Button>
                     </div>
                   </div>

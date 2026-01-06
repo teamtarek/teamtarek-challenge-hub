@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Medal, Award } from "lucide-react";
+import { Trophy, Medal, Award, CheckCircle, Video, User } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Registration {
   id: string;
@@ -19,6 +25,9 @@ interface Registration {
   avatar_url: string | null;
   year: number | null;
   murph_version: string | null;
+  validation_type: string | null;
+  video_url: string | null;
+  is_verified: boolean;
 }
 
 interface LeaderboardProps {
@@ -56,7 +65,10 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           created_at,
           user_id,
           year,
-          murph_version
+          murph_version,
+          validation_type,
+          video_url,
+          is_verified
         `)
         .eq("challenge_id", challengeId)
         .order("score", { ascending: true })
@@ -92,6 +104,7 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           ...r,
           score: r.score ?? 0,
           avatar_url: r.user_id ? profilesMap[r.user_id] || null : null,
+          is_verified: r.is_verified ?? false,
         }));
 
         setRegistrations(registrationsWithAvatars);
@@ -229,7 +242,21 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="font-medium">{registration.participant_name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{registration.participant_name}</p>
+                  {registration.is_verified && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Geprüftes Ergebnis</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {registration.murph_version && (
                     <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
@@ -237,6 +264,17 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                     </span>
                   )}
                   {registration.year && <span>{registration.year}</span>}
+                  {registration.validation_type === "video" ? (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                      <Video className="w-3 h-3" />
+                      Video
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
+                      <User className="w-3 h-3" />
+                      Coach
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="text-right font-mono">
@@ -259,7 +297,21 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="font-medium">{registration.participant_name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{registration.participant_name}</p>
+                  {registration.is_verified && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Geprüftes Ergebnis</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {registration.murph_version && (
                     <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
@@ -267,6 +319,17 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                     </span>
                   )}
                   {registration.year && <span>{registration.year}</span>}
+                  {registration.validation_type === "video" ? (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                      <Video className="w-3 h-3" />
+                      Video
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
+                      <User className="w-3 h-3" />
+                      Coach
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="text-right font-mono">
