@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -94,6 +94,8 @@ const AdminPage = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedVersion, setSelectedVersion] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"name" | "date" | "result">("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
   // New participant form
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -406,6 +408,52 @@ const AdminPage = () => {
     return "Punktzahlen";
   };
 
+  // Sort registrations
+  const getSortedRegistrations = () => {
+    const sorted = [...registrations].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case "name":
+          comparison = a.participant_name.localeCompare(b.participant_name, "de");
+          break;
+        case "date":
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case "result":
+          // Different result fields based on challenge type
+          if (isSnatchTest) {
+            comparison = (a.total_reps || 0) - (b.total_reps || 0);
+          } else if (isRiteOfPassage) {
+            // First by weight, then by time
+            const weightDiff = (a.kettlebell_weight_kg || 0) - (b.kettlebell_weight_kg || 0);
+            if (weightDiff !== 0) {
+              comparison = weightDiff;
+            } else {
+              comparison = (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
+            }
+          } else if (isSimpleSinister) {
+            // First by weight, then by time
+            const weightDiff = (a.kettlebell_weight_kg || 0) - (b.kettlebell_weight_kg || 0);
+            if (weightDiff !== 0) {
+              comparison = weightDiff;
+            } else {
+              comparison = (a.score || 0) - (b.score || 0);
+            }
+          } else {
+            comparison = (a.score || 0) - (b.score || 0);
+          }
+          break;
+      }
+      
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+    
+    return sorted;
+  };
+
+  const sortedRegistrations = getSortedRegistrations();
+
   if (authLoading || adminLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
@@ -453,8 +501,8 @@ const AdminPage = () => {
             </Select>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4">
+          {/* Filters & Sorting */}
+          <div className="flex flex-wrap gap-4 items-end">
             <div className="space-y-2">
               <Label>Jahr</Label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -489,6 +537,34 @@ const AdminPage = () => {
                 </Select>
               </div>
             )}
+            
+            {/* Sorting Controls */}
+            <div className="space-y-2">
+              <Label>Sortieren nach</Label>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as "name" | "date" | "result")}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Sortieren" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="date">Datum</SelectItem>
+                  <SelectItem value="result">Ergebnis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+              title={sortDirection === "asc" ? "Aufsteigend" : "Absteigend"}
+            >
+              {sortDirection === "asc" ? (
+                <ArrowUp className="w-4 h-4" />
+              ) : (
+                <ArrowDown className="w-4 h-4" />
+              )}
+            </Button>
           </div>
 
           <div className="space-y-4">
@@ -708,13 +784,13 @@ const AdminPage = () => {
               </Dialog>
             </div>
 
-            {registrations.length === 0 ? (
+            {sortedRegistrations.length === 0 ? (
               <p className="text-muted-foreground">
                 Keine Teilnehmer für diese Challenge.
               </p>
             ) : (
               <div className="space-y-3">
-                {registrations.map((registration) => (
+                {sortedRegistrations.map((registration) => (
                   <div
                     key={registration.id}
                     className={`flex flex-col gap-4 p-4 rounded-lg ${
