@@ -1,6 +1,31 @@
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight } from "lucide-react";
 
+// Challenge images
+import springImg from "@/assets/challenges/spring-challenge.jpg";
+import murphImg from "@/assets/challenges/murph.jpg";
+import deadlyDozenImg from "@/assets/challenges/deadly-dozen.jpg";
+import summerImg from "@/assets/challenges/summer-challenge.jpg";
+import kettlebellImg from "@/assets/challenges/kettlebell.jpg";
+import winterImg from "@/assets/challenges/winter-challenge.jpg";
+import pumpRowImg from "@/assets/challenges/pump-row.jpg";
+import tareksTrifectaImg from "@/assets/challenges/tareks-trifecta.jpg";
+import armyFitnessImg from "@/assets/challenges/army-fitness-test.jpg";
+
+const challengeImages: Record<string, string> = {
+  "spring-challenge-2026": springImg,
+  "murph": murphImg,
+  "murph-2026": murphImg,
+  "deadly-dozen": deadlyDozenImg,
+  "summer-challenge-2026": summerImg,
+  "kettlebell-swing": kettlebellImg,
+  "kettlebell-swing-2026": kettlebellImg,
+  "winter-challenge-2026": winterImg,
+  "pump-row": pumpRowImg,
+  "tareks-trifecta": tareksTrifectaImg,
+  "army-fitness-test": armyFitnessImg,
+};
+
 interface ChallengeCardProps {
   slug: string;
   name: string;
@@ -46,22 +71,44 @@ export const ChallengeCard = ({
   const isActive = now >= start && now <= end;
   const isUpcoming = now < start;
 
+  const heroImage = challengeImages[slug];
+
   return (
     <Link
       to={`/challenge/${slug}`}
-      className="challenge-card group block opacity-0 animate-fade-in"
+      className="challenge-card group block opacity-0 animate-fade-in overflow-hidden"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <span className={`challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
-          {isActive ? "AKTIV" : isUpcoming ? "BALD" : "BEENDET"}
-        </span>
-        <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-      </div>
+      {/* Hero Image */}
+      {heroImage && (
+        <div className="relative h-40 -mx-6 -mt-6 mb-4 overflow-hidden">
+          <img 
+            src={heroImage} 
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+          <span className={`absolute top-3 left-3 challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
+            {isActive ? "AKTIV" : isUpcoming ? "BALD" : "BEENDET"}
+          </span>
+        </div>
+      )}
+
+      {!heroImage && (
+        <div className="flex items-start justify-between mb-4">
+          <span className={`challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
+            {isActive ? "AKTIV" : isUpcoming ? "BALD" : "BEENDET"}
+          </span>
+          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        </div>
+      )}
       
-      <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
-        {name}
-      </h3>
+      <div className="flex items-start justify-between mb-2">
+        <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+          {name}
+        </h3>
+        <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
+      </div>
       
       <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
         {description}
