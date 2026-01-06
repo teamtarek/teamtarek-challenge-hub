@@ -11,6 +11,7 @@ interface Challenge {
   description: string;
   start_date: string;
   end_date: string | null;
+  category: string;
 }
 
 const Index = () => {
@@ -70,34 +71,70 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Challenges Grid */}
+      {/* Outdoor Community Challenges */}
       <section className="container py-24">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-3xl font-bold">Challenges 2026</h2>
+          <h2 className="text-3xl font-bold">Outdoor Community Challenges</h2>
           <span className="text-sm text-muted-foreground uppercase tracking-wider">
-            {challenges.length} Challenges
+            {challenges.filter(c => c.category === 'outdoor').length} Challenges
           </span>
         </div>
 
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="h-48 bg-card animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {challenges.map((challenge, index) => (
-              <ChallengeCard
-                key={challenge.id}
-                slug={challenge.slug}
-                name={challenge.name}
-                description={challenge.description || ""}
-                startDate={challenge.start_date}
-                endDate={challenge.end_date}
-                index={index}
-              />
+            {challenges
+              .filter(c => c.category === 'outdoor')
+              .map((challenge, index) => (
+                <ChallengeCard
+                  key={challenge.id}
+                  slug={challenge.slug}
+                  name={challenge.name}
+                  description={challenge.description || ""}
+                  startDate={challenge.start_date}
+                  endDate={challenge.end_date}
+                  index={index}
+                />
+              ))}
+          </div>
+        )}
+      </section>
+
+      {/* Gym Community Challenges */}
+      <section className="container py-24 pt-0">
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-3xl font-bold">Gym Community Challenges</h2>
+          <span className="text-sm text-muted-foreground uppercase tracking-wider">
+            {challenges.filter(c => c.category === 'gym').length} Challenges
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-48 bg-card animate-pulse" />
             ))}
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {challenges
+              .filter(c => c.category === 'gym')
+              .map((challenge, index) => (
+                <ChallengeCard
+                  key={challenge.id}
+                  slug={challenge.slug}
+                  name={challenge.name}
+                  description={challenge.description || ""}
+                  startDate={challenge.start_date}
+                  endDate={challenge.end_date}
+                  index={index}
+                />
+              ))}
           </div>
         )}
       </section>
