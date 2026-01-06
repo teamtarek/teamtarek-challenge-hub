@@ -16,6 +16,12 @@ import deadlyDozen from "@/assets/challenges/deadly-dozen.jpg";
 import summerChallenge from "@/assets/challenges/summer-challenge.jpg";
 import kettlebell from "@/assets/challenges/kettlebell.jpg";
 import winterChallenge from "@/assets/challenges/winter-challenge.jpg";
+import pumpRow from "@/assets/challenges/pump-row.jpg";
+import tareksTrifecta from "@/assets/challenges/tareks-trifecta.jpg";
+import armyFitnessTest from "@/assets/challenges/army-fitness-test.jpg";
+import snatchTest from "@/assets/challenges/5-minute-snatch-test.jpg";
+import simpleSinister from "@/assets/challenges/simple-sinister.jpg";
+import riteOfPassage from "@/assets/challenges/rite-of-passage.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
@@ -25,6 +31,7 @@ interface Challenge {
   description: string;
   start_date: string;
   end_date: string | null;
+  category: string;
 }
 
 const getChallengeHeroImage = (slug: string): string => {
@@ -35,6 +42,12 @@ const getChallengeHeroImage = (slug: string): string => {
     "summer-challenge-2026": summerChallenge,
     "kettlebell-swing-2026": kettlebell,
     "winter-challenge-2026": winterChallenge,
+    "pump-row": pumpRow,
+    "tareks-trifecta": tareksTrifecta,
+    "army-fitness-test": armyFitnessTest,
+    "5-minute-snatch-test": snatchTest,
+    "simple-sinister": simpleSinister,
+    "rite-of-passage": riteOfPassage,
   };
   return imageMap[slug] || heroBg;
 };
@@ -210,6 +223,7 @@ const ChallengePage = () => {
                 <RegistrationForm
                   challengeId={challenge.id}
                   challengeName={challenge.name}
+                  challengeSlug={challenge.slug}
                   onSuccess={handleRegistrationSuccess}
                 />
               </div>
@@ -229,7 +243,7 @@ const ChallengePage = () => {
           <TabsContent value="leaderboard">
             <div className="challenge-card">
               <h2 className="text-xl font-semibold mb-6">Leaderboard</h2>
-              <Leaderboard challengeId={challenge.id} />
+              <Leaderboard challengeId={challenge.id} challengeSlug={challenge.slug} />
             </div>
           </TabsContent>
         </Tabs>

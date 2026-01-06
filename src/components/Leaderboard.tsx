@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Medal, Award, CheckCircle, Video, User } from "lucide-react";
+import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -28,10 +28,15 @@ interface Registration {
   validation_type: string | null;
   video_url: string | null;
   is_verified: boolean;
+  kettlebell_weight_kg: number | null;
+  total_time_seconds: number | null;
+  completion_date: string | null;
+  total_reps: number | null;
 }
 
 interface LeaderboardProps {
   challengeId: string;
+  challengeSlug?: string;
 }
 
 const MURPH_VERSIONS = ["Standard", "Female Version", "Beginner Version"] as const;
@@ -47,12 +52,24 @@ const formatTime = (seconds: number | null): string => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
+const formatDate = (dateString: string | null): string => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
+
+export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterYear, setFilterYear] = useState<string>("all");
   const [filterVersion, setFilterVersion] = useState<string>("all");
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+
+  const isMurphChallenge = challengeSlug?.toLowerCase().includes("murph");
+  const isSnatchTest = challengeSlug === "5-minute-snatch-test";
+  const isSimpleSinister = challengeSlug === "simple-sinister";
+  const isRiteOfPassage = challengeSlug === "rite-of-passage";
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -68,7 +85,11 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           murph_version,
           validation_type,
           video_url,
-          is_verified
+          is_verified,
+          kettlebell_weight_kg,
+          total_time_seconds,
+          completion_date,
+          total_reps
         `)
         .eq("challenge_id", challengeId)
         .order("score", { ascending: true })
@@ -153,6 +174,38 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
     return name.slice(0, 2).toUpperCase();
   };
 
+  // Sorting logic based on challenge type
+  const getSortedRegistrations = (regs: Registration[]) => {
+    if (isSnatchTest) {
+      // For snatch test: higher reps is better
+      return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
+    } else if (isRiteOfPassage) {
+      // For RoP: by kettlebell weight (heavier is better), then by time (faster is better)
+      return [...regs].sort((a, b) => {
+        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+        if (weightDiff !== 0) return weightDiff;
+        return (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
+      });
+    } else if (isSimpleSinister) {
+      // For S&S: by kettlebell weight (heavier is better), then by time (faster is better)
+      return [...regs].sort((a, b) => {
+        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+        if (weightDiff !== 0) return weightDiff;
+        return (a.score || 0) - (b.score || 0);
+      });
+    } else {
+      // Default: by score (time, lower is better)
+      return [...regs].sort((a, b) => (a.score || 0) - (b.score || 0));
+    }
+  };
+
+  const hasResult = (reg: Registration) => {
+    if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
+    if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
+    if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
+    return reg.score && reg.score > 0;
+  };
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -179,12 +232,82 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
     return true;
   });
 
-  // Re-rank after filtering (only those with times)
-  const rankedRegistrations = filteredRegistrations
-    .filter((r) => r.score && r.score > 0)
-    .sort((a, b) => a.score - b.score);
+  // Re-rank after filtering (only those with results)
+  const sortedRegistrations = getSortedRegistrations(filteredRegistrations);
+  const rankedRegistrations = sortedRegistrations.filter(hasResult);
+  const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
 
-  const unrankedRegistrations = filteredRegistrations.filter((r) => !r.score || r.score === 0);
+  const renderResultColumn = (registration: Registration) => {
+    if (isSnatchTest) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {registration.total_reps || "-"} Reps
+            </span>
+          </div>
+          {registration.completion_date && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else if (isRiteOfPassage) {
+      return (
+        <div className="text-right">
+          {registration.kettlebell_weight_kg && (
+            <div className="font-mono">
+              <span className="text-primary font-semibold text-lg">
+                {registration.kettlebell_weight_kg} kg
+              </span>
+            </div>
+          )}
+          {registration.total_time_seconds && (
+            <div className="text-xs text-muted-foreground">
+              Zeit: {formatTime(registration.total_time_seconds)}
+            </div>
+          )}
+          {registration.completion_date && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else if (isSimpleSinister) {
+      return (
+        <div className="text-right">
+          {registration.kettlebell_weight_kg && (
+            <div className="font-mono">
+              <span className="text-primary font-semibold text-lg">
+                {registration.kettlebell_weight_kg} kg
+              </span>
+            </div>
+          )}
+          {registration.score > 0 && (
+            <div className="text-xs text-muted-foreground">
+              Zeit: {formatTime(registration.score)}
+            </div>
+          )}
+          {registration.completion_date && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else {
+      return (
+        <div className="text-right font-mono">
+          <span className="text-primary font-semibold text-lg">{formatTime(registration.score)}</span>
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -204,19 +327,21 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
           </SelectContent>
         </Select>
 
-        <Select value={filterVersion} onValueChange={setFilterVersion}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Version" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle Versionen</SelectItem>
-            {MURPH_VERSIONS.map((version) => (
-              <SelectItem key={version} value={version}>
-                {version}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isMurphChallenge && (
+          <Select value={filterVersion} onValueChange={setFilterVersion}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Version" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Versionen</SelectItem>
+              {MURPH_VERSIONS.map((version) => (
+                <SelectItem key={version} value={version}>
+                  {version}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {filteredRegistrations.length === 0 ? (
@@ -241,14 +366,14 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                   {getInitials(registration.participant_name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{registration.participant_name}</p>
+                  <p className="font-medium truncate">{registration.participant_name}</p>
                   {registration.is_verified && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Geprüftes Ergebnis</p>
@@ -257,7 +382,19 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                     </TooltipProvider>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                  {isKettlebellChallenge && registration.kettlebell_weight_kg && !isSnatchTest && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <Dumbbell className="w-3 h-3" />
+                      {registration.kettlebell_weight_kg} kg
+                    </span>
+                  )}
+                  {isSnatchTest && registration.kettlebell_weight_kg && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <Dumbbell className="w-3 h-3" />
+                      {registration.kettlebell_weight_kg} kg
+                    </span>
+                  )}
                   {registration.murph_version && (
                     <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                       {registration.murph_version}
@@ -277,9 +414,7 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                   )}
                 </div>
               </div>
-              <div className="text-right font-mono">
-                <span className="text-primary font-semibold text-lg">{formatTime(registration.score)}</span>
-              </div>
+              {renderResultColumn(registration)}
             </div>
           ))}
           {unrankedRegistrations.map((registration) => (
@@ -296,14 +431,14 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                   {getInitials(registration.participant_name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{registration.participant_name}</p>
+                  <p className="font-medium truncate">{registration.participant_name}</p>
                   {registration.is_verified && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Geprüftes Ergebnis</p>
@@ -312,7 +447,13 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                     </TooltipProvider>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                  {isKettlebellChallenge && registration.kettlebell_weight_kg && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <Dumbbell className="w-3 h-3" />
+                      {registration.kettlebell_weight_kg} kg
+                    </span>
+                  )}
                   {registration.murph_version && (
                     <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                       {registration.murph_version}
@@ -333,7 +474,7 @@ export const Leaderboard = ({ challengeId }: LeaderboardProps) => {
                 </div>
               </div>
               <div className="text-right font-mono">
-                <span className="text-muted-foreground">Keine Zeit</span>
+                <span className="text-muted-foreground">Kein Ergebnis</span>
               </div>
             </div>
           ))}
