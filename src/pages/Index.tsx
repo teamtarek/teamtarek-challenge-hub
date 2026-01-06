@@ -124,6 +124,7 @@ const Index = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {challenges
               .filter(c => c.category === 'gym')
+              .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
               .map((challenge, index) => (
                 <ChallengeCard
                   key={challenge.id}
