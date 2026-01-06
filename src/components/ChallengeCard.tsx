@@ -11,6 +11,9 @@ import winterImg from "@/assets/challenges/winter-challenge.jpg";
 import pumpRowImg from "@/assets/challenges/pump-row.jpg";
 import tareksTrifectaImg from "@/assets/challenges/tareks-trifecta.jpg";
 import armyFitnessImg from "@/assets/challenges/army-fitness-test.jpg";
+import snatchTestImg from "@/assets/challenges/5-minute-snatch-test.jpg";
+import simpleSinisterImg from "@/assets/challenges/simple-sinister.jpg";
+import riteOfPassageImg from "@/assets/challenges/rite-of-passage.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -24,6 +27,9 @@ const challengeImages: Record<string, string> = {
   "pump-row": pumpRowImg,
   "tareks-trifecta": tareksTrifectaImg,
   "army-fitness-test": armyFitnessImg,
+  "5-minute-snatch-test": snatchTestImg,
+  "simple-sinister": simpleSinisterImg,
+  "rite-of-passage": riteOfPassageImg,
 };
 
 interface ChallengeCardProps {

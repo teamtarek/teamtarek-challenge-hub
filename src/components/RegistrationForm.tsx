@@ -31,21 +31,27 @@ const videoUrlSchema = z.string().url("Bitte eine gültige URL eingeben").refine
 interface RegistrationFormProps {
   challengeId: string;
   challengeName: string;
+  challengeSlug?: string;
   onSuccess: () => void;
 }
 
-export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: RegistrationFormProps) => {
+export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, onSuccess }: RegistrationFormProps) => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [murphVersion, setMurphVersion] = useState<string>("Standard");
   const [validationType, setValidationType] = useState<string>("coach");
   const [videoUrl, setVideoUrl] = useState("");
+  const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
   const [year] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
+  const isSnatchTest = challengeSlug === "5-minute-snatch-test";
+  const isSimpleSinister = challengeSlug === "simple-sinister";
+  const isRiteOfPassage = challengeSlug === "rite-of-passage";
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +75,15 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
       }
     }
 
+    // Validate kettlebell weight for kettlebell challenges
+    if (isKettlebellChallenge && kettlebellWeight) {
+      const weight = parseInt(kettlebellWeight);
+      if (isNaN(weight) || weight < 4 || weight > 92) {
+        toast.error("Bitte ein gültiges Kettlebell-Gewicht eingeben (4-92 kg)");
+        return;
+      }
+    }
+
     setLoading(true);
 
     const insertData: any = {
@@ -84,6 +99,10 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
 
     if (isMurphChallenge) {
       insertData.murph_version = murphVersion;
+    }
+
+    if (isKettlebellChallenge && kettlebellWeight) {
+      insertData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     }
 
     const { error } = await supabase.from("registrations").insert(insertData);
@@ -169,6 +188,27 @@ export const RegistrationForm = ({ challengeId, challengeName, onSuccess }: Regi
               ))}
             </SelectContent>
           </Select>
+        </div>
+      )}
+
+      {isKettlebellChallenge && (
+        <div className="space-y-2">
+          <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
+          <Input
+            id="kettlebellWeight"
+            type="number"
+            placeholder="z.B. 24"
+            value={kettlebellWeight}
+            onChange={(e) => setKettlebellWeight(e.target.value)}
+            className="input-minimal"
+            min={4}
+            max={92}
+          />
+          <p className="text-xs text-muted-foreground">
+            {isSnatchTest && "Standard: 24 kg (Männer) / 16 kg (Frauen)"}
+            {isSimpleSinister && "Simple: 32 kg (M) / 24 kg (F) | Sinister: 48 kg (M) / 32 kg (F)"}
+            {isRiteOfPassage && "Ziel: Halbes Körpergewicht"}
+          </p>
         </div>
       )}
 

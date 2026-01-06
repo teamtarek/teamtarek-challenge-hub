@@ -140,6 +140,41 @@ const Index = () => {
         )}
       </section>
 
+      {/* Benchmark Workouts - Kettlebell */}
+      <section className="container py-24 pt-0">
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-3xl font-bold">Benchmark Workouts - Kettlebell</h2>
+          <span className="text-sm text-muted-foreground uppercase tracking-wider">
+            {challenges.filter(c => c.category === 'kettlebell').length} Challenges
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-48 bg-card animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {challenges
+              .filter(c => c.category === 'kettlebell')
+              .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+              .map((challenge, index) => (
+                <ChallengeCard
+                  key={challenge.id}
+                  slug={challenge.slug}
+                  name={challenge.name}
+                  description={challenge.description || ""}
+                  startDate={challenge.start_date}
+                  endDate={challenge.end_date}
+                  index={index}
+                />
+              ))}
+          </div>
+        )}
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container">
