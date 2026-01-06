@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,7 @@ interface Challenge {
   id: string;
   name: string;
   slug: string;
+  category: string;
 }
 
 interface Registration {
@@ -41,6 +42,10 @@ interface Registration {
   validation_type: string | null;
   video_url: string | null;
   is_verified: boolean;
+  kettlebell_weight_kg: number | null;
+  total_time_seconds: number | null;
+  completion_date: string | null;
+  total_reps: number | null;
 }
 
 // Helper functions for time conversion
@@ -66,6 +71,12 @@ const timeStringToSeconds = (timeStr: string): number => {
   return parseInt(timeStr, 10) || 0;
 };
 
+const formatDate = (dateString: string | null): string => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
+
 const AdminPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -74,6 +85,10 @@ const AdminPage = () => {
   const [selectedChallenge, setSelectedChallenge] = useState<string>("");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
+  const [kettlebellWeights, setKettlebellWeights] = useState<Record<string, string>>({});
+  const [totalTimes, setTotalTimes] = useState<Record<string, string>>({});
+  const [totalReps, setTotalReps] = useState<Record<string, string>>({});
+  const [completionDates, setCompletionDates] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
@@ -89,16 +104,24 @@ const AdminPage = () => {
   const [newParticipantValue, setNewParticipantValue] = useState("");
   const [newParticipantYear, setNewParticipantYear] = useState(new Date().getFullYear().toString());
   const [newParticipantVersion, setNewParticipantVersion] = useState("Standard");
+  const [newParticipantKettlebellWeight, setNewParticipantKettlebellWeight] = useState("");
+  const [newParticipantTotalTime, setNewParticipantTotalTime] = useState("");
+  const [newParticipantTotalReps, setNewParticipantTotalReps] = useState("");
+  const [newParticipantCompletionDate, setNewParticipantCompletionDate] = useState("");
   const [addingParticipant, setAddingParticipant] = useState(false);
   const [existingParticipants, setExistingParticipants] = useState<{ email: string; participant_name: string }[]>([]);
 
   const murphVersions = ["Standard", "Female Version", "Beginner Version"];
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
 
-  // Check if current challenge is Murph
+  // Check challenge type
   const selectedChallengeData = challenges.find((c) => c.id === selectedChallenge);
   const isMurphChallenge = selectedChallengeData?.slug?.toLowerCase().includes("murph") || 
                            selectedChallengeData?.name?.toLowerCase().includes("murph");
+  const isSnatchTest = selectedChallengeData?.slug === "5-minute-snatch-test";
+  const isSimpleSinister = selectedChallengeData?.slug === "simple-sinister";
+  const isRiteOfPassage = selectedChallengeData?.slug === "rite-of-passage";
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -117,7 +140,7 @@ const AdminPage = () => {
     const fetchChallenges = async () => {
       const { data, error } = await supabase
         .from("challenges")
-        .select("id, name, slug")
+        .select("id, name, slug, category")
         .order("start_date", { ascending: false });
 
       if (!error && data) {
@@ -161,7 +184,7 @@ const AdminPage = () => {
 
     let query = supabase
       .from("registrations")
-      .select("id, participant_name, email, score, murph_version, year, created_at, validation_type, video_url, is_verified")
+      .select("id, participant_name, email, score, murph_version, year, created_at, validation_type, video_url, is_verified, kettlebell_weight_kg, total_time_seconds, completion_date, total_reps")
       .eq("challenge_id", selectedChallenge);
 
     if (selectedYear !== "all") {
@@ -178,14 +201,29 @@ const AdminPage = () => {
     if (!error && data) {
       setRegistrations(data);
       const initialValues: Record<string, string> = {};
+      const initialWeights: Record<string, string> = {};
+      const initialTimes: Record<string, string> = {};
+      const initialReps: Record<string, string> = {};
+      const initialDates: Record<string, string> = {};
+      
       data.forEach((reg) => {
         if (isMurphChallenge) {
+          initialValues[reg.id] = secondsToTimeString(reg.score);
+        } else if (isSimpleSinister) {
           initialValues[reg.id] = secondsToTimeString(reg.score);
         } else {
           initialValues[reg.id] = reg.score?.toString() ?? "0";
         }
+        initialWeights[reg.id] = reg.kettlebell_weight_kg?.toString() ?? "";
+        initialTimes[reg.id] = secondsToTimeString(reg.total_time_seconds);
+        initialReps[reg.id] = reg.total_reps?.toString() ?? "";
+        initialDates[reg.id] = reg.completion_date ?? "";
       });
       setValues(initialValues);
+      setKettlebellWeights(initialWeights);
+      setTotalTimes(initialTimes);
+      setTotalReps(initialReps);
+      setCompletionDates(initialDates);
     }
   };
 
@@ -202,23 +240,55 @@ const AdminPage = () => {
 
   const handleSaveValue = async (registrationId: string) => {
     setSaving(registrationId);
-    let scoreValue: number;
     
-    if (isMurphChallenge) {
-      scoreValue = timeStringToSeconds(values[registrationId] || "");
-    } else {
-      scoreValue = parseInt(values[registrationId] || "0", 10);
+    const updateData: any = {};
+    
+    if (isMurphChallenge || isSimpleSinister) {
+      updateData.score = timeStringToSeconds(values[registrationId] || "");
+    } else if (!isKettlebellChallenge) {
+      updateData.score = parseInt(values[registrationId] || "0", 10);
+    }
+    
+    // Kettlebell specific fields
+    if (isKettlebellChallenge) {
+      const weight = kettlebellWeights[registrationId];
+      if (weight) {
+        updateData.kettlebell_weight_kg = parseInt(weight, 10);
+      }
+      
+      const date = completionDates[registrationId];
+      if (date) {
+        updateData.completion_date = date;
+      }
+    }
+    
+    if (isSnatchTest) {
+      const reps = totalReps[registrationId];
+      if (reps) {
+        updateData.total_reps = parseInt(reps, 10);
+      }
+    }
+    
+    if (isRiteOfPassage) {
+      const time = totalTimes[registrationId];
+      if (time) {
+        updateData.total_time_seconds = timeStringToSeconds(time);
+      }
+    }
+    
+    if (isSimpleSinister) {
+      updateData.score = timeStringToSeconds(values[registrationId] || "");
     }
 
     const { error } = await supabase
       .from("registrations")
-      .update({ score: scoreValue })
+      .update(updateData)
       .eq("id", registrationId);
 
     if (error) {
-      toast.error(isMurphChallenge ? "Fehler beim Speichern der Zeit" : "Fehler beim Speichern der Punktzahl");
+      toast.error("Fehler beim Speichern");
     } else {
-      toast.success(isMurphChallenge ? "Zeit gespeichert" : "Punktzahl gespeichert");
+      toast.success("Ergebnis gespeichert");
       await fetchRegistrations();
     }
     setSaving(null);
@@ -276,24 +346,31 @@ const AdminPage = () => {
 
     setAddingParticipant(true);
 
-    let scoreValue: number;
-    if (isMurphChallenge) {
-      scoreValue = timeStringToSeconds(newParticipantValue);
-    } else {
-      scoreValue = parseInt(newParticipantValue || "0", 10);
-    }
-
     const insertData: any = {
       challenge_id: selectedChallenge,
       participant_name: participantName,
       email: participantEmail,
-      score: scoreValue,
       user_id: null,
       year: yearToCheck,
     };
 
     if (isMurphChallenge) {
+      insertData.score = timeStringToSeconds(newParticipantValue);
       insertData.murph_version = newParticipantVersion;
+    } else if (isSimpleSinister) {
+      insertData.score = timeStringToSeconds(newParticipantValue);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+      insertData.completion_date = newParticipantCompletionDate || null;
+    } else if (isSnatchTest) {
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+      insertData.completion_date = newParticipantCompletionDate || null;
+    } else if (isRiteOfPassage) {
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.completion_date = newParticipantCompletionDate || null;
+    } else {
+      insertData.score = parseInt(newParticipantValue || "0", 10);
     }
 
     const { error } = await supabase.from("registrations").insert(insertData);
@@ -308,6 +385,10 @@ const AdminPage = () => {
       setNewParticipantValue("");
       setNewParticipantYear(new Date().getFullYear().toString());
       setNewParticipantVersion("Standard");
+      setNewParticipantKettlebellWeight("");
+      setNewParticipantTotalTime("");
+      setNewParticipantTotalReps("");
+      setNewParticipantCompletionDate("");
       setUseExistingParticipant(false);
       setSelectedExistingParticipant("");
       setDialogOpen(false);
@@ -316,6 +397,13 @@ const AdminPage = () => {
     }
 
     setAddingParticipant(false);
+  };
+
+  const getResultLabel = () => {
+    if (isMurphChallenge || isSimpleSinister) return "Zeiten";
+    if (isSnatchTest) return "Wiederholungen";
+    if (isRiteOfPassage) return "Ergebnisse";
+    return "Punktzahlen";
   };
 
   if (authLoading || adminLoading || loadingData) {
@@ -356,6 +444,9 @@ const AdminPage = () => {
                 {challenges.map((challenge) => (
                   <SelectItem key={challenge.id} value={challenge.id}>
                     {challenge.name}
+                    {challenge.category === "kettlebell" && (
+                      <span className="ml-2 text-xs text-muted-foreground">(Kettlebell)</span>
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -402,7 +493,7 @@ const AdminPage = () => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Teilnehmer & {isMurphChallenge ? "Zeiten" : "Punktzahlen"}</h2>
+              <h2 className="text-xl font-semibold">Teilnehmer & {getResultLabel()}</h2>
               
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -411,7 +502,7 @@ const AdminPage = () => {
                     Teilnehmer hinzufügen
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Ergebnis hinzufügen</DialogTitle>
                   </DialogHeader>
@@ -485,17 +576,89 @@ const AdminPage = () => {
                         </div>
                       </>
                     )}
-                    <div className="space-y-2">
-                      <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
-                      <Input
-                        id="value"
-                        placeholder={isMurphChallenge ? "45:30" : "0"}
-                        type={isMurphChallenge ? "text" : "number"}
-                        min={isMurphChallenge ? undefined : 0}
-                        value={newParticipantValue}
-                        onChange={(e) => setNewParticipantValue(e.target.value)}
-                      />
-                    </div>
+                    
+                    {/* Challenge-specific fields */}
+                    {isKettlebellChallenge && (
+                      <div className="space-y-2">
+                        <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
+                        <Input
+                          id="kettlebellWeight"
+                          type="number"
+                          placeholder="z.B. 24"
+                          value={newParticipantKettlebellWeight}
+                          onChange={(e) => setNewParticipantKettlebellWeight(e.target.value)}
+                          min={4}
+                          max={92}
+                        />
+                      </div>
+                    )}
+                    
+                    {isSnatchTest && (
+                      <div className="space-y-2">
+                        <Label htmlFor="totalReps">Wiederholungen gesamt</Label>
+                        <Input
+                          id="totalReps"
+                          type="number"
+                          placeholder="z.B. 100"
+                          value={newParticipantTotalReps}
+                          onChange={(e) => setNewParticipantTotalReps(e.target.value)}
+                          min={0}
+                        />
+                      </div>
+                    )}
+                    
+                    {isRiteOfPassage && (
+                      <div className="space-y-2">
+                        <Label htmlFor="totalTime">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
+                        <Input
+                          id="totalTime"
+                          type="text"
+                          placeholder="45:30"
+                          value={newParticipantTotalTime}
+                          onChange={(e) => setNewParticipantTotalTime(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    {isSimpleSinister && (
+                      <div className="space-y-2">
+                        <Label htmlFor="value">Zeit (MM:SS)</Label>
+                        <Input
+                          id="value"
+                          placeholder="20:00"
+                          type="text"
+                          value={newParticipantValue}
+                          onChange={(e) => setNewParticipantValue(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    {isKettlebellChallenge && (
+                      <div className="space-y-2">
+                        <Label htmlFor="completionDate">Datum</Label>
+                        <Input
+                          id="completionDate"
+                          type="date"
+                          value={newParticipantCompletionDate}
+                          onChange={(e) => setNewParticipantCompletionDate(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    {!isKettlebellChallenge && (
+                      <div className="space-y-2">
+                        <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
+                        <Input
+                          id="value"
+                          placeholder={isMurphChallenge ? "45:30" : "0"}
+                          type={isMurphChallenge ? "text" : "number"}
+                          min={isMurphChallenge ? undefined : 0}
+                          value={newParticipantValue}
+                          onChange={(e) => setNewParticipantValue(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
                     <div className="space-y-2">
                       <Label htmlFor="year">Jahr</Label>
                       <Select value={newParticipantYear} onValueChange={setNewParticipantYear}>
@@ -558,7 +721,8 @@ const AdminPage = () => {
                       registration.is_verified ? "bg-green-500/10 border border-green-500/30" : "bg-secondary"
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex flex-col gap-4">
+                      {/* Participant Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <p className="font-medium">
@@ -571,26 +735,141 @@ const AdminPage = () => {
                         <p className="text-sm text-muted-foreground">
                           {registration.email}
                         </p>
-                        {isMurphChallenge && (
-                          <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                            <span>{registration.year}</span>
-                            <span>•</span>
-                            <span>{registration.murph_version || "Standard"}</span>
+                        <div className="flex gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                          <span>{registration.year}</span>
+                          {isMurphChallenge && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.murph_version || "Standard"}</span>
+                            </>
+                          )}
+                          {isKettlebellChallenge && registration.kettlebell_weight_kg && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Dumbbell className="w-3 h-3" />
+                                {registration.kettlebell_weight_kg} kg
+                              </span>
+                            </>
+                          )}
+                          {registration.completion_date && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {formatDate(registration.completion_date)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Edit Fields */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {isKettlebellChallenge && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="kg"
+                              type="number"
+                              min={4}
+                              max={92}
+                              className="w-20"
+                              value={kettlebellWeights[registration.id] || ""}
+                              onChange={(e) =>
+                                setKettlebellWeights((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">kg</span>
                           </div>
                         )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder={isMurphChallenge ? "MM:SS" : "0"}
-                          type={isMurphChallenge ? "text" : "number"}
-                          min={isMurphChallenge ? undefined : 0}
-                          className="w-28"
-                          value={values[registration.id] || ""}
-                          onChange={(e) =>
-                            handleValueChange(registration.id, e.target.value)
-                          }
-                        />
-                        <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                        
+                        {isSnatchTest && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Reps"
+                              type="number"
+                              min={0}
+                              className="w-24"
+                              value={totalReps[registration.id] || ""}
+                              onChange={(e) =>
+                                setTotalReps((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Reps</span>
+                          </div>
+                        )}
+                        
+                        {isRiteOfPassage && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="MM:SS"
+                              type="text"
+                              className="w-24"
+                              value={totalTimes[registration.id] || ""}
+                              onChange={(e) =>
+                                setTotalTimes((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Zeit</span>
+                          </div>
+                        )}
+                        
+                        {isSimpleSinister && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="MM:SS"
+                              type="text"
+                              className="w-24"
+                              value={values[registration.id] || ""}
+                              onChange={(e) =>
+                                handleValueChange(registration.id, e.target.value)
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Zeit</span>
+                          </div>
+                        )}
+                        
+                        {isKettlebellChallenge && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="date"
+                              className="w-36"
+                              value={completionDates[registration.id] || ""}
+                              onChange={(e) =>
+                                setCompletionDates((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                        )}
+                        
+                        {!isKettlebellChallenge && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder={isMurphChallenge ? "MM:SS" : "0"}
+                              type={isMurphChallenge ? "text" : "number"}
+                              min={isMurphChallenge ? undefined : 0}
+                              className="w-28"
+                              value={values[registration.id] || ""}
+                              onChange={(e) =>
+                                handleValueChange(registration.id, e.target.value)
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                          </div>
+                        )}
+                        
                         <Button
                           size="sm"
                           onClick={() => handleSaveValue(registration.id)}
