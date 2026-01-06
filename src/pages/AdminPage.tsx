@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -96,6 +96,7 @@ const AdminPage = () => {
   const [selectedVersion, setSelectedVersion] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"name" | "date" | "result">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // New participant form
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -408,9 +409,20 @@ const AdminPage = () => {
     return "Punktzahlen";
   };
 
-  // Sort registrations
-  const getSortedRegistrations = () => {
-    const sorted = [...registrations].sort((a, b) => {
+  // Filter and sort registrations
+  const getFilteredAndSortedRegistrations = () => {
+    // First filter by search query
+    const filtered = registrations.filter((reg) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        reg.participant_name.toLowerCase().includes(query) ||
+        reg.email.toLowerCase().includes(query)
+      );
+    });
+
+    // Then sort
+    const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
       
       switch (sortBy) {
@@ -452,7 +464,7 @@ const AdminPage = () => {
     return sorted;
   };
 
-  const sortedRegistrations = getSortedRegistrations();
+  const sortedRegistrations = getFilteredAndSortedRegistrations();
 
   if (authLoading || adminLoading || loadingData) {
     return (
@@ -501,8 +513,20 @@ const AdminPage = () => {
             </Select>
           </div>
 
-          {/* Filters & Sorting */}
+          {/* Search, Filters & Sorting */}
           <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-2 flex-1 min-w-[200px] max-w-sm">
+              <Label>Suche</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Name oder E-Mail..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>Jahr</Label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
