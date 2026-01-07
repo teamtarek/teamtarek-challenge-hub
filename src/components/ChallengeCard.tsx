@@ -35,6 +35,12 @@ const challengeImages: Record<string, string> = {
 // Custom object positions for specific challenges
 const challengeObjectPositions: Record<string, string> = {
   "winter-challenge-2026": "center 20%",
+  "5-minute-snatch-test": "center top",
+};
+
+// Custom object fit for specific challenges (to show full image)
+const challengeObjectFit: Record<string, string> = {
+  "5-minute-snatch-test": "contain",
 };
 
 interface ChallengeCardProps {
@@ -84,6 +90,7 @@ export const ChallengeCard = ({
 
   const heroImage = challengeImages[slug];
   const objectPosition = challengeObjectPositions[slug] || "center";
+  const objectFit = challengeObjectFit[slug] || "cover";
 
   return (
     <Link
@@ -97,8 +104,8 @@ export const ChallengeCard = ({
           <img 
             src={heroImage} 
             alt={name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            style={{ objectPosition }}
+            className="w-full h-full transition-transform duration-500 group-hover:scale-110"
+            style={{ objectPosition, objectFit: objectFit as "cover" | "contain" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           <span className={`absolute top-3 left-3 challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
