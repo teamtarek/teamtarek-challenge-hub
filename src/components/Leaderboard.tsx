@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MemberBadge } from "@/components/MemberBadge";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar } from "lucide-react";
 import {
   Select,
@@ -24,6 +25,7 @@ interface Registration {
   created_at: string;
   user_id: string | null;
   avatar_url: string | null;
+  member_type: string | null;
   year: number | null;
   murph_version: string | null;
   validation_type: string | null;
@@ -34,6 +36,8 @@ interface Registration {
   completion_date: string | null;
   total_reps: number | null;
 }
+
+type MemberType = "webmaster" | "admin" | "member" | "prospect";
 
 interface LeaderboardProps {
   challengeId: string;
@@ -106,7 +110,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           .filter((r) => r.user_id)
           .map((r) => r.user_id as string);
 
-        let profilesMap: Record<string, string | null> = {};
+        let profilesMap: Record<string, { avatar_url: string | null }> = {};
+        let memberTypesMap: Record<string, string | null> = {};
         
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
@@ -116,16 +121,26 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
           if (profiles) {
             profilesMap = profiles.reduce((acc, p) => {
-              acc[p.user_id] = p.avatar_url;
+              acc[p.user_id] = { avatar_url: p.avatar_url };
               return acc;
-            }, {} as Record<string, string | null>);
+            }, {} as Record<string, { avatar_url: string | null }>);
+          }
+
+          // Fetch member types for each user
+          for (const userId of userIds) {
+            const { data: memberTypeData } = await supabase
+              .rpc("get_user_member_type", { _user_id: userId });
+            if (memberTypeData) {
+              memberTypesMap[userId] = memberTypeData;
+            }
           }
         }
 
         const registrationsWithAvatars = data.map((r) => ({
           ...r,
           score: r.score ?? 0,
-          avatar_url: r.user_id ? profilesMap[r.user_id] || null : null,
+          avatar_url: r.user_id ? profilesMap[r.user_id]?.avatar_url || null : null,
+          member_type: r.user_id ? memberTypesMap[r.user_id] || null : null,
           is_verified: r.is_verified ?? false,
         }));
 
@@ -381,13 +396,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                 </Avatar>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {registration.user_id ? (
                     <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
                       {registration.participant_name}
                     </Link>
                   ) : (
                     <p className="font-medium truncate">{registration.participant_name}</p>
+                  )}
+                  {registration.member_type && (
+                    <MemberBadge memberType={registration.member_type as MemberType} size="sm" />
                   )}
                   {registration.is_verified && (
                     <TooltipProvider>
@@ -463,13 +481,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                 </Avatar>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {registration.user_id ? (
                     <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
                       {registration.participant_name}
                     </Link>
                   ) : (
                     <p className="font-medium truncate">{registration.participant_name}</p>
+                  )}
+                  {registration.member_type && (
+                    <MemberBadge memberType={registration.member_type as MemberType} size="sm" />
                   )}
                   {registration.is_verified && (
                     <TooltipProvider>
