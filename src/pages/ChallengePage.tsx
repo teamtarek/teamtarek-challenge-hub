@@ -57,6 +57,7 @@ const getChallengeBackgroundPosition = (slug: string): string => {
   const positionMap: Record<string, string> = {
     "winter-challenge-2026": "center 20%",
     "5-minute-snatch-test": "center top",
+    "deadly-dozen": "center top",
   };
   return positionMap[slug] || "center";
 };
