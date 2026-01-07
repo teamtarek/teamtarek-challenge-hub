@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock } from "lucide-react";
 
 interface Profile {
   display_name: string | null;
@@ -12,6 +12,7 @@ interface Profile {
   age_class: string | null;
   favorite_exercise: string | null;
   hated_exercise: string | null;
+  is_private: boolean;
 }
 
 interface Registration {
@@ -50,7 +51,7 @@ const PublicProfilePage = () => {
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, age_class, favorite_exercise, hated_exercise")
+        .select("display_name, avatar_url, age_class, favorite_exercise, hated_exercise, is_private")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -164,6 +165,52 @@ const PublicProfilePage = () => {
             <User className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h1 className="text-2xl font-bold mb-2">Profil nicht gefunden</h1>
             <p className="text-muted-foreground">Dieses Profil existiert nicht oder ist nicht öffentlich.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If profile is private, show limited info
+  if (profile.is_private) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+
+        <div className="container py-8 max-w-2xl">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Zurück
+          </Link>
+
+          {/* Profile Header - Limited for private profiles */}
+          <div className="challenge-card mb-8">
+            <div className="flex items-center gap-6">
+              <Avatar className="w-24 h-24 border-2 border-border">
+                <AvatarImage src={profile.avatar_url || undefined} alt="Avatar" />
+                <AvatarFallback className="bg-secondary text-xl">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold">{profile.display_name || "Unbekannt"}</h1>
+                  <MemberBadge memberType={memberType} size="lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Private Profile Notice */}
+          <div className="challenge-card text-center py-12">
+            <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Privates Profil</h2>
+            <p className="text-muted-foreground">
+              Dieses Mitglied hat sein Profil auf privat gestellt.
+            </p>
           </div>
         </div>
       </div>

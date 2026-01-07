@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -30,6 +30,7 @@ interface Profile {
   weight_class: string | null;
   favorite_exercise: string | null;
   hated_exercise: string | null;
+  is_private: boolean;
 }
 
 interface Registration {
@@ -81,6 +82,7 @@ const ProfilePage = () => {
   const [weightClass, setWeightClass] = useState("");
   const [favoriteExercise, setFavoriteExercise] = useState("");
   const [hatedExercise, setHatedExercise] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,7 +98,7 @@ const ProfilePage = () => {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, age, age_class, gender, weight_class, favorite_exercise, hated_exercise")
+        .select("display_name, avatar_url, age, age_class, gender, weight_class, favorite_exercise, hated_exercise, is_private")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -109,6 +111,7 @@ const ProfilePage = () => {
         setWeightClass(profileData.weight_class || "");
         setFavoriteExercise(profileData.favorite_exercise || "");
         setHatedExercise(profileData.hated_exercise || "");
+        setIsPrivate(profileData.is_private || false);
         setAvatarUrl(profileData.avatar_url);
       }
 
@@ -206,6 +209,7 @@ const ProfilePage = () => {
         weight_class: weightClass || null,
         favorite_exercise: favoriteExercise.trim() || null,
         hated_exercise: hatedExercise.trim() || null,
+        is_private: isPrivate,
       })
       .eq("user_id", user.id);
     setSaving(false);
@@ -420,6 +424,43 @@ const ProfilePage = () => {
                 onChange={(e) => setHatedExercise(e.target.value)}
                 className="input-minimal"
               />
+            </div>
+
+            {/* Privacy Toggle */}
+            <div className="p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isPrivate ? (
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <Globe className="w-5 h-5 text-primary" />
+                  )}
+                  <div>
+                    <Label htmlFor="privacy-toggle" className="font-medium cursor-pointer">
+                      Profil-Sichtbarkeit
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {isPrivate 
+                        ? "Dein Profil ist privat. Andere können nur deinen Namen sehen." 
+                        : "Dein Profil ist öffentlich. Andere können deine Achievements sehen."}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="privacy-toggle"
+                  onClick={() => setIsPrivate(!isPrivate)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isPrivate ? "bg-muted" : "bg-primary"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isPrivate ? "translate-x-1" : "translate-x-6"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-2">

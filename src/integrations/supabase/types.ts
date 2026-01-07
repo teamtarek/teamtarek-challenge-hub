@@ -165,6 +165,7 @@ export type Database = {
           gender: string | null
           hated_exercise: string | null
           id: string
+          is_private: boolean
           updated_at: string
           user_id: string
           weight_class: string | null
@@ -179,6 +180,7 @@ export type Database = {
           gender?: string | null
           hated_exercise?: string | null
           id?: string
+          is_private?: boolean
           updated_at?: string
           user_id: string
           weight_class?: string | null
@@ -193,6 +195,7 @@ export type Database = {
           gender?: string | null
           hated_exercise?: string | null
           id?: string
+          is_private?: boolean
           updated_at?: string
           user_id?: string
           weight_class?: string | null
