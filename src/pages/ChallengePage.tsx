@@ -6,7 +6,7 @@ import { RegistrationForm } from "@/components/RegistrationForm";
 import { Leaderboard } from "@/components/Leaderboard";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Dumbbell, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Users, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Import challenge hero images
@@ -243,7 +243,20 @@ const ChallengePage = () => {
           <TabsContent value="leaderboard">
             <div className="challenge-card">
               <h2 className="text-xl font-semibold mb-6">Leaderboard</h2>
-              <Leaderboard challengeId={challenge.id} challengeSlug={challenge.slug} />
+              {user ? (
+                <Leaderboard challengeId={challenge.id} challengeSlug={challenge.slug} />
+              ) : (
+                <div className="text-center py-12">
+                  <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Anmeldung erforderlich</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Melde dich an, um das Leaderboard einzusehen.
+                  </p>
+                  <Link to="/auth">
+                    <Button>Anmelden</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
