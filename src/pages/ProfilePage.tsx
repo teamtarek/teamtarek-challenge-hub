@@ -42,6 +42,7 @@ interface Registration {
   total_reps: number | null;
   kettlebell_weight_kg: number | null;
   total_time_seconds: number | null;
+  murph_version: string | null;
   challenges: {
     name: string;
     slug: string;
@@ -82,12 +83,16 @@ const formatTimeFromSeconds = (seconds: number): string => {
 const formatChallengeResult = (reg: Registration): { value: string; label: string } => {
   const slug = reg.challenges.slug?.toLowerCase() || "";
   
-  // Murph - Zeit (score ist in Sekunden)
+  // Murph - Zeit und Version (score ist in Sekunden)
   if (slug.includes("murph")) {
+    const parts: string[] = [];
     if (reg.score && reg.score > 0) {
-      return { value: formatTimeFromSeconds(reg.score), label: "" };
+      parts.push(formatTimeFromSeconds(reg.score));
     }
-    return { value: "-", label: "" };
+    if (reg.murph_version && reg.murph_version !== "Standard") {
+      parts.push(reg.murph_version);
+    }
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: reg.murph_version === "Standard" ? "Standard" : "" };
   }
   
   // Rite of Passage - Gewicht und Zeit
@@ -197,6 +202,7 @@ const ProfilePage = () => {
           total_reps,
           kettlebell_weight_kg,
           total_time_seconds,
+          murph_version,
           challenges (
             name,
             slug,
