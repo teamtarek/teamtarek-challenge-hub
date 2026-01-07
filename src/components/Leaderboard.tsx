@@ -74,7 +74,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isSnatchTest = challengeSlug === "5-minute-snatch-test";
   const isSimpleSinister = challengeSlug === "simple-sinister";
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
-  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
+  const isMeetBetty = challengeSlug === "meet-betty";
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -195,12 +196,13 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isSnatchTest) {
       // For snatch test: higher reps is better
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
-    } else if (isRiteOfPassage) {
-      // For RoP: by kettlebell weight (heavier is better), then by time (faster is better)
+    } else if (isRiteOfPassage || isMeetBetty) {
+      // For RoP and Meet Betty: by time (faster is better), then by kettlebell weight (heavier is better)
       return [...regs].sort((a, b) => {
-        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
-        if (weightDiff !== 0) return weightDiff;
-        return (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isSimpleSinister) {
       // For S&S: by kettlebell weight (heavier is better), then by time (faster is better)
@@ -219,6 +221,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
+    if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
     return reg.score && reg.score > 0;
   };
 
@@ -291,6 +294,24 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
               <Calendar className="w-3 h-3" />
               {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else if (isMeetBetty) {
+      return (
+        <div className="text-right">
+          {registration.total_time_seconds && (
+            <div className="font-mono">
+              <span className="text-primary font-semibold text-lg">
+                {formatTime(registration.total_time_seconds)}
+              </span>
+            </div>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
             </div>
           )}
         </div>
