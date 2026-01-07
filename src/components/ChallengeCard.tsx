@@ -14,6 +14,7 @@ import armyFitnessImg from "@/assets/challenges/army-fitness-test.jpg";
 import snatchTestImg from "@/assets/challenges/5-minute-snatch-test.jpg";
 import simpleSinisterImg from "@/assets/challenges/simple-sinister.jpg";
 import riteOfPassageImg from "@/assets/challenges/rite-of-passage.jpg";
+import meetBettyImg from "@/assets/challenges/meet-betty.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -30,6 +31,7 @@ const challengeImages: Record<string, string> = {
   "5-minute-snatch-test": snatchTestImg,
   "simple-sinister": simpleSinisterImg,
   "rite-of-passage": riteOfPassageImg,
+  "meet-betty": meetBettyImg,
 };
 
 // Custom object positions for specific challenges

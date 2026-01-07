@@ -22,6 +22,7 @@ import armyFitnessTest from "@/assets/challenges/army-fitness-test.jpg";
 import snatchTest from "@/assets/challenges/5-minute-snatch-test.jpg";
 import simpleSinister from "@/assets/challenges/simple-sinister.jpg";
 import riteOfPassage from "@/assets/challenges/rite-of-passage.jpg";
+import meetBetty from "@/assets/challenges/meet-betty.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
@@ -48,6 +49,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "5-minute-snatch-test": snatchTest,
     "simple-sinister": simpleSinister,
     "rite-of-passage": riteOfPassage,
+    "meet-betty": meetBetty,
   };
   return imageMap[slug] || heroBg;
 };
