@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AdminRoleManager } from "@/components/AdminRoleManager";
 
 interface Challenge {
   id: string;
@@ -510,6 +511,9 @@ const AdminPage = () => {
             <Shield className="w-8 h-8 text-primary" />
             <h1 className="text-3xl font-bold">Admin-Bereich</h1>
           </div>
+
+          {/* Admin Role Manager - nur für Webmaster */}
+          {isWebmaster && <AdminRoleManager />}
 
           <div className="space-y-4">
             <Label>Challenge auswählen</Label>
