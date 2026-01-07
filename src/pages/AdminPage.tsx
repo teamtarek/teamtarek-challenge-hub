@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Search, Trash2, UserX, Link as LinkIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +47,7 @@ interface Registration {
   total_time_seconds: number | null;
   completion_date: string | null;
   total_reps: number | null;
+  user_id: string | null;
 }
 
 // Helper functions for time conversion
@@ -189,7 +190,7 @@ const AdminPage = () => {
 
     let query = supabase
       .from("registrations")
-      .select("id, participant_name, email, score, murph_version, year, created_at, validation_type, video_url, is_verified, kettlebell_weight_kg, total_time_seconds, completion_date, total_reps")
+      .select("id, participant_name, email, score, murph_version, year, created_at, validation_type, video_url, is_verified, kettlebell_weight_kg, total_time_seconds, completion_date, total_reps, user_id")
       .eq("challenge_id", selectedChallenge);
 
     if (selectedYear !== "all") {
@@ -854,6 +855,17 @@ const AdminPage = () => {
                           </p>
                           {registration.is_verified && (
                             <CheckCircle className="w-4 h-4 text-green-500" />
+                          )}
+                          {registration.user_id ? (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs" title="Mit Account verknüpft">
+                              <LinkIcon className="w-3 h-3" />
+                              Verknüpft
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 text-xs" title="Kein Account verknüpft">
+                              <UserX className="w-3 h-3" />
+                              Nicht verknüpft
+                            </span>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
