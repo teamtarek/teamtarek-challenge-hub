@@ -42,6 +42,8 @@ const getCategoryLabel = (value: string) => {
   return CATEGORIES.find((c) => c.value === value)?.label || value;
 };
 
+type MemberType = "webmaster" | "admin" | "member" | "prospect";
+
 interface Post {
   id: string;
   title: string;
@@ -55,6 +57,7 @@ interface Post {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  member_type: MemberType | null;
   comment_count: number;
   like_count: number;
   user_has_liked: boolean;
@@ -153,6 +156,16 @@ const CommunityPage = () => {
       }
     });
 
+    // Fetch member types for each user
+    const memberTypesMap: Record<string, MemberType | null> = {};
+    for (const userId of userIds) {
+      const { data: memberTypeData } = await supabase
+        .rpc("get_user_member_type", { _user_id: userId });
+      if (memberTypeData) {
+        memberTypesMap[userId] = memberTypeData as MemberType;
+      }
+    }
+
     // Filter out coaches-corner posts if user doesn't have access
     const filteredPostsData = postsData.filter(
       (p) => p.category !== "coaches-corner" || canAccessCoachesCorner
@@ -164,6 +177,7 @@ const CommunityPage = () => {
       image_url: p.image_url,
       video_url: p.video_url,
       profiles: profilesMap[p.user_id] || null,
+      member_type: memberTypesMap[p.user_id] || null,
       comment_count: commentCountMap[p.id] || 0,
       like_count: likeCountMap[p.id] || 0,
       user_has_liked: userLikesMap[p.id] || false,
@@ -688,6 +702,9 @@ const CommunityPage = () => {
                         >
                           {post.profiles?.display_name || "Anonym"}
                         </Link>
+                        {post.member_type && (
+                          <MemberBadge memberType={post.member_type} size="sm" />
+                        )}
                         <span>•</span>
                         <span>
                           {formatDistanceToNow(new Date(post.created_at), {

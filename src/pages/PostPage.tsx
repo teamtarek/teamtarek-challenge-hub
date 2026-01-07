@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/Header";
+import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +25,8 @@ const getCategoryLabel = (value: string) => {
   return CATEGORIES.find((c) => c.value === value)?.label || value;
 };
 
+type MemberType = "webmaster" | "admin" | "member" | "prospect";
+
 interface Post {
   id: string;
   title: string;
@@ -37,6 +40,7 @@ interface Post {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  member_type: MemberType | null;
   like_count: number;
   user_has_liked: boolean;
 }
@@ -50,6 +54,7 @@ interface Comment {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  member_type: MemberType | null;
   like_count: number;
   user_has_liked: boolean;
 }
@@ -100,12 +105,17 @@ const PostPage = () => {
     const likeCount = likesData?.length || 0;
     const userHasLiked = user ? likesData?.some((l) => l.user_id === user.id) || false : false;
 
+    // Fetch member type for post author
+    const { data: memberTypeData } = await supabase
+      .rpc("get_user_member_type", { _user_id: postData.user_id });
+
     setPost({
       ...postData,
       category: postData.category as Category,
       image_url: postData.image_url,
       video_url: postData.video_url,
       profiles: profile,
+      member_type: (memberTypeData as MemberType) || null,
       like_count: likeCount,
       user_has_liked: userHasLiked,
     });
@@ -155,9 +165,20 @@ const PostPage = () => {
       }
     });
 
+    // Fetch member types for commenters
+    const memberTypesMap: Record<string, MemberType | null> = {};
+    for (const userId of userIds) {
+      const { data: memberTypeData } = await supabase
+        .rpc("get_user_member_type", { _user_id: userId });
+      if (memberTypeData) {
+        memberTypesMap[userId] = memberTypeData as MemberType;
+      }
+    }
+
     const commentsWithData: Comment[] = commentsData.map((c) => ({
       ...c,
       profiles: profilesMap[c.user_id] || null,
+      member_type: memberTypesMap[c.user_id] || null,
       like_count: likeCountMap[c.id] || 0,
       user_has_liked: userLikesMap[c.id] || false,
     }));
@@ -369,13 +390,16 @@ const PostPage = () => {
                   </span>
                 </div>
                 <h1 className="text-2xl font-bold">{post.title}</h1>
-                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap">
                   <Link 
                     to={`/profil/${post.user_id}`} 
                     className="hover:text-primary transition-colors"
                   >
                     {post.profiles?.display_name || "Anonym"}
                   </Link>
+                  {post.member_type && (
+                    <MemberBadge memberType={post.member_type} size="sm" />
+                  )}
                   <span>•</span>
                   <span>
                     {formatDistanceToNow(new Date(post.created_at), {
@@ -489,13 +513,16 @@ const PostPage = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm flex-wrap">
                           <Link 
                             to={`/profil/${comment.user_id}`} 
                             className="font-medium hover:text-primary transition-colors"
                           >
                             {comment.profiles?.display_name || "Anonym"}
                           </Link>
+                          {comment.member_type && (
+                            <MemberBadge memberType={comment.member_type} size="sm" />
+                          )}
                           <span className="text-muted-foreground">
                             {formatDistanceToNow(new Date(comment.created_at), {
                               addSuffix: true,
