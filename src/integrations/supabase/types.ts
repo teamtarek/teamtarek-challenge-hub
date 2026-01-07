@@ -162,10 +162,12 @@ export type Database = {
           created_at: string
           display_name: string | null
           favorite_exercise: string | null
+          gender: string | null
           hated_exercise: string | null
           id: string
           updated_at: string
           user_id: string
+          weight_class: string | null
         }
         Insert: {
           age?: number | null
@@ -174,10 +176,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           favorite_exercise?: string | null
+          gender?: string | null
           hated_exercise?: string | null
           id?: string
           updated_at?: string
           user_id: string
+          weight_class?: string | null
         }
         Update: {
           age?: number | null
@@ -186,10 +190,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           favorite_exercise?: string | null
+          gender?: string | null
           hated_exercise?: string | null
           id?: string
           updated_at?: string
           user_id?: string
+          weight_class?: string | null
         }
         Relationships: []
       }
