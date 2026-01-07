@@ -451,12 +451,12 @@ const ProfilePage = () => {
           </form>
         </div>
 
-        {/* Completed Challenges with Results */}
+        {/* Achievements - Completed Challenges with Results */}
         {completedChallenges.length > 0 && (
           <div className="challenge-card mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-primary" />
-              Absolvierte Challenges
+              Achievements
             </h2>
             <div className="space-y-3">
               {completedChallenges.map((reg) => (
