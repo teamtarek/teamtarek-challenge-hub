@@ -681,7 +681,13 @@ const CommunityPage = () => {
                         {post.content}
                       </p>
                       <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                        <span>{post.profiles?.display_name || "Anonym"}</span>
+                        <Link 
+                          to={`/profil/${post.user_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-primary transition-colors"
+                        >
+                          {post.profiles?.display_name || "Anonym"}
+                        </Link>
                         <span>•</span>
                         <span>
                           {formatDistanceToNow(new Date(post.created_at), {
