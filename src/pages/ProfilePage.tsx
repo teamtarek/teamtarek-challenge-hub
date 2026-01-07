@@ -67,6 +67,73 @@ const WEIGHT_CLASSES_FEMALE = [
   { value: "female_heavy", label: "Schwergewicht (75kg+)" },
 ];
 
+// Helper function to format time from seconds
+const formatTimeFromSeconds = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  if (hours > 0) {
+    return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
+
+// Helper function to format result based on challenge type
+const formatChallengeResult = (reg: Registration): { value: string; label: string } => {
+  const slug = reg.challenges.slug?.toLowerCase() || "";
+  
+  // Murph - Zeit (score ist in Sekunden)
+  if (slug.includes("murph")) {
+    if (reg.score && reg.score > 0) {
+      return { value: formatTimeFromSeconds(reg.score), label: "" };
+    }
+    return { value: "-", label: "" };
+  }
+  
+  // Rite of Passage - Gewicht und Zeit
+  if (slug === "rite-of-passage") {
+    const parts: string[] = [];
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    if (reg.total_time_seconds && reg.total_time_seconds > 0) {
+      parts.push(formatTimeFromSeconds(reg.total_time_seconds));
+    }
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // Simple & Sinister - Zeit und Gewicht
+  if (slug === "simple-sinister") {
+    const parts: string[] = [];
+    if (reg.score && reg.score > 0) {
+      parts.push(formatTimeFromSeconds(reg.score));
+    }
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // 5-Minute Snatch Test - Reps und Gewicht
+  if (slug === "5-minute-snatch-test") {
+    const parts: string[] = [];
+    if (reg.total_reps && reg.total_reps > 0) {
+      parts.push(`${reg.total_reps} Reps`);
+    }
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // Standard - Punkte
+  if (reg.score && reg.score > 0) {
+    return { value: reg.score.toString(), label: "Punkte" };
+  }
+  
+  return { value: "-", label: "" };
+};
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
@@ -534,8 +601,15 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-primary font-semibold font-mono text-xl">{reg.score}</span>
-                    <span className="text-muted-foreground text-sm ml-1">Punkte</span>
+                    {(() => {
+                      const result = formatChallengeResult(reg);
+                      return (
+                        <>
+                          <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
+                          {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
+                        </>
+                      );
+                    })()}
                   </div>
                 </Link>
               ))}
