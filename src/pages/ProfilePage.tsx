@@ -26,6 +26,8 @@ interface Profile {
   avatar_url: string | null;
   age: number | null;
   age_class: string | null;
+  gender: string | null;
+  weight_class: string | null;
   favorite_exercise: string | null;
   hated_exercise: string | null;
 }
@@ -33,6 +35,8 @@ interface Profile {
 interface Registration {
   id: string;
   score: number | null;
+  is_verified: boolean | null;
+  year: number | null;
   created_at: string;
   challenges: {
     name: string;
@@ -40,6 +44,24 @@ interface Registration {
     start_date: string;
   };
 }
+
+const GENDER_OPTIONS = [
+  { value: "male", label: "Männlich" },
+  { value: "female", label: "Weiblich" },
+  { value: "other", label: "Dazwischen/Außerhalb" },
+];
+
+const WEIGHT_CLASSES_MALE = [
+  { value: "male_light", label: "Leichtgewicht (<75kg)" },
+  { value: "male_medium", label: "Mittelgewicht (75-90kg)" },
+  { value: "male_heavy", label: "Schwergewicht (90kg+)" },
+];
+
+const WEIGHT_CLASSES_FEMALE = [
+  { value: "female_light", label: "Leichtgewicht (<60kg)" },
+  { value: "female_medium", label: "Mittelgewicht (60-75kg)" },
+  { value: "female_heavy", label: "Schwergewicht (75kg+)" },
+];
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -55,6 +77,8 @@ const ProfilePage = () => {
   const [displayName, setDisplayName] = useState("");
   const [age, setAge] = useState("");
   const [ageClass, setAgeClass] = useState("");
+  const [gender, setGender] = useState("");
+  const [weightClass, setWeightClass] = useState("");
   const [favoriteExercise, setFavoriteExercise] = useState("");
   const [hatedExercise, setHatedExercise] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -72,7 +96,7 @@ const ProfilePage = () => {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, age, age_class, favorite_exercise, hated_exercise")
+        .select("display_name, avatar_url, age, age_class, gender, weight_class, favorite_exercise, hated_exercise")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -80,7 +104,9 @@ const ProfilePage = () => {
         setProfile(profileData as Profile);
         setDisplayName(profileData.display_name || "");
         setAge(profileData.age?.toString() || "");
-        setAgeClass((profileData as Profile).age_class || "");
+        setAgeClass(profileData.age_class || "");
+        setGender(profileData.gender || "");
+        setWeightClass(profileData.weight_class || "");
         setFavoriteExercise(profileData.favorite_exercise || "");
         setHatedExercise(profileData.hated_exercise || "");
         setAvatarUrl(profileData.avatar_url);
@@ -92,6 +118,8 @@ const ProfilePage = () => {
         .select(`
           id,
           score,
+          is_verified,
+          year,
           created_at,
           challenges (
             name,
@@ -174,9 +202,11 @@ const ProfilePage = () => {
         display_name: displayName.trim() || null,
         age: age ? parseInt(age, 10) : null,
         age_class: ageClass || null,
+        gender: gender || null,
+        weight_class: weightClass || null,
         favorite_exercise: favoriteExercise.trim() || null,
         hated_exercise: hatedExercise.trim() || null,
-      } as any)
+      })
       .eq("user_id", user.id);
     setSaving(false);
 
@@ -211,8 +241,17 @@ const ProfilePage = () => {
     );
   }
 
-  // Filter registrations with scores > 0
-  const completedChallenges = registrations.filter((reg) => reg.score && reg.score > 0);
+  // Filter registrations with verified scores > 0
+  const completedChallenges = registrations.filter((reg) => reg.is_verified && reg.score && reg.score > 0);
+  // Get current registrations (not yet completed)
+  const pendingRegistrations = registrations.filter((reg) => !reg.is_verified || !reg.score || reg.score === 0);
+
+  // Get weight class options based on gender
+  const getWeightClassOptions = () => {
+    if (gender === "male") return WEIGHT_CLASSES_MALE;
+    if (gender === "female") return WEIGHT_CLASSES_FEMALE;
+    return [...WEIGHT_CLASSES_MALE, ...WEIGHT_CLASSES_FEMALE];
+  };
 
   return (
     <div className="min-h-screen">
@@ -324,6 +363,42 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="gender">Geschlecht</Label>
+              <Select value={gender} onValueChange={(val) => {
+                setGender(val);
+                // Reset weight class if gender changes
+                if (val !== gender) setWeightClass("");
+              }}>
+                <SelectTrigger className="input-minimal">
+                  <SelectValue placeholder="Geschlecht wählen (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENDER_OPTIONS.map((g) => (
+                    <SelectItem key={g.value} value={g.value}>
+                      {g.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="weight-class">Gewichtsklasse</Label>
+              <Select value={weightClass} onValueChange={setWeightClass}>
+                <SelectTrigger className="input-minimal">
+                  <SelectValue placeholder="Gewichtsklasse wählen (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getWeightClassOptions().map((wc) => (
+                    <SelectItem key={wc.value} value={wc.value}>
+                      {wc.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="favorite-exercise">Lieblingsübung</Label>
               <Input
                 id="favorite-exercise"
@@ -376,12 +451,12 @@ const ProfilePage = () => {
           </form>
         </div>
 
-        {/* My Results */}
+        {/* Completed Challenges with Results */}
         {completedChallenges.length > 0 && (
           <div className="challenge-card mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-primary" />
-              Meine Ergebnisse
+              Absolvierte Challenges
             </h2>
             <div className="space-y-3">
               {completedChallenges.map((reg) => (
@@ -394,7 +469,7 @@ const ProfilePage = () => {
                     <p className="font-medium">{reg.challenges.name}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(reg.challenges.start_date).toLocaleDateString("de-DE", { month: "long", year: "numeric" })}
+                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
                     </div>
                   </div>
                   <div className="text-right">
@@ -407,23 +482,23 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* My Challenges */}
+        {/* Current Registrations */}
         <div className="challenge-card">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            Meine Anmeldungen
+            Aktuelle Anmeldungen
           </h2>
           
-          {registrations.length === 0 ? (
+          {pendingRegistrations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Du hast dich noch für keine Challenge registriert.</p>
+              <p>Du hast keine offenen Challenge-Anmeldungen.</p>
               <Link to="/" className="text-primary hover:underline mt-2 inline-block">
                 Challenges entdecken →
               </Link>
             </div>
           ) : (
             <div className="space-y-3">
-              {registrations.map((reg) => (
+              {pendingRegistrations.map((reg) => (
                 <Link
                   key={reg.id}
                   to={`/challenge/${reg.challenges.slug}`}
@@ -433,18 +508,11 @@ const ProfilePage = () => {
                     <p className="font-medium">{reg.challenges.name}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(reg.challenges.start_date).toLocaleDateString("de-DE", { month: "long", year: "numeric" })}
+                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
                     </div>
                   </div>
                   <div className="text-right">
-                    {reg.score && reg.score > 0 ? (
-                      <>
-                        <span className="text-primary font-semibold font-mono">{reg.score}</span>
-                        <span className="text-muted-foreground text-sm ml-1">Punkte</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Ausstehend</span>
-                    )}
+                    <span className="text-muted-foreground text-sm">Ausstehend</span>
                   </div>
                 </Link>
               ))}
