@@ -39,6 +39,9 @@ interface Registration {
   is_verified: boolean | null;
   year: number | null;
   created_at: string;
+  total_reps: number | null;
+  kettlebell_weight_kg: number | null;
+  total_time_seconds: number | null;
   challenges: {
     name: string;
     slug: string;
@@ -124,6 +127,9 @@ const ProfilePage = () => {
           is_verified,
           year,
           created_at,
+          total_reps,
+          kettlebell_weight_kg,
+          total_time_seconds,
           challenges (
             name,
             slug,
@@ -245,10 +251,24 @@ const ProfilePage = () => {
     );
   }
 
-  // Filter registrations with verified scores > 0
-  const completedChallenges = registrations.filter((reg) => reg.is_verified && reg.score && reg.score > 0);
+  // Filter registrations with verified results (score, total_reps, kettlebell_weight_kg, or total_time_seconds > 0)
+  const completedChallenges = registrations.filter((reg) => 
+    reg.is_verified && (
+      (reg.score && reg.score > 0) || 
+      (reg.total_reps && reg.total_reps > 0) || 
+      (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) ||
+      (reg.total_time_seconds && reg.total_time_seconds > 0)
+    )
+  );
   // Get current registrations (not yet completed)
-  const pendingRegistrations = registrations.filter((reg) => !reg.is_verified || !reg.score || reg.score === 0);
+  const pendingRegistrations = registrations.filter((reg) => 
+    !reg.is_verified || (
+      (!reg.score || reg.score === 0) && 
+      (!reg.total_reps || reg.total_reps === 0) && 
+      (!reg.kettlebell_weight_kg || reg.kettlebell_weight_kg === 0) &&
+      (!reg.total_time_seconds || reg.total_time_seconds === 0)
+    )
+  );
 
   // Get weight class options based on gender
   const getWeightClassOptions = () => {
