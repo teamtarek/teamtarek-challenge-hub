@@ -117,6 +117,13 @@ const AdminPage = () => {
   const [addingParticipant, setAddingParticipant] = useState(false);
   const [existingParticipants, setExistingParticipants] = useState<{ email: string; participant_name: string }[]>([]);
 
+  // Link user dialog state
+  const [linkDialogOpen, setLinkDialogOpen] = useState<string | null>(null);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState<{ user_id: string; display_name: string | null }[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [linkingUser, setLinkingUser] = useState(false);
+
   const murphVersions = ["Standard", "Female Version", "Beginner Version"];
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
 
@@ -334,6 +341,63 @@ const AdminPage = () => {
       await fetchRegistrations();
     }
     setDeleting(null);
+  };
+
+  const handleSearchUsers = async (query: string) => {
+    setUserSearchQuery(query);
+    if (query.trim().length < 2) {
+      setUserSearchResults([]);
+      return;
+    }
+    
+    setSearchingUsers(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("user_id, display_name")
+      .or(`display_name.ilike.%${query}%`)
+      .limit(10);
+    
+    if (!error && data) {
+      setUserSearchResults(data);
+    }
+    setSearchingUsers(false);
+  };
+
+  const handleLinkUser = async (registrationId: string, userId: string) => {
+    setLinkingUser(true);
+    
+    const { error } = await supabase
+      .from("registrations")
+      .update({ user_id: userId })
+      .eq("id", registrationId);
+    
+    if (error) {
+      toast.error("Fehler beim Verknüpfen");
+    } else {
+      toast.success("Account erfolgreich verknüpft");
+      await fetchRegistrations();
+    }
+    
+    setLinkDialogOpen(null);
+    setUserSearchQuery("");
+    setUserSearchResults([]);
+    setLinkingUser(false);
+  };
+
+  const handleUnlinkUser = async (registrationId: string) => {
+    if (!confirm("Möchtest du die Verknüpfung wirklich aufheben?")) return;
+    
+    const { error } = await supabase
+      .from("registrations")
+      .update({ user_id: null })
+      .eq("id", registrationId);
+    
+    if (error) {
+      toast.error("Fehler beim Aufheben der Verknüpfung");
+    } else {
+      toast.success("Verknüpfung aufgehoben");
+      await fetchRegistrations();
+    }
   };
 
   const handleAddParticipant = async () => {
@@ -857,15 +921,96 @@ const AdminPage = () => {
                             <CheckCircle className="w-4 h-4 text-green-500" />
                           )}
                           {registration.user_id ? (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs" title="Mit Account verknüpft">
-                              <LinkIcon className="w-3 h-3" />
-                              Verknüpft
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs" title="Mit Account verknüpft">
+                                <LinkIcon className="w-3 h-3" />
+                                Verknüpft
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 px-1 text-xs text-muted-foreground hover:text-destructive"
+                                onClick={() => handleUnlinkUser(registration.id)}
+                                title="Verknüpfung aufheben"
+                              >
+                                <UserX className="w-3 h-3" />
+                              </Button>
+                            </div>
                           ) : (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 text-xs" title="Kein Account verknüpft">
-                              <UserX className="w-3 h-3" />
-                              Nicht verknüpft
-                            </span>
+                            <Dialog open={linkDialogOpen === registration.id} onOpenChange={(open) => {
+                              setLinkDialogOpen(open ? registration.id : null);
+                              if (!open) {
+                                setUserSearchQuery("");
+                                setUserSearchResults([]);
+                              }
+                            }}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                                >
+                                  <UserX className="w-3 h-3 mr-1" />
+                                  Nicht verknüpft – Jetzt verknüpfen
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Account verknüpfen</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 pt-4">
+                                  <p className="text-sm text-muted-foreground">
+                                    Registrierung von <strong>{registration.participant_name}</strong> ({registration.email}) mit einem Account verknüpfen:
+                                  </p>
+                                  <div className="space-y-2">
+                                    <Label>Benutzer suchen</Label>
+                                    <div className="relative">
+                                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                      <Input
+                                        placeholder="Name eingeben..."
+                                        value={userSearchQuery}
+                                        onChange={(e) => handleSearchUsers(e.target.value)}
+                                        className="pl-9"
+                                      />
+                                    </div>
+                                  </div>
+                                  {searchingUsers && (
+                                    <div className="flex justify-center py-4">
+                                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  {!searchingUsers && userSearchResults.length > 0 && (
+                                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                                      {userSearchResults.map((result) => (
+                                        <div
+                                          key={result.user_id}
+                                          className="flex items-center justify-between p-3 rounded-lg bg-secondary hover:bg-secondary/80 cursor-pointer"
+                                          onClick={() => handleLinkUser(registration.id, result.user_id)}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4 text-muted-foreground" />
+                                            <span className="font-medium">{result.display_name || "Unbenannt"}</span>
+                                          </div>
+                                          <Button size="sm" disabled={linkingUser}>
+                                            {linkingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {!searchingUsers && userSearchQuery.length >= 2 && userSearchResults.length === 0 && (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                      Keine Benutzer gefunden
+                                    </p>
+                                  )}
+                                  {userSearchQuery.length < 2 && (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                      Mindestens 2 Zeichen eingeben
+                                    </p>
+                                  )}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
