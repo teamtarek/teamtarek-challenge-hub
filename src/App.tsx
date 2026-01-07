@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ChallengePage from "./pages/ChallengePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
+import PublicProfilePage from "./pages/PublicProfilePage";
 import AdminPage from "./pages/AdminPage";
 import CommunityPage from "./pages/CommunityPage";
 import PostPage from "./pages/PostPage";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/challenge/:slug" element={<ChallengePage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/profil" element={<ProfilePage />} />
+            <Route path="/profil/:userId" element={<PublicProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/:postId" element={<PostPage />} />
