@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Search } from "lucide-react";
+import { Shield, Save, Loader2, Plus, UserPlus, CheckCircle, Video, ExternalLink, User, Dumbbell, Calendar, ArrowUpDown, ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -80,7 +80,8 @@ const formatDate = (dateString: string | null): string => {
 const AdminPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, loading: adminLoading } = useIsAdmin();
+  const { isAdmin, isWebmaster, loading: adminLoading } = useIsAdmin();
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<string>("");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -312,6 +313,25 @@ const AdminPage = () => {
       await fetchRegistrations();
     }
     setVerifying(null);
+  };
+
+  const handleDeleteRegistration = async (registrationId: string) => {
+    if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
+    
+    setDeleting(registrationId);
+    
+    const { error } = await supabase
+      .from("registrations")
+      .delete()
+      .eq("id", registrationId);
+
+    if (error) {
+      toast.error("Fehler beim Löschen");
+    } else {
+      toast.success("Eintrag gelöscht");
+      await fetchRegistrations();
+    }
+    setDeleting(null);
   };
 
   const handleAddParticipant = async () => {

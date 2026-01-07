@@ -225,8 +225,10 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     );
   }
 
-  // Filter registrations
+  // Filter registrations - only show verified results
   const filteredRegistrations = registrations.filter((r) => {
+    // Only show verified results
+    if (!r.is_verified) return false;
     if (filterYear !== "all" && r.year !== parseInt(filterYear)) return false;
     if (filterVersion !== "all" && r.murph_version !== filterVersion) return false;
     return true;

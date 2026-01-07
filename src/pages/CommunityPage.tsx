@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Header } from "@/components/Header";
+import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search, Image, Video, X, Pencil } from "lucide-react";
+import { MessageSquare, Plus, Loader2, ArrowLeft, Heart, Search, Image, Video, X, Pencil, Lock, Trash2 } from "lucide-react";
 import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -60,6 +62,7 @@ interface Post {
 
 const CommunityPage = () => {
   const { user } = useAuth();
+  const { canAccessCoachesCorner, isAdmin, loading: roleLoading } = useUserRole();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -76,6 +79,12 @@ const CommunityPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [likingPost, setLikingPost] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [deletingPost, setDeletingPost] = useState<string | null>(null);
+
+  // Available categories based on user role
+  const availableCategories = CATEGORIES.filter(
+    (cat) => cat.value !== "coaches-corner" || canAccessCoachesCorner
+  );
 
   const fetchPosts = async () => {
     let query = supabase
@@ -144,7 +153,12 @@ const CommunityPage = () => {
       }
     });
 
-    const postsWithData: Post[] = postsData.map((p) => ({
+    // Filter out coaches-corner posts if user doesn't have access
+    const filteredPostsData = postsData.filter(
+      (p) => p.category !== "coaches-corner" || canAccessCoachesCorner
+    );
+
+    const postsWithData: Post[] = filteredPostsData.map((p) => ({
       ...p,
       category: p.category as Category,
       image_url: p.image_url,
@@ -160,7 +174,9 @@ const CommunityPage = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    if (!roleLoading) {
+      fetchPosts();
+    }
 
     // Subscribe to realtime updates
     const channel = supabase
@@ -180,7 +196,30 @@ const CommunityPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, filterCategory]);
+  }, [user, filterCategory, canAccessCoachesCorner, roleLoading]);
+
+  const handleDeletePost = async (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!confirm("Möchtest du diesen Beitrag wirklich löschen?")) return;
+    
+    setDeletingPost(postId);
+    
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+    
+    if (error) {
+      toast.error("Beitrag konnte nicht gelöscht werden.");
+    } else {
+      toast.success("Beitrag gelöscht!");
+      await fetchPosts();
+    }
+    
+    setDeletingPost(null);
+  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -399,9 +438,10 @@ const CommunityPage = () => {
                         <SelectValue placeholder="Kategorie wählen" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map((cat) => (
+                        {availableCategories.map((cat) => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
+                            {cat.value === "coaches-corner" && " 🔒"}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -524,14 +564,16 @@ const CommunityPage = () => {
               >
                 Alle
               </Button>
-              {CATEGORIES.map((cat) => (
+              {availableCategories.map((cat) => (
                 <Button
                   key={cat.value}
                   variant={filterCategory === cat.value ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilterCategory(cat.value)}
+                  className="gap-1"
                 >
                   {cat.label}
+                  {cat.value === "coaches-corner" && <Lock className="w-3 h-3" />}
                 </Button>
               ))}
             </div>
@@ -605,7 +647,7 @@ const CommunityPage = () => {
                             <Video className="w-3 h-3" /> Video
                           </span>
                         )}
-                        {user && post.user_id === user.id && (
+                        {(user && post.user_id === user.id) && (
                           <button
                             onClick={(e) => {
                               e.preventDefault();
@@ -615,6 +657,20 @@ const CommunityPage = () => {
                             className="text-xs px-2 py-0.5 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground flex items-center gap-1 transition-colors"
                           >
                             <Pencil className="w-3 h-3" /> Bearbeiten
+                          </button>
+                        )}
+                        {(isAdmin || (user && post.user_id === user.id)) && (
+                          <button
+                            onClick={(e) => handleDeletePost(e, post.id)}
+                            disabled={deletingPost === post.id}
+                            className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 hover:bg-destructive/20 text-destructive flex items-center gap-1 transition-colors"
+                          >
+                            {deletingPost === post.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                            Löschen
                           </button>
                         )}
                       </div>

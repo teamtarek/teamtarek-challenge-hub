@@ -1,11 +1,20 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole, AGE_CLASSES } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +25,7 @@ interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   age: number | null;
+  age_class: string | null;
   favorite_exercise: string | null;
   hated_exercise: string | null;
 }
@@ -34,6 +44,7 @@ interface Registration {
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
+  const { memberType, loading: roleLoading } = useUserRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -43,6 +54,7 @@ const ProfilePage = () => {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [age, setAge] = useState("");
+  const [ageClass, setAgeClass] = useState("");
   const [favoriteExercise, setFavoriteExercise] = useState("");
   const [hatedExercise, setHatedExercise] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -60,14 +72,15 @@ const ProfilePage = () => {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, age, favorite_exercise, hated_exercise")
+        .select("display_name, avatar_url, age, age_class, favorite_exercise, hated_exercise")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (profileData) {
-        setProfile(profileData);
+        setProfile(profileData as Profile);
         setDisplayName(profileData.display_name || "");
         setAge(profileData.age?.toString() || "");
+        setAgeClass((profileData as Profile).age_class || "");
         setFavoriteExercise(profileData.favorite_exercise || "");
         setHatedExercise(profileData.hated_exercise || "");
         setAvatarUrl(profileData.avatar_url);
@@ -160,9 +173,10 @@ const ProfilePage = () => {
       .update({ 
         display_name: displayName.trim() || null,
         age: age ? parseInt(age, 10) : null,
+        age_class: ageClass || null,
         favorite_exercise: favoriteExercise.trim() || null,
         hated_exercise: hatedExercise.trim() || null,
-      })
+      } as any)
       .eq("user_id", user.id);
     setSaving(false);
 
@@ -213,10 +227,15 @@ const ProfilePage = () => {
           Zurück zu den Challenges
         </Link>
 
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-          <User className="w-8 h-8 text-primary" />
-          Mein Profil
-        </h1>
+        <div className="flex items-center gap-3 mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <User className="w-8 h-8 text-primary" />
+            Mein Profil
+          </h1>
+          {!roleLoading && memberType && (
+            <MemberBadge memberType={memberType} size="lg" />
+          )}
+        </div>
 
         {/* Profile Form */}
         <div className="challenge-card mb-8">
@@ -252,7 +271,9 @@ const ProfilePage = () => {
               />
             </div>
             <div>
-              <p className="font-medium">{displayName || user?.email}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="font-medium">{displayName || user?.email}</p>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Klicke auf das Kamera-Symbol, um ein Profilbild hochzuladen
               </p>
@@ -284,6 +305,22 @@ const ProfilePage = () => {
                 onChange={(e) => setAge(e.target.value)}
                 className="input-minimal"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="age-class">Altersklasse</Label>
+              <Select value={ageClass} onValueChange={setAgeClass}>
+                <SelectTrigger className="input-minimal">
+                  <SelectValue placeholder="Altersklasse wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AGE_CLASSES.map((ac) => (
+                    <SelectItem key={ac.value} value={ac.value}>
+                      {ac.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
