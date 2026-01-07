@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar } from "lucide-react";
@@ -362,15 +363,32 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               <div className="flex items-center justify-center w-8">
                 {getRankIcon(index + 1)}
               </div>
-              <Avatar className="w-10 h-10 border border-border">
-                <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
-                <AvatarFallback className="bg-muted text-sm">
-                  {getInitials(registration.participant_name)}
-                </AvatarFallback>
-              </Avatar>
+              {registration.user_id ? (
+                <Link to={`/profil/${registration.user_id}`}>
+                  <Avatar className="w-10 h-10 border border-border hover:ring-2 hover:ring-primary transition-all">
+                    <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
+                    <AvatarFallback className="bg-muted text-sm">
+                      {getInitials(registration.participant_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <Avatar className="w-10 h-10 border border-border">
+                  <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
+                  <AvatarFallback className="bg-muted text-sm">
+                    {getInitials(registration.participant_name)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">{registration.participant_name}</p>
+                  {registration.user_id ? (
+                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
+                      {registration.participant_name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium truncate">{registration.participant_name}</p>
+                  )}
                   {registration.is_verified && (
                     <TooltipProvider>
                       <Tooltip>
@@ -427,15 +445,32 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               <div className="flex items-center justify-center w-8">
                 <span className="text-muted-foreground">-</span>
               </div>
-              <Avatar className="w-10 h-10 border border-border">
-                <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
-                <AvatarFallback className="bg-muted text-sm">
-                  {getInitials(registration.participant_name)}
-                </AvatarFallback>
-              </Avatar>
+              {registration.user_id ? (
+                <Link to={`/profil/${registration.user_id}`}>
+                  <Avatar className="w-10 h-10 border border-border hover:ring-2 hover:ring-primary transition-all">
+                    <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
+                    <AvatarFallback className="bg-muted text-sm">
+                      {getInitials(registration.participant_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <Avatar className="w-10 h-10 border border-border">
+                  <AvatarImage src={registration.avatar_url || undefined} alt={registration.participant_name} />
+                  <AvatarFallback className="bg-muted text-sm">
+                    {getInitials(registration.participant_name)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">{registration.participant_name}</p>
+                  {registration.user_id ? (
+                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
+                      {registration.participant_name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium truncate">{registration.participant_name}</p>
+                  )}
                   {registration.is_verified && (
                     <TooltipProvider>
                       <Tooltip>
