@@ -56,8 +56,17 @@ const getChallengeHeroImage = (slug: string): string => {
 const getChallengeBackgroundPosition = (slug: string): string => {
   const positionMap: Record<string, string> = {
     "winter-challenge-2026": "center 20%",
+    "5-minute-snatch-test": "center top",
   };
   return positionMap[slug] || "center";
+};
+
+// Custom background size for specific challenges
+const getChallengeBackgroundSize = (slug: string): string => {
+  const sizeMap: Record<string, string> = {
+    "5-minute-snatch-test": "contain",
+  };
+  return sizeMap[slug] || "cover";
 };
 
 const formatDateRange = (start: string, end: string | null) => {
@@ -155,6 +164,7 @@ const ChallengePage = () => {
   const isUpcoming = now < start;
   const heroImage = getChallengeHeroImage(challenge.slug);
   const backgroundPosition = getChallengeBackgroundPosition(challenge.slug);
+  const backgroundSize = getChallengeBackgroundSize(challenge.slug);
 
   return (
     <div className="min-h-screen">
@@ -165,8 +175,10 @@ const ChallengePage = () => {
         className="relative min-h-[50vh] flex items-end"
         style={{
           backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
+          backgroundSize: backgroundSize,
           backgroundPosition: backgroundPosition,
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: 'hsl(var(--background))',
         }}
       >
         {/* Dark gradient overlay */}
