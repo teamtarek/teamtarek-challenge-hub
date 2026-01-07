@@ -370,7 +370,12 @@ const PostPage = () => {
                 </div>
                 <h1 className="text-2xl font-bold">{post.title}</h1>
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                  <span>{post.profiles?.display_name || "Anonym"}</span>
+                  <Link 
+                    to={`/profil/${post.user_id}`} 
+                    className="hover:text-primary transition-colors"
+                  >
+                    {post.profiles?.display_name || "Anonym"}
+                  </Link>
                   <span>•</span>
                   <span>
                     {formatDistanceToNow(new Date(post.created_at), {
@@ -485,9 +490,12 @@ const PostPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium">
+                          <Link 
+                            to={`/profil/${comment.user_id}`} 
+                            className="font-medium hover:text-primary transition-colors"
+                          >
                             {comment.profiles?.display_name || "Anonym"}
-                          </span>
+                          </Link>
                           <span className="text-muted-foreground">
                             {formatDistanceToNow(new Date(comment.created_at), {
                               addSuffix: true,
