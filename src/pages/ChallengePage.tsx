@@ -52,6 +52,14 @@ const getChallengeHeroImage = (slug: string): string => {
   return imageMap[slug] || heroBg;
 };
 
+// Custom background positions for specific challenges
+const getChallengeBackgroundPosition = (slug: string): string => {
+  const positionMap: Record<string, string> = {
+    "winter-challenge-2026": "center 20%",
+  };
+  return positionMap[slug] || "center";
+};
+
 const formatDateRange = (start: string, end: string | null) => {
   const startDate = new Date(start);
   const endDate = end ? new Date(end) : null;
@@ -146,6 +154,7 @@ const ChallengePage = () => {
   const isActive = now >= start && now <= end;
   const isUpcoming = now < start;
   const heroImage = getChallengeHeroImage(challenge.slug);
+  const backgroundPosition = getChallengeBackgroundPosition(challenge.slug);
 
   return (
     <div className="min-h-screen">
@@ -157,7 +166,7 @@ const ChallengePage = () => {
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: backgroundPosition,
         }}
       >
         {/* Dark gradient overlay */}
