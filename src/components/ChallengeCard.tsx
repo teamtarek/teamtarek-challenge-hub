@@ -32,6 +32,11 @@ const challengeImages: Record<string, string> = {
   "rite-of-passage": riteOfPassageImg,
 };
 
+// Custom object positions for specific challenges
+const challengeObjectPositions: Record<string, string> = {
+  "winter-challenge-2026": "center 20%",
+};
+
 interface ChallengeCardProps {
   slug: string;
   name: string;
@@ -78,6 +83,7 @@ export const ChallengeCard = ({
   const isUpcoming = now < start;
 
   const heroImage = challengeImages[slug];
+  const objectPosition = challengeObjectPositions[slug] || "center";
 
   return (
     <Link
@@ -92,6 +98,7 @@ export const ChallengeCard = ({
             src={heroImage} 
             alt={name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            style={{ objectPosition }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           <span className={`absolute top-3 left-3 challenge-badge ${isActive ? 'challenge-badge-active' : ''}`}>
