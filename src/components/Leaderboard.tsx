@@ -398,11 +398,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   {registration.user_id ? (
-                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
+                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                       {registration.participant_name}
                     </Link>
                   ) : (
-                    <p className="font-medium truncate">{registration.participant_name}</p>
+                    <p className="font-medium truncate text-muted-foreground">{registration.participant_name}</p>
                   )}
                   {registration.member_type && (
                     <MemberBadge memberType={registration.member_type as MemberType} size="sm" />
@@ -483,11 +484,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   {registration.user_id ? (
-                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors">
+                    <Link to={`/profil/${registration.user_id}`} className="font-medium truncate hover:text-primary transition-colors flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                       {registration.participant_name}
                     </Link>
                   ) : (
-                    <p className="font-medium truncate">{registration.participant_name}</p>
+                    <p className="font-medium truncate text-muted-foreground">{registration.participant_name}</p>
                   )}
                   {registration.member_type && (
                     <MemberBadge memberType={registration.member_type as MemberType} size="sm" />
