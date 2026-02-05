@@ -31,31 +31,45 @@ serve(async (req) => {
     }
     logStep("Stripe key verified");
 
-    // Create Supabase client for user authentication
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header provided");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - no valid authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
     logStep("Authorization header found");
 
+    // Create Supabase client with user's auth context
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Validate JWT and get claims
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
     
-    if (userError) {
-      throw new Error(`Authentication error: ${userError.message}`);
+    if (claimsError || !claimsData?.claims) {
+      logStep("Claims validation failed", { error: claimsError?.message });
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - invalid token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
     
-    const user = userData.user;
-    if (!user?.email) {
-      throw new Error("User not authenticated or email not available");
+    if (!userId || !userEmail) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - missing user claims" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated via claims", { userId, email: userEmail });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
@@ -64,7 +78,7 @@ serve(async (req) => {
 
     // Check if a Stripe customer already exists for this user
     const customers = await stripe.customers.list({ 
-      email: user.email, 
+      email: userEmail, 
       limit: 1 
     });
     
@@ -82,7 +96,7 @@ serve(async (req) => {
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : userEmail,
       line_items: [
         {
           price: MONTHLY_MEMBERSHIP_PRICE_ID,
@@ -93,7 +107,7 @@ serve(async (req) => {
       success_url: `${origin}/profile?checkout=success`,
       cancel_url: `${origin}/profile?checkout=canceled`,
       metadata: {
-        user_id: user.id,
+        user_id: userId,
       },
     });
 
