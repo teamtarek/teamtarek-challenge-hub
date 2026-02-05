@@ -79,8 +79,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   useEffect(() => {
     const fetchRegistrations = async () => {
+      // Use the secure public view that excludes email addresses
       const { data, error } = await supabase
-        .from("registrations")
+        .from("registrations_public" as any)
         .select(`
           id, 
           participant_name, 

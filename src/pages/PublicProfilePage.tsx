@@ -71,9 +71,9 @@ const PublicProfilePage = () => {
         setMemberType(memberTypeData as MemberType);
       }
 
-      // Fetch completed challenges (verified with results)
+      // Fetch completed challenges using secure public view (excludes email)
       const { data: regData } = await supabase
-        .from("registrations")
+        .from("registrations_public" as any)
         .select(`
           id,
           score,
@@ -82,14 +82,40 @@ const PublicProfilePage = () => {
           kettlebell_weight_kg,
           total_reps,
           total_time_seconds,
-          challenges (
-            name,
-            slug
-          )
+          challenge_id
         `)
         .eq("user_id", userId)
         .eq("is_verified", true)
         .order("year", { ascending: false });
+
+      // Fetch challenge details separately since we can't join on views
+      if (regData && regData.length > 0) {
+        const challengeIds = [...new Set(regData.map((r: any) => r.challenge_id))];
+        const { data: challengesData } = await supabase
+          .from("challenges")
+          .select("id, name, slug")
+          .in("id", challengeIds);
+        
+        if (challengesData) {
+          const challengeMap = challengesData.reduce((acc: any, c: any) => {
+            acc[c.id] = { name: c.name, slug: c.slug };
+            return acc;
+          }, {});
+          
+          const regWithChallenges = regData.map((r: any) => ({
+            ...r,
+            challenges: challengeMap[r.challenge_id] || { name: "Unknown", slug: "" }
+          }));
+          
+          // Filter to only those with actual results
+          const completed = regWithChallenges.filter((reg: any) => 
+            (reg.score && reg.score > 0) || 
+            (reg.total_reps && reg.total_reps > 0) || 
+            (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
+          );
+          setCompletedChallenges(completed as unknown as Registration[]);
+        }
+      }
 
       if (regData) {
         // Filter to only those with actual results
