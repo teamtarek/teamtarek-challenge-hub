@@ -78,7 +78,7 @@ serve(async (req) => {
 
     // Check if a Stripe customer already exists for this user
     const customers = await stripe.customers.list({ 
-      email: user.email, 
+      email: userEmail, 
       limit: 1 
     });
     
