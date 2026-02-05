@@ -12,39 +12,46 @@
    console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
  };
  
- serve(async (req) => {
-   if (req.method === "OPTIONS") {
-     return new Response(null, { headers: corsHeaders });
-   }
- 
-   const supabaseClient = createClient(
-     Deno.env.get("SUPABASE_URL") ?? "",
-     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-   );
- 
-   try {
-     logStep("Function started");
- 
-     const authHeader = req.headers.get("Authorization");
-     let userEmail: string | null = null;
-     let customerId: string | undefined;
- 
-     // Check if user is authenticated
-     if (authHeader) {
-       const token = authHeader.replace("Bearer ", "");
-       const { data } = await supabaseClient.auth.getUser(token);
-       if (data.user?.email) {
-         userEmail = data.user.email;
-         logStep("Authenticated user", { email: userEmail });
-       }
-     }
- 
-     // Get email from request body if not authenticated
-     if (!userEmail) {
-       const body = await req.json().catch(() => ({}));
-       userEmail = body.email;
-       logStep("Using email from body", { email: userEmail });
-     }
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+  );
+
+  try {
+    logStep("Function started");
+
+    const authHeader = req.headers.get("Authorization");
+    
+    // SECURITY: Require authentication for checkout
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      logStep("Unauthorized - no auth header");
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !userData.user) {
+      logStep("Unauthorized - invalid token", { error: authError?.message });
+      return new Response(JSON.stringify({ error: "Invalid authentication" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const userEmail = userData.user.email;
+    const userId = userData.user.id;
+    let customerId: string | undefined;
+    
+    logStep("Authenticated user", { email: userEmail, userId });
  
      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
      if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
