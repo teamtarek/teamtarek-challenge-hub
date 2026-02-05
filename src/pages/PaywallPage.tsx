@@ -55,7 +55,7 @@
            <div className="challenge-card text-center">
              {reason === "inactive" ? (
                <>
-                 <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                 <AlertTriangle className="w-12 h-12 text-accent mx-auto mb-4" />
                  <h1 className="text-2xl font-bold mb-4">Zugang deaktiviert</h1>
                  <p className="text-muted-foreground mb-6">
                    Dein Zugang wurde aufgrund von 6 Monaten Inaktivität deaktiviert.
