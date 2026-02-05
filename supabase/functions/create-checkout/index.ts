@@ -96,7 +96,7 @@ serve(async (req) => {
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : userEmail,
       line_items: [
         {
           price: MONTHLY_MEMBERSHIP_PRICE_ID,
@@ -107,7 +107,7 @@ serve(async (req) => {
       success_url: `${origin}/profile?checkout=success`,
       cancel_url: `${origin}/profile?checkout=canceled`,
       metadata: {
-        user_id: user.id,
+        user_id: userId,
       },
     });
 
