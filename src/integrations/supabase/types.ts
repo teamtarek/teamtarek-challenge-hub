@@ -79,6 +79,36 @@ export type Database = {
           },
         ]
       }
+      invite_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          token: string
+          used_at: string | null
+          used_by_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          token: string
+          used_at?: string | null
+          used_by_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by_user_id?: string | null
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           comment_id: string | null
@@ -117,6 +147,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      memberships: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          last_activity_at: string | null
+          source: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          last_activity_at?: string | null
+          source: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          last_activity_at?: string | null
+          source?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       posts: {
         Row: {
@@ -293,6 +356,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_inactive_memberships: { Args: never; Returns: number }
+      get_membership_status: { Args: { _user_id: string }; Returns: string }
       get_user_member_type: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -303,6 +368,14 @@ export type Database = {
       }
       is_admin_or_webmaster: { Args: { _user_id: string }; Returns: boolean }
       is_webmaster: { Args: { _user_id: string }; Returns: boolean }
+      update_membership_activity: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      use_invite_token: {
+        Args: { _token: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
