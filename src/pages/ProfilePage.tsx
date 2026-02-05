@@ -167,6 +167,23 @@ const ProfilePage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Handle checkout success
+  useEffect(() => {
+    const checkoutStatus = searchParams.get("checkout");
+    if (checkoutStatus === "success") {
+      toast.success("Zahlung erfolgreich! Deine Mitgliedschaft wird aktiviert.");
+      // Clear the URL parameter
+      setSearchParams({});
+      // Refresh membership status after a short delay
+      setTimeout(() => {
+        refetchRole();
+      }, 2000);
+    } else if (checkoutStatus === "canceled") {
+      toast.info("Checkout abgebrochen.");
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, refetchRole]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
