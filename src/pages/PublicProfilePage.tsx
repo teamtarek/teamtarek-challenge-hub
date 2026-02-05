@@ -72,11 +72,16 @@ const PublicProfilePage = () => {
       }
 
       // Fetch completed challenges using secure RPC function (excludes email)
-      const { data: regData } = await supabase
+      const { data: allRegData } = await supabase
         .rpc("get_public_registrations");
 
-      // Fetch challenge details separately since we can't join on views
-      if (regData && regData.length > 0) {
+      // Filter for this user's verified registrations
+      const regData = allRegData?.filter((r: any) => 
+        r.user_id === userId && r.is_verified === true
+      ) || [];
+
+      // Fetch challenge details separately
+      if (regData.length > 0) {
         const challengeIds = [...new Set(regData.map((r: any) => r.challenge_id))];
         const { data: challengesData } = await supabase
           .from("challenges")
@@ -94,12 +99,14 @@ const PublicProfilePage = () => {
             challenges: challengeMap[r.challenge_id] || { name: "Unknown", slug: "" }
           }));
           
-          // Filter to only those with actual results
-          const completed = regWithChallenges.filter((reg: any) => 
-            (reg.score && reg.score > 0) || 
-            (reg.total_reps && reg.total_reps > 0) || 
-            (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
-          );
+          // Filter to only those with actual results and sort by year
+          const completed = regWithChallenges
+            .filter((reg: any) => 
+              (reg.score && reg.score > 0) || 
+              (reg.total_reps && reg.total_reps > 0) || 
+              (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
+            )
+            .sort((a: any, b: any) => (b.year || 0) - (a.year || 0));
           setCompletedChallenges(completed as unknown as Registration[]);
         }
       }
