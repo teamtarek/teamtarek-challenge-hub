@@ -31,45 +31,34 @@ serve(async (req) => {
     }
     logStep("Stripe key verified");
 
-    // Authenticate user
+    // Try to get authenticated user (optional)
+    let userId: string | undefined;
+    let userEmail: string | undefined;
+
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - no valid authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      logStep("Authorization header found, attempting to get user");
+      
+      // Create Supabase client with user's auth context
+      const supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } } }
       );
-    }
-    logStep("Authorization header found");
 
-    // Create Supabase client with user's auth context
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Get authenticated user using the client with auth context
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-    
-    if (userError || !userData?.user) {
-      logStep("User authentication failed", { error: userError?.message });
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Try to get authenticated user
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+      
+      if (!userError && userData?.user) {
+        userId = userData.user.id;
+        userEmail = userData.user.email;
+        logStep("User authenticated", { userId, email: userEmail });
+      } else {
+        logStep("No authenticated user found, proceeding without user context", { error: userError?.message });
+      }
+    } else {
+      logStep("No authorization header, proceeding without user context");
     }
-
-    const user = userData.user;
-    const userId = user.id;
-    const userEmail = user.email;
-    
-    if (!userId || !userEmail) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - user email not available" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    logStep("User authenticated", { userId, email: userEmail });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
