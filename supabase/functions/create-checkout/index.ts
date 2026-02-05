@@ -65,22 +65,30 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check if a Stripe customer already exists for this user
-    const customers = await stripe.customers.list({ 
-      email: userEmail, 
-      limit: 1 
-    });
-    
+    // Check if a Stripe customer already exists for this user (only if we have an email)
     let customerId: string | undefined;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Found existing Stripe customer", { customerId });
-    } else {
-      logStep("No existing Stripe customer found, will create during checkout");
+    if (userEmail) {
+      const customers = await stripe.customers.list({ 
+        email: userEmail, 
+        limit: 1 
+      });
+      
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Found existing Stripe customer", { customerId });
+      } else {
+        logStep("No existing Stripe customer found, will create during checkout");
+      }
     }
 
     // Get the origin for success/cancel URLs
     const origin = req.headers.get("origin") || "https://teamtarek-challenge-hub.lovable.app";
+
+    // Build session metadata
+    const metadata: Record<string, string> = {};
+    if (userId) {
+      metadata.user_id = userId;
+    }
 
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({
@@ -95,15 +103,14 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/profile?checkout=success`,
       cancel_url: `${origin}/profile?checkout=canceled`,
-      metadata: {
-        user_id: userId,
-      },
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
     logStep("Checkout session created", { 
       sessionId: session.id, 
       priceId: MONTHLY_MEMBERSHIP_PRICE_ID,
-      url: session.url 
+      url: session.url,
+      hasUserId: !!userId
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
