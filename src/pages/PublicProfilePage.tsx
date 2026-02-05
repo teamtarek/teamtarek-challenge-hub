@@ -71,22 +71,9 @@ const PublicProfilePage = () => {
         setMemberType(memberTypeData as MemberType);
       }
 
-      // Fetch completed challenges using secure public view (excludes email)
+      // Fetch completed challenges using secure RPC function (excludes email)
       const { data: regData } = await supabase
-        .from("registrations_public" as any)
-        .select(`
-          id,
-          score,
-          is_verified,
-          year,
-          kettlebell_weight_kg,
-          total_reps,
-          total_time_seconds,
-          challenge_id
-        `)
-        .eq("user_id", userId)
-        .eq("is_verified", true)
-        .order("year", { ascending: false });
+        .rpc("get_public_registrations");
 
       // Fetch challenge details separately since we can't join on views
       if (regData && regData.length > 0) {
