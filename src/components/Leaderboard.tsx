@@ -79,28 +79,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   useEffect(() => {
     const fetchRegistrations = async () => {
-      // Use the secure public view that excludes email addresses
+      // Use the secure RPC function that excludes email addresses
       const { data, error } = await supabase
-        .from("registrations_public" as any)
-        .select(`
-          id, 
-          participant_name, 
-          score, 
-          created_at,
-          user_id,
-          year,
-          murph_version,
-          validation_type,
-          video_url,
-          is_verified,
-          kettlebell_weight_kg,
-          total_time_seconds,
-          completion_date,
-          total_reps
-        `)
-        .eq("challenge_id", challengeId)
-        .order("score", { ascending: true })
-        .order("created_at", { ascending: true });
+        .rpc("get_public_registrations", { p_challenge_id: challengeId });
 
       if (!error && data) {
         // Cast data to expected type since we're using a view
