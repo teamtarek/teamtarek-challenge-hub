@@ -31,67 +31,64 @@ serve(async (req) => {
     }
     logStep("Stripe key verified");
 
-    // Authenticate user
+    // Try to get authenticated user (optional)
+    let userId: string | undefined;
+    let userEmail: string | undefined;
+
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - no valid authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      logStep("Authorization header found, attempting to get user");
+      
+      // Create Supabase client with user's auth context
+      const supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } } }
       );
-    }
-    logStep("Authorization header found");
 
-    // Create Supabase client with user's auth context
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Get authenticated user using the client with auth context
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-    
-    if (userError || !userData?.user) {
-      logStep("User authentication failed", { error: userError?.message });
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Try to get authenticated user
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+      
+      if (!userError && userData?.user) {
+        userId = userData.user.id;
+        userEmail = userData.user.email;
+        logStep("User authenticated", { userId, email: userEmail });
+      } else {
+        logStep("No authenticated user found, proceeding without user context", { error: userError?.message });
+      }
+    } else {
+      logStep("No authorization header, proceeding without user context");
     }
-
-    const user = userData.user;
-    const userId = user.id;
-    const userEmail = user.email;
-    
-    if (!userId || !userEmail) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - user email not available" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    logStep("User authenticated", { userId, email: userEmail });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check if a Stripe customer already exists for this user
-    const customers = await stripe.customers.list({ 
-      email: userEmail, 
-      limit: 1 
-    });
-    
+    // Check if a Stripe customer already exists for this user (only if we have an email)
     let customerId: string | undefined;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Found existing Stripe customer", { customerId });
-    } else {
-      logStep("No existing Stripe customer found, will create during checkout");
+    if (userEmail) {
+      const customers = await stripe.customers.list({ 
+        email: userEmail, 
+        limit: 1 
+      });
+      
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Found existing Stripe customer", { customerId });
+      } else {
+        logStep("No existing Stripe customer found, will create during checkout");
+      }
     }
 
     // Get the origin for success/cancel URLs
     const origin = req.headers.get("origin") || "https://teamtarek-challenge-hub.lovable.app";
+
+    // Build session metadata
+    const metadata: Record<string, string> = {};
+    if (userId) {
+      metadata.user_id = userId;
+    }
 
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({
@@ -106,15 +103,14 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/profile?checkout=success`,
       cancel_url: `${origin}/profile?checkout=canceled`,
-      metadata: {
-        user_id: userId,
-      },
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
     logStep("Checkout session created", { 
       sessionId: session.id, 
       priceId: MONTHLY_MEMBERSHIP_PRICE_ID,
-      url: session.url 
+      url: session.url,
+      hasUserId: !!userId
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
