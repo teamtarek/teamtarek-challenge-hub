@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole, AGE_CLASSES } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,8 +141,9 @@ const formatChallengeResult = (reg: Registration): { value: string; label: strin
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { memberType, loading: roleLoading } = useUserRole();
+  const { memberType, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -165,6 +166,23 @@ const ProfilePage = () => {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  // Handle checkout success
+  useEffect(() => {
+    const checkoutStatus = searchParams.get("checkout");
+    if (checkoutStatus === "success") {
+      toast.success("Zahlung erfolgreich! Deine Mitgliedschaft wird aktiviert.");
+      // Clear the URL parameter
+      setSearchParams({});
+      // Refresh membership status after a short delay
+      setTimeout(() => {
+        refetchRole();
+      }, 2000);
+    } else if (checkoutStatus === "canceled") {
+      toast.info("Checkout abgebrochen.");
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, refetchRole]);
 
   useEffect(() => {
     const fetchData = async () => {
