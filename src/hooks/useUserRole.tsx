@@ -112,7 +112,8 @@ export const useUserRole = () => {
     isWebmaster, 
     isAdmin, 
     isMember, 
-    canAccessCoachesCorner 
+    canAccessCoachesCorner,
+    refetch
   };
 };
 
