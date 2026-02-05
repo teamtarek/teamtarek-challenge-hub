@@ -47,6 +47,18 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Require authentication for registration
+  if (!user) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground mb-4">Du musst angemeldet sein, um dich für Challenges zu registrieren.</p>
+        <Button asChild>
+          <a href="/auth">Jetzt anmelden</a>
+        </Button>
+      </div>
+    );
+  }
+
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
   const isSnatchTest = challengeSlug === "5-minute-snatch-test";
   const isSimpleSinister = challengeSlug === "simple-sinister";
