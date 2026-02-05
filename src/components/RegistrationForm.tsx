@@ -132,14 +132,6 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
 
     setSuccess(true);
     toast.success("Erfolgreich registriert!");
-    
-    // Store registration in localStorage for leaderboard access (for non-logged-in users)
-    if (!user) {
-      const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
-      registeredChallenges[challengeId] = { name: validation.data.name, email: validation.data.email };
-      localStorage.setItem("registeredChallenges", JSON.stringify(registeredChallenges));
-    }
-    
     onSuccess();
   };
 
