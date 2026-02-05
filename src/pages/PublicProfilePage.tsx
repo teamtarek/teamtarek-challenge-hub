@@ -117,16 +117,6 @@ const PublicProfilePage = () => {
         }
       }
 
-      if (regData) {
-        // Filter to only those with actual results
-        const completed = regData.filter((reg: any) => 
-          (reg.score && reg.score > 0) || 
-          (reg.total_reps && reg.total_reps > 0) || 
-          (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
-        );
-        setCompletedChallenges(completed as unknown as Registration[]);
-      }
-
       setLoading(false);
     };
 
