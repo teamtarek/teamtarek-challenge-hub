@@ -141,8 +141,9 @@ const formatChallengeResult = (reg: Registration): { value: string; label: strin
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { memberType, loading: roleLoading } = useUserRole();
+  const { memberType, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<Profile | null>(null);
