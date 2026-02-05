@@ -146,7 +146,7 @@ const AuthPage = () => {
        return;
      }
  
-    const { error } = await signUp(validation.data.email, validation.data.password, validation.data.displayName);
+     const { error } = await signUp(validation.data.email, validation.data.password, validation.data.displayName, inviteToken.trim());
     
     if (error) {
        setLoading(false);
