@@ -302,20 +302,39 @@ const AuthPage = () => {
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
-                    <Input
-                      id="signup-confirm-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signupConfirmPassword}
-                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                      className="input-minimal"
-                      required
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
+                   <div className="space-y-2">
+                     <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
+                     <Input
+                       id="signup-confirm-password"
+                       type="password"
+                       placeholder="••••••••"
+                       value={signupConfirmPassword}
+                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                       className="input-minimal"
+                       required
+                     />
+                   </div>
+ 
+                   <div className="space-y-2">
+                     <Label htmlFor="invite-token">Einladungscode</Label>
+                     <div className="relative">
+                       <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                       <Input
+                         id="invite-token"
+                         type="text"
+                         placeholder="XXXX-XXXX-XXXX"
+                         value={inviteToken}
+                         onChange={(e) => setInviteToken(e.target.value)}
+                         className="input-minimal pl-10"
+                         required
+                       />
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                       Du benötigst einen Einladungscode zur Registrierung.
+                     </p>
+                   </div>
+ 
+                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -327,7 +346,32 @@ const AuthPage = () => {
                   </Button>
                 </form>
               </TabsContent>
-            </Tabs>
+             </Tabs>
+ 
+             {/* Stripe Subscription Option */}
+             <div className="mt-6 pt-6 border-t border-border">
+               <p className="text-sm text-muted-foreground text-center mb-4">
+                 Kein Einladungscode? Starte eine Mitgliedschaft:
+               </p>
+               <Button 
+                 variant="outline" 
+                 className="w-full gap-2" 
+                 onClick={handleStartSubscription}
+                 disabled={checkoutLoading}
+               >
+                 {checkoutLoading ? (
+                   <>
+                     <Loader2 className="w-4 h-4 animate-spin" />
+                     Weiterleitung...
+                   </>
+                 ) : (
+                   <>
+                     <CreditCard className="w-4 h-4" />
+                     Mitglied werden – 7,99 €/Monat
+                   </>
+                 )}
+               </Button>
+             </div>
           </div>
         </div>
       </div>
