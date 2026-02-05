@@ -10,76 +10,96 @@ export const useUserRole = () => {
   const { user } = useAuth();
   const [memberType, setMemberType] = useState<MemberType>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
+  const checkMemberType = async () => {
+    if (!user) {
+      setMemberType(null);
+      setLoading(false);
+      return;
+    }
+
+    // Check if webmaster first (by email)
+    if (user.email === WEBMASTER_EMAIL) {
+      setMemberType("webmaster");
+      setLoading(false);
+      return;
+    }
+
+    // Check if admin
+    const { data: adminData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (adminData) {
+      setMemberType("admin");
+      setLoading(false);
+      return;
+    }
+
+    // Check if has active membership (from Stripe or token)
+    const { data: membershipData } = await supabase
+      .from("memberships")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (membershipData) {
+      setMemberType("member");
+      setLoading(false);
+      return;
+    }
+
+    // Check if member (has verified result with score)
+    const { data: memberData } = await supabase
+      .from("registrations")
+      .select("id, score, total_reps, kettlebell_weight_kg, is_verified")
+      .eq("user_id", user.id)
+      .eq("is_verified", true);
+
+    if (memberData && memberData.length > 0) {
+      const hasVerifiedResult = memberData.some(
+        (reg) =>
+          (reg.score !== null && reg.score > 0) ||
+          (reg.total_reps !== null && reg.total_reps > 0) ||
+          (reg.kettlebell_weight_kg !== null && reg.kettlebell_weight_kg > 0)
+      );
+
+      if (hasVerifiedResult) {
+        setMemberType("member");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Check if prospect (has any registration)
+    const { data: prospectData } = await supabase
+      .from("registrations")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (prospectData && prospectData.length > 0) {
+      setMemberType("prospect");
+    } else {
+      setMemberType("prospect"); // Default for logged-in users without registrations
+    }
+
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const checkMemberType = async () => {
-      if (!user) {
-        setMemberType(null);
-        setLoading(false);
-        return;
-      }
-
-      // Check if webmaster first (by email)
-      if (user.email === WEBMASTER_EMAIL) {
-        setMemberType("webmaster");
-        setLoading(false);
-        return;
-      }
-
-      // Check if admin
-      const { data: adminData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (adminData) {
-        setMemberType("admin");
-        setLoading(false);
-        return;
-      }
-
-      // Check if member (has verified result with score)
-      const { data: memberData } = await supabase
-        .from("registrations")
-        .select("id, score, total_reps, kettlebell_weight_kg, is_verified")
-        .eq("user_id", user.id)
-        .eq("is_verified", true);
-
-      if (memberData && memberData.length > 0) {
-        const hasVerifiedResult = memberData.some(
-          (reg) =>
-            (reg.score !== null && reg.score > 0) ||
-            (reg.total_reps !== null && reg.total_reps > 0) ||
-            (reg.kettlebell_weight_kg !== null && reg.kettlebell_weight_kg > 0)
-        );
-
-        if (hasVerifiedResult) {
-          setMemberType("member");
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Check if prospect (has any registration)
-      const { data: prospectData } = await supabase
-        .from("registrations")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1);
-
-      if (prospectData && prospectData.length > 0) {
-        setMemberType("prospect");
-      } else {
-        setMemberType("prospect"); // Default for logged-in users without registrations
-      }
-
-      setLoading(false);
-    };
-
     checkMemberType();
-  }, [user]);
+  }, [user, refreshCounter]);
+
+  const refetch = () => {
+    setLoading(true);
+    setRefreshCounter((c) => c + 1);
+  };
 
   const isWebmaster = memberType === "webmaster";
   const isAdmin = memberType === "admin" || memberType === "webmaster";
