@@ -353,7 +353,68 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      registrations_public: {
+        Row: {
+          challenge_id: string | null
+          completion_date: string | null
+          created_at: string | null
+          id: string | null
+          is_verified: boolean | null
+          kettlebell_weight_kg: number | null
+          murph_version: string | null
+          participant_name: string | null
+          score: number | null
+          total_reps: number | null
+          total_time_seconds: number | null
+          user_id: string | null
+          validation_type: string | null
+          video_url: string | null
+          year: number | null
+        }
+        Insert: {
+          challenge_id?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          kettlebell_weight_kg?: number | null
+          murph_version?: string | null
+          participant_name?: string | null
+          score?: number | null
+          total_reps?: number | null
+          total_time_seconds?: number | null
+          user_id?: string | null
+          validation_type?: string | null
+          video_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          challenge_id?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          kettlebell_weight_kg?: number | null
+          murph_version?: string | null
+          participant_name?: string | null
+          score?: number | null
+          total_reps?: number | null
+          total_time_seconds?: number | null
+          user_id?: string | null
+          validation_type?: string | null
+          video_url?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       deactivate_inactive_memberships: { Args: never; Returns: number }
