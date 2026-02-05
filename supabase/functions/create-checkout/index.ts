@@ -101,8 +101,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/profile?checkout=success`,
-      cancel_url: `${origin}/profile?checkout=canceled`,
+      success_url: `${origin}/profil?checkout=success`,
+      cancel_url: `${origin}/profil?checkout=canceled`,
       metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
