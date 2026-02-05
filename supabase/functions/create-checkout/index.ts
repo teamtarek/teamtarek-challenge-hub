@@ -48,28 +48,28 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Validate JWT and get claims
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    // Get authenticated user using the client with auth context
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     
-    if (claimsError || !claimsData?.claims) {
-      logStep("Claims validation failed", { error: claimsError?.message });
+    if (userError || !userData?.user) {
+      logStep("User authentication failed", { error: userError?.message });
       return new Response(
         JSON.stringify({ error: "Unauthorized - invalid token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email as string;
+    const user = userData.user;
+    const userId = user.id;
+    const userEmail = user.email;
     
     if (!userId || !userEmail) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized - missing user claims" }),
+        JSON.stringify({ error: "Unauthorized - user email not available" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    logStep("User authenticated via claims", { userId, email: userEmail });
+    logStep("User authenticated", { userId, email: userEmail });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
