@@ -102,7 +102,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
       challenge_id: challengeId,
       participant_name: validation.data.name,
       email: validation.data.email,
-      user_id: user?.id || null,
+      user_id: user.id, // Always set user_id for authenticated users
       year: year,
       validation_type: validationType,
       video_url: validationType === "video" ? videoUrl.trim() : null,
