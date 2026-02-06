@@ -175,7 +175,7 @@ const PublicProfilePage = () => {
   if (profile.is_private) {
     return (
       <div className="min-h-screen">
-        <Header />
+
 
         <div className="container py-8 max-w-2xl">
           <Link
