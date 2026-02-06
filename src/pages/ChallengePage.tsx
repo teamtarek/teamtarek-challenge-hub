@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
-import { Header } from "@/components/Header";
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
