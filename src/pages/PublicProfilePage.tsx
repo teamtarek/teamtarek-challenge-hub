@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock, Zap } from "lucide-react";
+import { getMileLevel } from "@/lib/mileLevels";
 
 interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   age_class: string | null;
+  gender: string | null;
   favorite_exercise: string | null;
   hated_exercise: string | null;
   is_private: boolean;
@@ -51,7 +53,7 @@ const PublicProfilePage = () => {
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, age_class, favorite_exercise, hated_exercise, is_private")
+        .select("display_name, avatar_url, age_class, gender, favorite_exercise, hated_exercise, is_private")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -96,7 +98,8 @@ const PublicProfilePage = () => {
         const completed = regData.filter((reg: any) => 
           (reg.score && reg.score > 0) || 
           (reg.total_reps && reg.total_reps > 0) || 
-          (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
+          (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) ||
+          (reg.total_time_seconds && reg.total_time_seconds > 0)
         );
         setCompletedChallenges(completed as unknown as Registration[]);
       }
@@ -114,31 +117,42 @@ const PublicProfilePage = () => {
     return "?";
   };
 
-  const formatResult = (reg: Registration): string => {
+  const formatResult = (reg: Registration): { value: string; mileLevel?: ReturnType<typeof getMileLevel> } => {
     const slug = reg.challenges.slug;
     
-    if (slug === "5-minute-snatch-test" && reg.total_reps) {
-      return `${reg.total_reps} Reps`;
+    if (slug === "the-mile" && reg.total_time_seconds) {
+      const mins = Math.floor(reg.total_time_seconds / 60);
+      const secs = reg.total_time_seconds % 60;
+      const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null);
+      return { value: `${mins}:${secs.toString().padStart(2, "0")}`, mileLevel };
+    }
+    if ((slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") && reg.total_reps) {
+      return { value: `${reg.total_reps} Reps` };
     }
     if ((slug === "simple-sinister" || slug === "rite-of-passage") && reg.kettlebell_weight_kg) {
       const time = reg.total_time_seconds || reg.score;
       if (time) {
         const mins = Math.floor(time / 60);
         const secs = time % 60;
-        return `${reg.kettlebell_weight_kg}kg in ${mins}:${secs.toString().padStart(2, "0")}`;
+        return { value: `${reg.kettlebell_weight_kg}kg in ${mins}:${secs.toString().padStart(2, "0")}` };
       }
-      return `${reg.kettlebell_weight_kg}kg`;
+      return { value: `${reg.kettlebell_weight_kg}kg` };
+    }
+    if (slug === "meet-betty" && reg.total_time_seconds) {
+      const mins = Math.floor(reg.total_time_seconds / 60);
+      const secs = reg.total_time_seconds % 60;
+      return { value: `${mins}:${secs.toString().padStart(2, "0")}` };
     }
     if (reg.score && reg.score > 0) {
       const hours = Math.floor(reg.score / 3600);
       const mins = Math.floor((reg.score % 3600) / 60);
       const secs = reg.score % 60;
       if (hours > 0) {
-        return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        return { value: `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}` };
       }
-      return `${mins}:${secs.toString().padStart(2, "0")}`;
+      return { value: `${mins}:${secs.toString().padStart(2, "0")}` };
     }
-    return "-";
+    return { value: "-" };
   };
 
   if (loading) {
@@ -285,9 +299,22 @@ const PublicProfilePage = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-primary font-semibold font-mono text-lg">
-                      {formatResult(reg)}
-                    </span>
+                    {(() => {
+                      const result = formatResult(reg);
+                      return (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-primary font-semibold font-mono text-lg">
+                            {result.value}
+                          </span>
+                          {result.mileLevel && (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
+                              <Zap className="w-3 h-3" />
+                              {result.mileLevel.label}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </Link>
               ))}
