@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -346,7 +346,7 @@ const PostPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+
         <div className="container py-12 flex justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -360,7 +360,7 @@ const PostPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
       <main className="container py-8">
         <div className="max-w-3xl mx-auto">
           <Link

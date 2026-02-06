@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock } from "lucide-react";
@@ -152,7 +152,7 @@ const PublicProfilePage = () => {
   if (notFound || !profile) {
     return (
       <div className="min-h-screen">
-        <Header />
+
         <div className="container py-8 max-w-2xl">
           <Link
             to="/"
@@ -175,7 +175,7 @@ const PublicProfilePage = () => {
   if (profile.is_private) {
     return (
       <div className="min-h-screen">
-        <Header />
+
 
         <div className="container py-8 max-w-2xl">
           <Link
@@ -219,7 +219,6 @@ const PublicProfilePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
 
       <div className="container py-8 max-w-2xl">
         <Link

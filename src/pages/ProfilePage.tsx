@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole, AGE_CLASSES } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -370,15 +370,13 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="container py-8 max-w-2xl">
         <Link
-          to="/"
+          to="/dashboard"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurück zu den Challenges
+          Zurück
         </Link>
 
         <div className="flex items-center gap-3 mb-8">

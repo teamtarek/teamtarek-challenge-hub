@@ -1,0 +1,282 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { MemberBadge } from "@/components/MemberBadge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
+
+interface RecentThread {
+  id: string;
+  title: string;
+  category: string;
+  created_at: string;
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  comment_count: number;
+}
+
+interface UserChallenge {
+  id: string;
+  challenge_name: string;
+  challenge_slug: string;
+  is_verified: boolean;
+  score: number | null;
+}
+
+interface LeaderboardEntry {
+  participant_name: string;
+  score: number;
+  challenge_name: string;
+  user_id: string | null;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  allgemein: "Allgemein",
+  "training-draussen": "Training draußen",
+  "challenges-ergebnisse": "Challenges & Ergebnisse",
+  "technik-fragen": "Technik & Fragen",
+  "motivation-mindset": "Motivation / Mindset",
+  "off-topic": "Off-Topic",
+  "outdoor-training": "Outdoor Training",
+  challenges: "Challenges",
+  "coaches-corner": "Coaches Corner",
+};
+
+const DashboardPage = () => {
+  const { user } = useAuth();
+  const { memberType } = useUserRole();
+  const [threads, setThreads] = useState<RecentThread[]>([]);
+  const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return;
+
+      // Fetch recent threads
+      const { data: postsData } = await supabase
+        .from("posts")
+        .select("id, title, category, created_at, user_id")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (postsData && postsData.length > 0) {
+        const userIds = [...new Set(postsData.map((p) => p.user_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds);
+
+        const profileMap = (profiles || []).reduce(
+          (acc, p) => ({ ...acc, [p.user_id]: p }),
+          {} as Record<string, { display_name: string | null; avatar_url: string | null }>
+        );
+
+        // Get comment counts
+        const postIds = postsData.map((p) => p.id);
+        const { data: comments } = await supabase
+          .from("comments")
+          .select("post_id")
+          .in("post_id", postIds);
+
+        const commentCounts: Record<string, number> = {};
+        (comments || []).forEach((c) => {
+          commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
+        });
+
+        setThreads(
+          postsData.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            created_at: p.created_at,
+            user_id: p.user_id,
+            display_name: profileMap[p.user_id]?.display_name || null,
+            avatar_url: profileMap[p.user_id]?.avatar_url || null,
+            comment_count: commentCounts[p.id] || 0,
+          }))
+        );
+      }
+
+      // Fetch user's challenges
+      const { data: regData } = await supabase
+        .from("registrations")
+        .select("id, score, is_verified, challenges(name, slug)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (regData) {
+        setUserChallenges(
+          regData.map((r: any) => ({
+            id: r.id,
+            challenge_name: r.challenges?.name || "Challenge",
+            challenge_slug: r.challenges?.slug || "",
+            is_verified: r.is_verified || false,
+            score: r.score,
+          }))
+        );
+      }
+
+      setLoading(false);
+    };
+
+    fetchDashboardData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="container py-12">
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-20 bg-card animate-pulse rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-8 max-w-4xl">
+      {/* Welcome */}
+      <div className="mb-10">
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">Willkommen zurück</h1>
+        <p className="text-muted-foreground">
+          Hier siehst du, was in der Community los ist.
+        </p>
+      </div>
+
+      {/* Active Discussions */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-primary" />
+            Aktive Diskussionen
+          </h2>
+          <Link
+            to="/community"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            Alle anzeigen <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        {threads.length === 0 ? (
+          <div className="bg-card border border-border p-6 text-center text-muted-foreground">
+            Noch keine Diskussionen. Starte die erste!
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {threads.map((thread) => (
+              <Link
+                key={thread.id}
+                to={`/community/${thread.id}`}
+                className="flex items-center gap-4 bg-card border border-border p-4 hover:border-primary/30 transition-colors"
+              >
+                <Avatar className="w-8 h-8 border border-border flex-shrink-0">
+                  <AvatarImage src={thread.avatar_url || undefined} />
+                  <AvatarFallback className="bg-secondary text-xs">
+                    {thread.display_name?.slice(0, 2).toUpperCase() || "??"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{thread.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{CATEGORY_LABELS[thread.category] || thread.category}</span>
+                    <span>•</span>
+                    <span>{thread.display_name || "Anonym"}</span>
+                    <span>•</span>
+                    <span>
+                      {formatDistanceToNow(new Date(thread.created_at), {
+                        addSuffix: true,
+                        locale: de,
+                      })}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  {thread.comment_count}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* User's Challenges */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-primary" />
+            Deine Challenges
+          </h2>
+          <Link
+            to="/challenges"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            Alle Challenges <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        {userChallenges.length === 0 ? (
+          <div className="bg-card border border-border p-6 text-center text-muted-foreground">
+            <p className="mb-2">Du nimmst noch an keiner Challenge teil.</p>
+            <Link to="/challenges" className="text-primary hover:underline text-sm">
+              Challenges entdecken →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {userChallenges.map((ch) => (
+              <Link
+                key={ch.id}
+                to={`/challenge/${ch.challenge_slug}`}
+                className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
+              >
+                <div>
+                  <p className="font-medium">{ch.challenge_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Leaderboard Preview */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-primary" />
+            Leaderboard
+          </h2>
+          <Link
+            to="/leaderboard"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            Vollständig anzeigen <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        <div className="bg-card border border-border p-6 text-center text-muted-foreground">
+          <Trophy className="w-10 h-10 mx-auto mb-3 text-primary/50" />
+          <p className="mb-2">Ergebnisse aus allen Challenges an einem Ort.</p>
+          <Link to="/leaderboard" className="text-primary hover:underline text-sm">
+            Zum Leaderboard →
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default DashboardPage;

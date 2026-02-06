@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,44 +6,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 3%;
+    --foreground: 40 10% 92%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 6%;
+    --card-foreground: 40 10% 92%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 40 10% 92%;
 
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 35 65% 50%;
+    --primary-foreground: 0 0% 3%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 40 10% 92%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 35 65% 50%;
+    --accent-foreground: 0 0% 3%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 100%;
+    --border: 0 0% 14%;
+    --input: 0 0% 10%;
+    --ring: 35 65% 50%;
 
-    --radius: 0rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 40 10% 92%;
+    --sidebar-primary: 35 65% 50%;
+    --sidebar-primary-foreground: 0 0% 3%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 40 10% 92%;
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 35 65% 50%;
+
+    --earth: 35 65% 50%;
+    --earth-foreground: 0 0% 3%;
+    --earth-muted: 35 30% 25%;
   }
 }
 
@@ -63,7 +67,7 @@
 
 @layer components {
   .challenge-card {
-    @apply bg-card border border-border p-6 transition-all duration-300 hover:border-foreground/50 hover:bg-card/80;
+    @apply bg-card border border-border p-6 transition-all duration-300 hover:border-foreground/20;
   }
 
   .challenge-badge {
@@ -71,10 +75,18 @@
   }
 
   .challenge-badge-active {
-    @apply bg-foreground text-background;
+    @apply bg-primary text-primary-foreground;
   }
 
   .input-minimal {
-    @apply bg-secondary border-0 focus:ring-2 focus:ring-foreground/50 placeholder:text-muted-foreground;
+    @apply bg-secondary border-0 focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground;
+  }
+
+  .forum-category {
+    @apply bg-card border border-border p-5 transition-all duration-200 hover:border-primary/40 cursor-pointer;
+  }
+
+  .nav-link-active {
+    @apply text-primary border-b-2 border-primary;
   }
 }
