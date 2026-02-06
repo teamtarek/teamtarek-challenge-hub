@@ -336,7 +336,10 @@ const CommunityPage = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="title">Titel</Label>
-                    <Input id="title" placeholder="Worum geht es?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} maxLength={200} />
+                    <div className="flex gap-1 items-center">
+                      <Input id="title" placeholder="Worum geht es?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} maxLength={200} className="flex-1" />
+                      <EmojiPicker size="sm" onEmojiSelect={(emoji) => setNewTitle((prev) => prev + emoji)} />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="content">Inhalt</Label>
