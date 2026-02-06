@@ -469,19 +469,25 @@ const PostPage = () => {
 
             {/* Comment Form */}
             <form onSubmit={handleSubmitComment} className="flex gap-3">
-              <Textarea
-                placeholder={
-                  user
-                    ? "Schreibe einen Kommentar..."
-                    : "Melde dich an, um zu kommentieren"
-                }
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                disabled={!user}
-                className="flex-1"
-                rows={2}
-                maxLength={2000}
-              />
+              <div className="flex-1 relative">
+                <Textarea
+                  placeholder={
+                    user
+                      ? "Schreibe einen Kommentar..."
+                      : "Melde dich an, um zu kommentieren"
+                  }
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={!user}
+                  rows={2}
+                  maxLength={2000}
+                />
+                {user && (
+                  <div className="absolute bottom-2 right-2">
+                    <EmojiPicker size="sm" onEmojiSelect={(emoji) => setNewComment((prev) => prev + emoji)} />
+                  </div>
+                )}
+              </div>
               <Button type="submit" disabled={submitting || !user} size="icon">
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
