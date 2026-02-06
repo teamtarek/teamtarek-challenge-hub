@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart } from "lucide-react";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -346,7 +347,7 @@ const PostPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+
         <div className="container py-12 flex justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -360,7 +361,7 @@ const PostPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
       <main className="container py-8">
         <div className="max-w-3xl mx-auto">
           <Link
@@ -468,19 +469,25 @@ const PostPage = () => {
 
             {/* Comment Form */}
             <form onSubmit={handleSubmitComment} className="flex gap-3">
-              <Textarea
-                placeholder={
-                  user
-                    ? "Schreibe einen Kommentar..."
-                    : "Melde dich an, um zu kommentieren"
-                }
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                disabled={!user}
-                className="flex-1"
-                rows={2}
-                maxLength={2000}
-              />
+              <div className="flex-1 relative">
+                <Textarea
+                  placeholder={
+                    user
+                      ? "Schreibe einen Kommentar..."
+                      : "Melde dich an, um zu kommentieren"
+                  }
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={!user}
+                  rows={2}
+                  maxLength={2000}
+                />
+                {user && (
+                  <div className="absolute bottom-2 right-2">
+                    <EmojiPicker size="sm" onEmojiSelect={(emoji) => setNewComment((prev) => prev + emoji)} />
+                  </div>
+                )}
+              </div>
               <Button type="submit" disabled={submitting || !user} size="icon">
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

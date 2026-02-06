@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock } from "lucide-react";
@@ -71,44 +71,34 @@ const PublicProfilePage = () => {
         setMemberType(memberTypeData as MemberType);
       }
 
-      // Fetch completed challenges using secure RPC function (excludes email)
-      const { data: allRegData } = await supabase
-        .rpc("get_public_registrations");
+      // Fetch completed challenges (verified with results)
+      const { data: regData } = await supabase
+        .from("registrations")
+        .select(`
+          id,
+          score,
+          is_verified,
+          year,
+          kettlebell_weight_kg,
+          total_reps,
+          total_time_seconds,
+          challenges (
+            name,
+            slug
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("is_verified", true)
+        .order("year", { ascending: false });
 
-      // Filter for this user's verified registrations
-      const regData = allRegData?.filter((r: any) => 
-        r.user_id === userId && r.is_verified === true
-      ) || [];
-
-      // Fetch challenge details separately
-      if (regData.length > 0) {
-        const challengeIds = [...new Set(regData.map((r: any) => r.challenge_id))];
-        const { data: challengesData } = await supabase
-          .from("challenges")
-          .select("id, name, slug")
-          .in("id", challengeIds);
-        
-        if (challengesData) {
-          const challengeMap = challengesData.reduce((acc: any, c: any) => {
-            acc[c.id] = { name: c.name, slug: c.slug };
-            return acc;
-          }, {});
-          
-          const regWithChallenges = regData.map((r: any) => ({
-            ...r,
-            challenges: challengeMap[r.challenge_id] || { name: "Unknown", slug: "" }
-          }));
-          
-          // Filter to only those with actual results and sort by year
-          const completed = regWithChallenges
-            .filter((reg: any) => 
-              (reg.score && reg.score > 0) || 
-              (reg.total_reps && reg.total_reps > 0) || 
-              (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
-            )
-            .sort((a: any, b: any) => (b.year || 0) - (a.year || 0));
-          setCompletedChallenges(completed as unknown as Registration[]);
-        }
+      if (regData) {
+        // Filter to only those with actual results
+        const completed = regData.filter((reg: any) => 
+          (reg.score && reg.score > 0) || 
+          (reg.total_reps && reg.total_reps > 0) || 
+          (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0)
+        );
+        setCompletedChallenges(completed as unknown as Registration[]);
       }
 
       setLoading(false);
@@ -162,7 +152,7 @@ const PublicProfilePage = () => {
   if (notFound || !profile) {
     return (
       <div className="min-h-screen">
-        <Header />
+
         <div className="container py-8 max-w-2xl">
           <Link
             to="/"
@@ -185,7 +175,7 @@ const PublicProfilePage = () => {
   if (profile.is_private) {
     return (
       <div className="min-h-screen">
-        <Header />
+
 
         <div className="container py-8 max-w-2xl">
           <Link
@@ -229,7 +219,6 @@ const PublicProfilePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
 
       <div className="container py-8 max-w-2xl">
         <Link

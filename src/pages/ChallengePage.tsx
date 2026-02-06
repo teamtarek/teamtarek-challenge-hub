@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { Leaderboard } from "@/components/Leaderboard";
-import { Header } from "@/components/Header";
+// Header removed - using AppLayout
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -171,8 +172,6 @@ const ChallengePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       {/* Hero Section */}
       <section 
         className="relative min-h-[50vh] flex items-end"
@@ -191,7 +190,7 @@ const ChallengePage = () => {
         <div className="relative z-10 container pb-12">
           {/* Back Link */}
           <Link
-            to="/"
+            to="/challenges"
             className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -286,14 +285,6 @@ const ChallengePage = () => {
         </Tabs>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="container">
-          <p className="text-sm text-muted-foreground text-center uppercase tracking-wider">
-            © 2026 Team Tarek. Alle Rechte vorbehalten.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };

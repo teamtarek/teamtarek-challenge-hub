@@ -47,18 +47,6 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Require authentication for registration
-  if (!user) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground mb-4">Du musst angemeldet sein, um dich für Challenges zu registrieren.</p>
-        <Button asChild>
-          <a href="/auth">Jetzt anmelden</a>
-        </Button>
-      </div>
-    );
-  }
-
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
   const isSnatchTest = challengeSlug === "5-minute-snatch-test";
   const isSimpleSinister = challengeSlug === "simple-sinister";
@@ -102,7 +90,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
       challenge_id: challengeId,
       participant_name: validation.data.name,
       email: validation.data.email,
-      user_id: user.id, // Always set user_id for authenticated users
+      user_id: user?.id || null,
       year: year,
       validation_type: validationType,
       video_url: validationType === "video" ? videoUrl.trim() : null,
@@ -132,6 +120,14 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
 
     setSuccess(true);
     toast.success("Erfolgreich registriert!");
+    
+    // Store registration in localStorage for leaderboard access (for non-logged-in users)
+    if (!user) {
+      const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
+      registeredChallenges[challengeId] = { name: validation.data.name, email: validation.data.email };
+      localStorage.setItem("registeredChallenges", JSON.stringify(registeredChallenges));
+    }
+    
     onSuccess();
   };
 

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole, AGE_CLASSES } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,8 +141,9 @@ const formatChallengeResult = (reg: Registration): { value: string; label: strin
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { memberType, loading: roleLoading } = useUserRole();
+  const { memberType, loading: roleLoading, refetch: refetchRole } = useUserRole();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -165,6 +166,23 @@ const ProfilePage = () => {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  // Handle checkout success
+  useEffect(() => {
+    const checkoutStatus = searchParams.get("checkout");
+    if (checkoutStatus === "success") {
+      toast.success("Zahlung erfolgreich! Deine Mitgliedschaft wird aktiviert.");
+      // Clear the URL parameter
+      setSearchParams({});
+      // Refresh membership status after a short delay
+      setTimeout(() => {
+        refetchRole();
+      }, 2000);
+    } else if (checkoutStatus === "canceled") {
+      toast.info("Checkout abgebrochen.");
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, refetchRole]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -352,15 +370,13 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="container py-8 max-w-2xl">
         <Link
-          to="/"
+          to="/dashboard"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurück zu den Challenges
+          Zurück
         </Link>
 
         <div className="flex items-center gap-3 mb-8">

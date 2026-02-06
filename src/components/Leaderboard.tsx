@@ -79,35 +79,35 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   useEffect(() => {
     const fetchRegistrations = async () => {
-      // Use the secure RPC function that excludes email addresses
       const { data, error } = await supabase
-        .rpc("get_public_registrations", { p_challenge_id: challengeId });
+        .from("registrations")
+        .select(`
+          id, 
+          participant_name, 
+          score, 
+          created_at,
+          user_id,
+          year,
+          murph_version,
+          validation_type,
+          video_url,
+          is_verified,
+          kettlebell_weight_kg,
+          total_time_seconds,
+          completion_date,
+          total_reps
+        `)
+        .eq("challenge_id", challengeId)
+        .order("score", { ascending: true })
+        .order("created_at", { ascending: true });
 
       if (!error && data) {
-        // Cast data to expected type since we're using a view
-        const registrationData = data as unknown as Array<{
-          id: string;
-          participant_name: string;
-          score: number | null;
-          created_at: string;
-          user_id: string | null;
-          year: number | null;
-          murph_version: string | null;
-          validation_type: string | null;
-          video_url: string | null;
-          is_verified: boolean | null;
-          kettlebell_weight_kg: number | null;
-          total_time_seconds: number | null;
-          completion_date: string | null;
-          total_reps: number | null;
-        }>;
-        
         // Extract unique years
-        const years = [...new Set(registrationData.map((r) => r.year).filter((y): y is number => y !== null))].sort((a, b) => b - a);
+        const years = [...new Set(data.map((r) => r.year).filter((y): y is number => y !== null))].sort((a, b) => b - a);
         setAvailableYears(years);
 
         // Fetch profiles for users with user_id
-        const userIds = registrationData
+        const userIds = data
           .filter((r) => r.user_id)
           .map((r) => r.user_id as string);
 
@@ -137,7 +137,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           }
         }
 
-        const registrationsWithAvatars = registrationData.map((r) => ({
+        const registrationsWithAvatars = data.map((r) => ({
           ...r,
           score: r.score ?? 0,
           avatar_url: r.user_id ? profilesMap[r.user_id]?.avatar_url || null : null,

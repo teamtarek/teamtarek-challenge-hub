@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Header } from "@/components/Header";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -555,7 +555,7 @@ const AdminPage = () => {
   if (authLoading || adminLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+
         <div className="container py-12 flex justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -569,7 +569,7 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
       <main className="container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-center gap-3">

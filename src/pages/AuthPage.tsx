@@ -1,13 +1,11 @@
- import { useState, useEffect } from "react";
- import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
- import { Dumbbell, Loader2, ArrowLeft, CreditCard, Ticket } from "lucide-react";
- import { useMembership } from "@/hooks/useMembership";
- import { supabase } from "@/integrations/supabase/client";
+import { Dumbbell, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -28,9 +26,7 @@ const signupSchema = z.object({
 
 const AuthPage = () => {
   const navigate = useNavigate();
-   const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading: authLoading } = useAuth();
-   const { status: membershipStatus, loading: membershipLoading, isActive, refreshMembership } = useMembership();
   
   const [activeTab, setActiveTab] = useState("login");
   const [loading, setLoading] = useState(false);
@@ -44,34 +40,12 @@ const AuthPage = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
-   const [inviteToken, setInviteToken] = useState("");
-   const [checkoutLoading, setCheckoutLoading] = useState(false);
- 
-   // Handle subscription success callback
-   useEffect(() => {
-     const subscriptionStatus = searchParams.get("subscription");
-     if (subscriptionStatus === "success") {
-       toast.success("Mitgliedschaft erfolgreich aktiviert!");
-       refreshMembership();
-     } else if (subscriptionStatus === "canceled") {
-       toast.info("Checkout abgebrochen.");
-     }
-   }, [searchParams, refreshMembership]);
 
   useEffect(() => {
-     if (user && !authLoading && !membershipLoading) {
-       // Check membership status
-       if (membershipStatus === "inactive") {
-         navigate("/paywall");
-         return;
-       }
-       if (!isActive && membershipStatus !== null) {
-         navigate("/paywall");
-         return;
-       }
+    if (user && !authLoading) {
       navigate("/");
     }
-   }, [user, authLoading, membershipLoading, membershipStatus, isActive, navigate]);
+  }, [user, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +58,9 @@ const AuthPage = () => {
     
     setLoading(true);
     const { error } = await signIn(validation.data.email, validation.data.password);
+    setLoading(false);
     
     if (error) {
-       setLoading(false);
       if (error.message.includes("Invalid login credentials")) {
         toast.error("Ungültige E-Mail oder Passwort");
       } else {
@@ -95,22 +69,13 @@ const AuthPage = () => {
       return;
     }
     
-     // Update activity on login
-     await refreshMembership();
-     setLoading(false);
- 
     toast.success("Erfolgreich angemeldet!");
+    navigate("/");
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-     // Validate invite token
-     if (!inviteToken.trim()) {
-       toast.error("Einladungscode ist erforderlich.");
-       return;
-     }
- 
     const validation = signupSchema.safeParse({
       displayName: signupName,
       email: signupEmail,
@@ -124,32 +89,10 @@ const AuthPage = () => {
     }
     
     setLoading(true);
- 
-     // Check if token is valid before signup
-     const { data: tokenData, error: tokenError } = await supabase
-       .from("invite_tokens")
-       .select("*")
-       .eq("token", inviteToken.trim())
-       .is("used_by_user_id", null)
-       .maybeSingle();
- 
-     if (tokenError || !tokenData) {
-       toast.error("Ungültiger oder bereits verwendeter Einladungscode.");
-       setLoading(false);
-       return;
-     }
- 
-     // Check if token is expired
-     if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
-       toast.error("Dieser Einladungscode ist abgelaufen.");
-       setLoading(false);
-       return;
-     }
- 
-     const { error } = await signUp(validation.data.email, validation.data.password, validation.data.displayName, inviteToken.trim());
+    const { error } = await signUp(validation.data.email, validation.data.password, validation.data.displayName);
+    setLoading(false);
     
     if (error) {
-       setLoading(false);
       if (error.message.includes("already registered")) {
         toast.error("Diese E-Mail ist bereits registriert.");
       } else {
@@ -158,28 +101,11 @@ const AuthPage = () => {
       return;
     }
     
-     // Wait for user to be created and use the token
-     // The token will be used after email confirmation via a trigger
-     setLoading(false);
     toast.success("Erfolgreich registriert!");
-   };
- 
-   const handleStartSubscription = async () => {
-     setCheckoutLoading(true);
-     try {
-       const { data, error } = await supabase.functions.invoke("create-checkout");
-       if (error) throw error;
-       if (data?.url) {
-         window.location.href = data.url;
-       }
-     } catch (error: any) {
-       toast.error("Fehler beim Starten des Checkouts.");
-       console.error("Checkout error:", error);
-     }
-     setCheckoutLoading(false);
+    navigate("/");
   };
 
-   if (authLoading || membershipLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -302,39 +228,20 @@ const AuthPage = () => {
                     />
                   </div>
                   
-                   <div className="space-y-2">
-                     <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
-                     <Input
-                       id="signup-confirm-password"
-                       type="password"
-                       placeholder="••••••••"
-                       value={signupConfirmPassword}
-                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                       className="input-minimal"
-                       required
-                     />
-                   </div>
- 
-                   <div className="space-y-2">
-                     <Label htmlFor="invite-token">Einladungscode</Label>
-                     <div className="relative">
-                       <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                       <Input
-                         id="invite-token"
-                         type="text"
-                         placeholder="XXXX-XXXX-XXXX"
-                         value={inviteToken}
-                         onChange={(e) => setInviteToken(e.target.value)}
-                         className="input-minimal pl-10"
-                         required
-                       />
-                     </div>
-                     <p className="text-xs text-muted-foreground">
-                       Du benötigst einen Einladungscode zur Registrierung.
-                     </p>
-                   </div>
- 
-                   <Button type="submit" className="w-full" disabled={loading}>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
+                    <Input
+                      id="signup-confirm-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      className="input-minimal"
+                      required
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -346,32 +253,7 @@ const AuthPage = () => {
                   </Button>
                 </form>
               </TabsContent>
-             </Tabs>
- 
-             {/* Stripe Subscription Option */}
-             <div className="mt-6 pt-6 border-t border-border">
-               <p className="text-sm text-muted-foreground text-center mb-4">
-                 Kein Einladungscode? Starte eine Mitgliedschaft:
-               </p>
-               <Button 
-                 variant="outline" 
-                 className="w-full gap-2" 
-                 onClick={handleStartSubscription}
-                 disabled={checkoutLoading}
-               >
-                 {checkoutLoading ? (
-                   <>
-                     <Loader2 className="w-4 h-4 animate-spin" />
-                     Weiterleitung...
-                   </>
-                 ) : (
-                   <>
-                     <CreditCard className="w-4 h-4" />
-                     Mitglied werden – 7,99 €/Monat
-                   </>
-                 )}
-               </Button>
-             </div>
+            </Tabs>
           </div>
         </div>
       </div>

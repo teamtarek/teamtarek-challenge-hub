@@ -1,10 +1,7 @@
- project_id = "iyhhtcrlydtvqzcrzzis"
- 
- [functions.stripe-webhook]
- verify_jwt = false
- 
- [functions.create-checkout]
- verify_jwt = false
- 
- [functions.deactivate-inactive]
- verify_jwt = false
+project_id = "iyhhtcrlydtvqzcrzzis"
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
