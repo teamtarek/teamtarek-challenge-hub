@@ -190,7 +190,7 @@ const ChallengePage = () => {
         <div className="relative z-10 container pb-12">
           {/* Back Link */}
           <Link
-            to="/"
+            to="/challenges"
             className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
