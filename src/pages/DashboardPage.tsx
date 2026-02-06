@@ -41,6 +41,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   "challenges-ergebnisse": "Challenges & Ergebnisse",
   "technik-fragen": "Technik & Fragen",
   "motivation-mindset": "Motivation / Mindset",
+  "prae-postnatales-training": "Prä- / Postnatales Training",
   "off-topic": "Off-Topic",
   "outdoor-training": "Outdoor Training",
   challenges: "Challenges",

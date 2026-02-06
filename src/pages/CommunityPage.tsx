@@ -36,6 +36,7 @@ const CATEGORIES = [
   { value: "challenges-ergebnisse", label: "Challenges & Ergebnisse" },
   { value: "technik-fragen", label: "Technik & Fragen" },
   { value: "motivation-mindset", label: "Motivation / Mindset" },
+  { value: "prae-postnatales-training", label: "Prä- / Postnatales Training" },
   { value: "off-topic", label: "Off-Topic" },
   { value: "training-logs", label: "Training Logs" },
 ] as const;
