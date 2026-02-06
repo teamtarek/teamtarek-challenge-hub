@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { RegistrationForm } from "@/components/RegistrationForm";
+import { ResultEntryForm } from "@/components/ResultEntryForm";
 import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
 
@@ -104,6 +105,12 @@ const ChallengePage = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
+  const [existingResult, setExistingResult] = useState<{
+    score: number | null;
+    total_time_seconds: number | null;
+    total_reps: number | null;
+    kettlebell_weight_kg: number | null;
+  }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null });
   const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
 
@@ -124,7 +131,7 @@ const ChallengePage = () => {
         if (user) {
           const { data: regData } = await supabase
             .from("registrations")
-            .select("id, is_verified")
+            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
             .maybeSingle();
@@ -133,6 +140,12 @@ const ChallengePage = () => {
             setIsRegistered(true);
             setRegistrationId(regData.id);
             setIsVerified(regData.is_verified ?? false);
+            setExistingResult({
+              score: regData.score,
+              total_time_seconds: regData.total_time_seconds,
+              total_reps: regData.total_reps,
+              kettlebell_weight_kg: regData.kettlebell_weight_kg,
+            });
             setActiveTab("leaderboard");
           }
         } else {
@@ -151,7 +164,27 @@ const ChallengePage = () => {
 
   const handleRegistrationSuccess = () => {
     setIsRegistered(true);
-    setActiveTab("leaderboard");
+    setActiveTab("details"); // Stay on details so user can enter result
+  };
+
+  const handleResultSuccess = async () => {
+    if (!challenge || !user) return;
+    // Refresh registration data
+    const { data: regData } = await supabase
+      .from("registrations")
+      .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
+      .eq("challenge_id", challenge.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (regData) {
+      setIsVerified(regData.is_verified ?? false);
+      setExistingResult({
+        score: regData.score,
+        total_time_seconds: regData.total_time_seconds,
+        total_reps: regData.total_reps,
+        kettlebell_weight_kg: regData.kettlebell_weight_kg,
+      });
+    }
   };
 
   const handleUnregister = async () => {
@@ -342,37 +375,49 @@ const ChallengePage = () => {
                 />
               </div>
             ) : (
-              <div className="challenge-card text-center py-8">
-                <h2 className="text-xl font-semibold mb-2">Du bist registriert!</h2>
-                <p className="text-muted-foreground mb-4">
-                  Schau dir das Leaderboard an, um deinen Fortschritt zu verfolgen.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Button onClick={() => setActiveTab("leaderboard")}>
-                    Zum Leaderboard
-                  </Button>
-                  {user && !isVerified && (
-                    <Button
-                      variant="outline"
-                      onClick={handleUnregister}
-                      disabled={unregistering}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      {unregistering ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <LogOut className="w-4 h-4 mr-2" />
-                      )}
-                      Abmelden
+              <>
+                {/* Result Entry Form */}
+                {user && registrationId && (
+                  <div className="challenge-card">
+                    <ResultEntryForm
+                      registrationId={registrationId}
+                      challengeSlug={challenge.slug}
+                      challengeName={challenge.name}
+                      existingResult={existingResult}
+                      isVerified={isVerified}
+                      onSuccess={handleResultSuccess}
+                    />
+                  </div>
+                )}
+
+                <div className="challenge-card text-center py-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Button onClick={() => setActiveTab("leaderboard")}>
+                      Zum Leaderboard
                     </Button>
+                    {user && !isVerified && (
+                      <Button
+                        variant="outline"
+                        onClick={handleUnregister}
+                        disabled={unregistering}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        {unregistering ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <LogOut className="w-4 h-4 mr-2" />
+                        )}
+                        Abmelden
+                      </Button>
+                    )}
+                  </div>
+                  {isVerified && (
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
+                    </p>
                   )}
                 </div>
-                {isVerified && (
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
-                  </p>
-                )}
-              </div>
+              </>
             )}
           </TabsContent>
 
