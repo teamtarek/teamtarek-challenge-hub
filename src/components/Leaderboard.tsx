@@ -83,7 +83,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const is10k = challengeSlug === "10-kilometer-run";
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
+  const isSpringChallenge = challengeSlug === "spring-challenge-2026";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -213,7 +215,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
       });
     } else if (isSnatchTest || isSecretServiceSnatchTest) {
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
-    } else if (isEnduranceRun) {
+    } else if (isEnduranceRun || isSpringChallenge) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
@@ -240,7 +242,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const hasResult = (reg: Registration) => {
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
-    if (isEnduranceRun) return reg.total_time_seconds && reg.total_time_seconds > 0;
+    if (isEnduranceRun || isSpringChallenge) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
@@ -316,6 +318,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               {formatDate(registration.completion_date)}
             </div>
           )}
+        </div>
+      );
+    } else if (isSpringChallenge) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
         </div>
       );
     } else if (isEnduranceRun) {
