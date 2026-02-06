@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
-import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar } from "lucide-react";
+import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
+import { getMileLevel } from "@/lib/mileLevels";
 import {
   Select,
   SelectContent,
@@ -26,6 +27,7 @@ interface Registration {
   user_id: string | null;
   avatar_url: string | null;
   member_type: string | null;
+  gender: string | null;
   year: number | null;
   murph_version: string | null;
   validation_type: string | null;
@@ -72,10 +74,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   const isMurphChallenge = challengeSlug?.toLowerCase().includes("murph");
   const isSnatchTest = challengeSlug === "5-minute-snatch-test";
+  const isSecretServiceSnatchTest = challengeSlug === "secret-service-snatch-test";
   const isSimpleSinister = challengeSlug === "simple-sinister";
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
   const isMeetBetty = challengeSlug === "meet-betty";
-  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTheMile = challengeSlug === "the-mile";
+  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -111,20 +115,20 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           .filter((r) => r.user_id)
           .map((r) => r.user_id as string);
 
-        let profilesMap: Record<string, { avatar_url: string | null }> = {};
+        let profilesMap: Record<string, { avatar_url: string | null; gender: string | null }> = {};
         let memberTypesMap: Record<string, string | null> = {};
         
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
             .from("profiles")
-            .select("user_id, avatar_url")
+            .select("user_id, avatar_url, gender")
             .in("user_id", userIds);
 
           if (profiles) {
             profilesMap = profiles.reduce((acc, p) => {
-              acc[p.user_id] = { avatar_url: p.avatar_url };
+              acc[p.user_id] = { avatar_url: p.avatar_url, gender: p.gender };
               return acc;
-            }, {} as Record<string, { avatar_url: string | null }>);
+            }, {} as Record<string, { avatar_url: string | null; gender: string | null }>);
           }
 
           // Fetch member types for each user
@@ -142,6 +146,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           score: r.score ?? 0,
           avatar_url: r.user_id ? profilesMap[r.user_id]?.avatar_url || null : null,
           member_type: r.user_id ? memberTypesMap[r.user_id] || null : null,
+          gender: r.user_id ? profilesMap[r.user_id]?.gender || null : null,
           is_verified: r.is_verified ?? false,
         }));
 
@@ -193,9 +198,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   // Sorting logic based on challenge type
   const getSortedRegistrations = (regs: Registration[]) => {
-    if (isSnatchTest) {
-      // For snatch test: higher reps is better
+    if (isSnatchTest || isSecretServiceSnatchTest) {
+      // For snatch tests: higher reps is better
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
+    } else if (isTheMile) {
+      // For The Mile: faster time is better (total_time_seconds)
+      return [...regs].sort((a, b) => {
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        return timeA - timeB;
+      });
     } else if (isRiteOfPassage || isMeetBetty) {
       // For RoP and Meet Betty: by time (faster is better), then by kettlebell weight (heavier is better)
       return [...regs].sort((a, b) => {
@@ -218,7 +230,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   };
 
   const hasResult = (reg: Registration) => {
-    if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
+    if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
+    if (isTheMile) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
@@ -259,7 +272,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
 
   const renderResultColumn = (registration: Registration) => {
-    if (isSnatchTest) {
+    if (isSnatchTest || isSecretServiceSnatchTest) {
       return (
         <div className="text-right">
           <div className="font-mono">
@@ -272,6 +285,23 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               <Calendar className="w-3 h-3" />
               {formatDate(registration.completion_date)}
             </div>
+          )}
+        </div>
+      );
+    } else if (isTheMile) {
+      const mileLevel = getMileLevel(registration.total_time_seconds || 0, registration.gender);
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {mileLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${mileLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {mileLevel.label}
+            </span>
           )}
         </div>
       );

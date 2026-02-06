@@ -49,9 +49,11 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
 
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
   const isSnatchTest = challengeSlug === "5-minute-snatch-test";
+  const isSecretServiceSnatchTest = challengeSlug === "secret-service-snatch-test";
   const isSimpleSinister = challengeSlug === "simple-sinister";
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
-  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
+  const isTheMile = challengeSlug === "the-mile";
+  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,6 +208,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
           />
           <p className="text-xs text-muted-foreground">
             {isSnatchTest && "Standard: 24 kg (Männer) / 16 kg (Frauen)"}
+            {isSecretServiceSnatchTest && "Standard: 24 kg (Männer) / 16 kg (Frauen)"}
             {isSimpleSinister && "Simple: 32 kg (M) / 24 kg (F) | Sinister: 48 kg (M) / 32 kg (F)"}
             {isRiteOfPassage && "Ziel: Halbes Körpergewicht"}
           </p>

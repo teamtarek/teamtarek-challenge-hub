@@ -16,6 +16,7 @@ const SECTIONS = [
   { key: "outdoor", label: "Outdoor Community Challenges" },
   { key: "gym", label: "Gym Community Challenges" },
   { key: "kettlebell", label: "Benchmark Workouts — Kettlebell" },
+  { key: "endurance", label: "Benchmark Workouts — Endurance" },
 ];
 
 const ChallengesPage = () => {

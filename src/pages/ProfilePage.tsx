@@ -16,8 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { getMileLevel } from "@/lib/mileLevels";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -80,8 +81,18 @@ const formatTimeFromSeconds = (seconds: number): string => {
 };
 
 // Helper function to format result based on challenge type
-const formatChallengeResult = (reg: Registration): { value: string; label: string } => {
+const formatChallengeResult = (reg: Registration, userGender: string | null): { value: string; label: string; mileLevel?: { level: number; label: string; className: string } | null } => {
   const slug = reg.challenges.slug?.toLowerCase() || "";
+  
+  // The Mile - Zeit und Level
+  if (slug === "the-mile") {
+    const parts: string[] = [];
+    if (reg.total_time_seconds && reg.total_time_seconds > 0) {
+      parts.push(formatTimeFromSeconds(reg.total_time_seconds));
+    }
+    const mileLevel = getMileLevel(reg.total_time_seconds || 0, userGender);
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "", mileLevel };
+  }
   
   // Murph - Zeit und Version (score ist in Sekunden)
   if (slug.includes("murph")) {
@@ -119,11 +130,23 @@ const formatChallengeResult = (reg: Registration): { value: string; label: strin
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
   }
   
-  // 5-Minute Snatch Test - Reps und Gewicht
-  if (slug === "5-minute-snatch-test") {
+  // 5-Minute Snatch Test & Secret Service Snatch Test - Reps und Gewicht
+  if (slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") {
     const parts: string[] = [];
     if (reg.total_reps && reg.total_reps > 0) {
       parts.push(`${reg.total_reps} Reps`);
+    }
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // Meet Betty - Zeit und Gewicht
+  if (slug === "meet-betty") {
+    const parts: string[] = [];
+    if (reg.total_time_seconds && reg.total_time_seconds > 0) {
+      parts.push(formatTimeFromSeconds(reg.total_time_seconds));
     }
     if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
       parts.push(`${reg.kettlebell_weight_kg} kg`);
@@ -624,12 +647,20 @@ const ProfilePage = () => {
                   </div>
                   <div className="text-right">
                     {(() => {
-                      const result = formatChallengeResult(reg);
+                      const result = formatChallengeResult(reg, gender || null);
                       return (
-                        <>
-                          <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
-                          {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
-                        </>
+                        <div className="flex flex-col items-end gap-1">
+                          <div>
+                            <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
+                            {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
+                          </div>
+                          {result.mileLevel && (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
+                              <Zap className="w-3 h-3" />
+                              {result.mileLevel.label}
+                            </span>
+                          )}
+                        </div>
                       );
                     })()}
                   </div>
