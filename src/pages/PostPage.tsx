@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart } from "lucide-react";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
