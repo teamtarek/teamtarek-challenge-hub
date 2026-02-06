@@ -555,7 +555,7 @@ const AdminPage = () => {
   if (authLoading || adminLoading || loadingData) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+
         <div className="container py-12 flex justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
