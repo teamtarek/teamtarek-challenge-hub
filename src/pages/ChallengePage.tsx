@@ -270,9 +270,9 @@ const ChallengePage = () => {
             {/* Description */}
             <div className="challenge-card">
               <h2 className="text-xl font-semibold mb-4">Über diese Challenge</h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
                 {challenge.description}
-              </p>
+              </div>
             </div>
 
             {/* Mile Level Info Box */}
