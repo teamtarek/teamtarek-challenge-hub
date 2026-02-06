@@ -7,8 +7,9 @@ import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Dumbbell, Users, Lock } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MILE_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
 
 // Import challenge hero images
 import springChallenge from "@/assets/challenges/spring-challenge.jpg";
@@ -237,6 +238,49 @@ const ChallengePage = () => {
                 {challenge.description}
               </p>
             </div>
+
+            {/* Mile Level Info Box */}
+            {challenge.slug === "the-mile" && (
+              <div className="challenge-card">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary" />
+                  Level-Stufen
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Level</th>
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Männer</th>
+                        <th className="text-left py-2 font-medium text-muted-foreground">Frauen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MILE_LEVEL_DESCRIPTIONS.map((l) => (
+                        <tr key={l.level} className="border-b border-border/50">
+                          <td className="py-3 pr-4">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border font-medium ${
+                              l.level === 4 ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
+                              l.level === 3 ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+                              l.level === 2 ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
+                              "bg-green-500/20 text-green-400 border-green-500/30"
+                            }`}>
+                              <Zap className="w-3 h-3" />
+                              Level {l.level}
+                            </span>
+                          </td>
+                          <td className="py-3 pr-4 font-mono">{l.male}</td>
+                          <td className="py-3 font-mono">{l.female}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Registration */}
             {!isRegistered ? (
