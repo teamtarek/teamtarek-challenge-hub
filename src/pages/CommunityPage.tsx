@@ -37,6 +37,7 @@ const CATEGORIES = [
   { value: "technik-fragen", label: "Technik & Fragen" },
   { value: "motivation-mindset", label: "Motivation / Mindset" },
   { value: "off-topic", label: "Off-Topic" },
+  { value: "training-logs", label: "Training Logs" },
 ] as const;
 
 type Category = typeof CATEGORIES[number]["value"];
