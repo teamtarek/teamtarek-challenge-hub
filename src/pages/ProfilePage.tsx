@@ -84,13 +84,13 @@ const formatTimeFromSeconds = (seconds: number): string => {
 const formatChallengeResult = (reg: Registration, userGender: string | null): { value: string; label: string; mileLevel?: { level: number; label: string; className: string } | null } => {
   const slug = reg.challenges.slug?.toLowerCase() || "";
   
-  // The Mile - Zeit und Level
-  if (slug === "the-mile") {
+  // Endurance runs - Zeit und Level
+  if (slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run") {
     const parts: string[] = [];
     if (reg.total_time_seconds && reg.total_time_seconds > 0) {
       parts.push(formatTimeFromSeconds(reg.total_time_seconds));
     }
-    const mileLevel = getMileLevel(reg.total_time_seconds || 0, userGender);
+    const mileLevel = getMileLevel(reg.total_time_seconds || 0, userGender, slug);
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "", mileLevel };
   }
   

@@ -120,10 +120,10 @@ const PublicProfilePage = () => {
   const formatResult = (reg: Registration): { value: string; mileLevel?: ReturnType<typeof getMileLevel> } => {
     const slug = reg.challenges.slug;
     
-    if (slug === "the-mile" && reg.total_time_seconds) {
+    if ((slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run") && reg.total_time_seconds) {
       const mins = Math.floor(reg.total_time_seconds / 60);
       const secs = reg.total_time_seconds % 60;
-      const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null);
+      const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null, slug);
       return { value: `${mins}:${secs.toString().padStart(2, "0")}`, mileLevel };
     }
     if ((slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") && reg.total_reps) {

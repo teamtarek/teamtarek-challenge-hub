@@ -79,6 +79,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
   const isMeetBetty = challengeSlug === "meet-betty";
   const isTheMile = challengeSlug === "the-mile";
+  const is5k = challengeSlug === "5-kilometer-run";
+  const is10k = challengeSlug === "10-kilometer-run";
+  const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
@@ -210,7 +213,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
       });
     } else if (isSnatchTest || isSecretServiceSnatchTest) {
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
-    } else if (isTheMile) {
+    } else if (isEnduranceRun) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
@@ -237,7 +240,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const hasResult = (reg: Registration) => {
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
-    if (isTheMile) return reg.total_time_seconds && reg.total_time_seconds > 0;
+    if (isEnduranceRun) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
@@ -315,8 +318,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           )}
         </div>
       );
-    } else if (isTheMile) {
-      const mileLevel = getMileLevel(registration.total_time_seconds || 0, registration.gender);
+    } else if (isEnduranceRun) {
+      const mileLevel = getMileLevel(registration.total_time_seconds || 0, registration.gender, challengeSlug);
       return (
         <div className="text-right">
           <div className="font-mono">

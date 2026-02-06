@@ -1,4 +1,4 @@
-// Mile level system - levels based on time and gender
+// Endurance level system - levels based on time and gender
 // Times are in seconds
 
 export interface MileLevel {
@@ -7,24 +7,70 @@ export interface MileLevel {
   className: string;
 }
 
-const MILE_LEVELS_MALE = [
+interface LevelThreshold {
+  level: number;
+  maxSeconds: number;
+}
+
+const MILE_LEVELS_MALE: LevelThreshold[] = [
   { level: 4, maxSeconds: 5 * 60 + 45 },  // ≤ 5:45
   { level: 3, maxSeconds: 6 * 60 + 45 },  // ≤ 6:45
   { level: 2, maxSeconds: 8 * 60 },        // ≤ 8:00
   { level: 1, maxSeconds: 9 * 60 + 30 },  // ≤ 9:30
 ];
 
-const MILE_LEVELS_FEMALE = [
+const MILE_LEVELS_FEMALE: LevelThreshold[] = [
   { level: 4, maxSeconds: 6 * 60 + 45 },  // ≤ 6:45
   { level: 3, maxSeconds: 7 * 60 + 45 },  // ≤ 7:45
   { level: 2, maxSeconds: 9 * 60 },        // ≤ 9:00
   { level: 1, maxSeconds: 10 * 60 + 30 }, // ≤ 10:30
 ];
 
-export const getMileLevel = (timeSeconds: number, gender: string | null): MileLevel | null => {
+const FIVE_K_LEVELS_MALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 20 * 60 },       // ≤ 20:00
+  { level: 3, maxSeconds: 22 * 60 + 30 },  // ≤ 22:30
+  { level: 2, maxSeconds: 26 * 60 },       // ≤ 26:00
+  { level: 1, maxSeconds: 30 * 60 },       // ≤ 30:00
+];
+
+const FIVE_K_LEVELS_FEMALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 22 * 60 + 30 },  // ≤ 22:30
+  { level: 3, maxSeconds: 26 * 60 },       // ≤ 26:00
+  { level: 2, maxSeconds: 30 * 60 },       // ≤ 30:00
+  { level: 1, maxSeconds: 35 * 60 },       // ≤ 35:00
+];
+
+const TEN_K_LEVELS_MALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 40 * 60 },       // ≤ 40:00
+  { level: 3, maxSeconds: 45 * 60 },       // ≤ 45:00
+  { level: 2, maxSeconds: 50 * 60 },       // ≤ 50:00
+  { level: 1, maxSeconds: 60 * 60 },       // ≤ 60:00
+];
+
+const TEN_K_LEVELS_FEMALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 43 * 60 },       // ≤ 43:00
+  { level: 3, maxSeconds: 50 * 60 },       // ≤ 50:00
+  { level: 2, maxSeconds: 57 * 60 },       // ≤ 57:00
+  { level: 1, maxSeconds: 70 * 60 },       // ≤ 70:00
+];
+
+const getLevelsForChallenge = (challengeSlug: string, gender: string | null): LevelThreshold[] => {
+  const isFemale = gender === "female";
+  switch (challengeSlug) {
+    case "5-kilometer-run":
+      return isFemale ? FIVE_K_LEVELS_FEMALE : FIVE_K_LEVELS_MALE;
+    case "10-kilometer-run":
+      return isFemale ? TEN_K_LEVELS_FEMALE : TEN_K_LEVELS_MALE;
+    case "the-mile":
+    default:
+      return isFemale ? MILE_LEVELS_FEMALE : MILE_LEVELS_MALE;
+  }
+};
+
+export const getMileLevel = (timeSeconds: number, gender: string | null, challengeSlug: string = "the-mile"): MileLevel | null => {
   if (!timeSeconds || timeSeconds <= 0) return null;
   
-  const levels = gender === "female" ? MILE_LEVELS_FEMALE : MILE_LEVELS_MALE;
+  const levels = getLevelsForChallenge(challengeSlug, gender);
   
   for (const { level, maxSeconds } of levels) {
     if (timeSeconds <= maxSeconds) {
@@ -54,4 +100,18 @@ export const MILE_LEVEL_DESCRIPTIONS = [
   { level: 2, male: "≤ 8:00", female: "≤ 9:00" },
   { level: 3, male: "≤ 6:45", female: "≤ 7:45" },
   { level: 4, male: "≤ 5:45", female: "≤ 6:45" },
+];
+
+export const FIVE_K_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "≤ 30:00", female: "≤ 35:00" },
+  { level: 2, male: "≤ 26:00", female: "≤ 30:00" },
+  { level: 3, male: "≤ 22:30", female: "≤ 26:00" },
+  { level: 4, male: "≤ 20:00", female: "≤ 22:30" },
+];
+
+export const TEN_K_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "≤ 60:00", female: "≤ 70:00" },
+  { level: 2, male: "≤ 50:00", female: "≤ 57:00" },
+  { level: 3, male: "≤ 45:00", female: "≤ 50:00" },
+  { level: 4, male: "≤ 40:00", female: "≤ 43:00" },
 ];
