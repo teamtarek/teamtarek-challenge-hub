@@ -132,9 +132,14 @@ const AdminPage = () => {
   const isMurphChallenge = selectedChallengeData?.slug?.toLowerCase().includes("murph") || 
                            selectedChallengeData?.name?.toLowerCase().includes("murph");
   const isSnatchTest = selectedChallengeData?.slug === "5-minute-snatch-test";
+  const isSecretServiceSnatchTest = selectedChallengeData?.slug === "secret-service-snatch-test";
   const isSimpleSinister = selectedChallengeData?.slug === "simple-sinister";
   const isRiteOfPassage = selectedChallengeData?.slug === "rite-of-passage";
-  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage;
+  const isMeetBetty = selectedChallengeData?.slug === "meet-betty";
+  const isTheMile = selectedChallengeData?.slug === "the-mile";
+  const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
+  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeChallenge = isTheMile || isMeetBetty;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -258,7 +263,7 @@ const AdminPage = () => {
     
     if (isMurphChallenge || isSimpleSinister) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
-    } else if (!isKettlebellChallenge) {
+    } else if (!isKettlebellChallenge && !isTheMile) {
       updateData.score = parseInt(values[registrationId] || "0", 10);
     }
     
@@ -275,14 +280,14 @@ const AdminPage = () => {
       }
     }
     
-    if (isSnatchTest) {
+    if (isAnySnatchTest) {
       const reps = totalReps[registrationId];
       if (reps) {
         updateData.total_reps = parseInt(reps, 10);
       }
     }
     
-    if (isRiteOfPassage) {
+    if (isRiteOfPassage || isTheMile || isMeetBetty) {
       const time = totalTimes[registrationId];
       if (time) {
         updateData.total_time_seconds = timeStringToSeconds(time);
@@ -450,7 +455,7 @@ const AdminPage = () => {
       insertData.score = timeStringToSeconds(newParticipantValue);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.completion_date = newParticipantCompletionDate || null;
-    } else if (isSnatchTest) {
+    } else if (isAnySnatchTest) {
       insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.completion_date = newParticipantCompletionDate || null;
@@ -458,6 +463,11 @@ const AdminPage = () => {
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
       insertData.completion_date = newParticipantCompletionDate || null;
+    } else if (isTheMile) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+    } else if (isMeetBetty) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
     } else {
       insertData.score = parseInt(newParticipantValue || "0", 10);
     }
@@ -490,8 +500,9 @@ const AdminPage = () => {
 
   const getResultLabel = () => {
     if (isMurphChallenge || isSimpleSinister) return "Zeiten";
-    if (isSnatchTest) return "Wiederholungen";
+    if (isAnySnatchTest) return "Wiederholungen";
     if (isRiteOfPassage) return "Ergebnisse";
+    if (isTheMile || isMeetBetty) return "Zeiten";
     return "Punktzahlen";
   };
 
@@ -520,8 +531,10 @@ const AdminPage = () => {
           break;
         case "result":
           // Different result fields based on challenge type
-          if (isSnatchTest) {
+          if (isAnySnatchTest) {
             comparison = (a.total_reps || 0) - (b.total_reps || 0);
+          } else if (isTheMile || isMeetBetty) {
+            comparison = (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
           } else if (isRiteOfPassage) {
             // First by weight, then by time
             const weightDiff = (a.kettlebell_weight_kg || 0) - (b.kettlebell_weight_kg || 0);
@@ -595,6 +608,9 @@ const AdminPage = () => {
                     {challenge.name}
                     {challenge.category === "kettlebell" && (
                       <span className="ml-2 text-xs text-muted-foreground">(Kettlebell)</span>
+                    )}
+                    {challenge.category === "endurance" && (
+                      <span className="ml-2 text-xs text-muted-foreground">(Endurance)</span>
                     )}
                   </SelectItem>
                 ))}
@@ -782,7 +798,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {isSnatchTest && (
+                    {isAnySnatchTest && (
                       <div className="space-y-2">
                         <Label htmlFor="totalReps">Wiederholungen gesamt</Label>
                         <Input
@@ -796,13 +812,13 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {isRiteOfPassage && (
+                    {(isRiteOfPassage || isTheMile || isMeetBetty) && (
                       <div className="space-y-2">
-                        <Label htmlFor="totalTime">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
+                        <Label htmlFor="totalTime">Zeit (MM:SS)</Label>
                         <Input
                           id="totalTime"
                           type="text"
-                          placeholder="45:30"
+                          placeholder="6:30"
                           value={newParticipantTotalTime}
                           onChange={(e) => setNewParticipantTotalTime(e.target.value)}
                         />
@@ -834,7 +850,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {!isKettlebellChallenge && (
+                    {!isKettlebellChallenge && !isTheMile && (
                       <div className="space-y-2">
                         <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
                         <Input
@@ -1067,7 +1083,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {isSnatchTest && (
+                        {isAnySnatchTest && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="Reps"
@@ -1086,7 +1102,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {isRiteOfPassage && (
+                        {(isRiteOfPassage || isTheMile || isMeetBetty) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="MM:SS"
@@ -1135,7 +1151,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {!isKettlebellChallenge && (
+                        {!isKettlebellChallenge && !isTheMile && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder={isMurphChallenge ? "MM:SS" : "0"}
