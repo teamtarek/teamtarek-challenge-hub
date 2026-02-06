@@ -370,6 +370,14 @@ const CommunityPage = () => {
                   <div className="space-y-2">
                     <Label>Video URL (optional)</Label>
                     <Input placeholder="https://youtube.com/..." value={newVideoUrl} onChange={(e) => setNewVideoUrl(e.target.value)} />
+                    {newVideoUrl.trim() && isValidVideoUrl(newVideoUrl.trim()) && (
+                      <div className="mt-2">
+                        <VideoEmbed url={newVideoUrl.trim()} />
+                      </div>
+                    )}
+                    {newVideoUrl.trim() && !isValidVideoUrl(newVideoUrl.trim()) && (
+                      <p className="text-xs text-destructive">Ungültiger Video-Link. Unterstützt: YouTube, Vimeo.</p>
+                    )}
                   </div>
                   <Button type="submit" className="w-full" disabled={creating}>
                     {creating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
