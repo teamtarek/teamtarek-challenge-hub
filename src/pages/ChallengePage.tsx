@@ -171,8 +171,6 @@ const ChallengePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       {/* Hero Section */}
       <section 
         className="relative min-h-[50vh] flex items-end"
