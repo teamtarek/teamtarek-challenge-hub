@@ -8,7 +8,7 @@ interface VideoEmbedProps {
 const getVideoEmbedUrl = (url: string): { embedUrl: string; type: string } | null => {
   // YouTube
   const youtubeMatch = url.match(
-    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    /(?:youtube\.com\/(?:shorts\/|(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))|youtu\.be\/)([^"&?\/\s]{11})/
   );
   if (youtubeMatch) {
     return {
