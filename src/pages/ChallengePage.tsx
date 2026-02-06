@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,7 +7,8 @@ import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
 
@@ -101,6 +102,9 @@ const ChallengePage = () => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationId, setRegistrationId] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
@@ -120,13 +124,15 @@ const ChallengePage = () => {
         if (user) {
           const { data: regData } = await supabase
             .from("registrations")
-            .select("id")
+            .select("id, is_verified")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
             .maybeSingle();
           
           if (regData) {
             setIsRegistered(true);
+            setRegistrationId(regData.id);
+            setIsVerified(regData.is_verified ?? false);
             setActiveTab("leaderboard");
           }
         } else {
@@ -146,6 +152,32 @@ const ChallengePage = () => {
   const handleRegistrationSuccess = () => {
     setIsRegistered(true);
     setActiveTab("leaderboard");
+  };
+
+  const handleUnregister = async () => {
+    if (!registrationId || !challenge) return;
+    if (!confirm("Möchtest du dich wirklich von dieser Challenge abmelden?")) return;
+    
+    setUnregistering(true);
+    const { error } = await supabase
+      .from("registrations")
+      .delete()
+      .eq("id", registrationId);
+
+    if (error) {
+      toast.error("Abmeldung fehlgeschlagen. Verifizierte Ergebnisse können nicht gelöscht werden.");
+    } else {
+      setIsRegistered(false);
+      setRegistrationId(null);
+      setIsVerified(false);
+      setActiveTab("details");
+      toast.success("Du hast dich erfolgreich abgemeldet.");
+      // Clean localStorage too
+      const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
+      delete registeredChallenges[challenge.id];
+      localStorage.setItem("registeredChallenges", JSON.stringify(registeredChallenges));
+    }
+    setUnregistering(false);
   };
 
   if (loading) {
@@ -315,9 +347,31 @@ const ChallengePage = () => {
                 <p className="text-muted-foreground mb-4">
                   Schau dir das Leaderboard an, um deinen Fortschritt zu verfolgen.
                 </p>
-                <Button onClick={() => setActiveTab("leaderboard")}>
-                  Zum Leaderboard
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button onClick={() => setActiveTab("leaderboard")}>
+                    Zum Leaderboard
+                  </Button>
+                  {user && !isVerified && (
+                    <Button
+                      variant="outline"
+                      onClick={handleUnregister}
+                      disabled={unregistering}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      {unregistering ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <LogOut className="w-4 h-4 mr-2" />
+                      )}
+                      Abmelden
+                    </Button>
+                  )}
+                </div>
+                {isVerified && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
+                  </p>
+                )}
               </div>
             )}
           </TabsContent>
