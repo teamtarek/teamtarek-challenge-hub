@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, User, LogIn, Shield, MessageSquare } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const Header = () => {
   const { user, loading } = useAuth();
@@ -34,12 +35,15 @@ export const Header = () => {
                 </Link>
               )}
               {user ? (
-                <Link to="/profil">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <User className="w-4 h-4" />
-                    Profil
-                  </Button>
-                </Link>
+                <>
+                  <NotificationBell />
+                  <Link to="/profil">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <User className="w-4 h-4" />
+                      Profil
+                    </Button>
+                  </Link>
+                </>
               ) : (
                 <Link to="/auth">
                   <Button variant="outline" size="sm" className="gap-2">
