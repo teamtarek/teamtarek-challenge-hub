@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MessageSquare, Plus, Loader2, Heart, Search, Image, X, Pencil, Trash2 } from "lucide-react";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
