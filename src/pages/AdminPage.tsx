@@ -125,7 +125,8 @@ const AdminPage = () => {
   const [linkingUser, setLinkingUser] = useState(false);
 
   const murphVersions = ["Standard", "Female Version", "Beginner Version"];
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2018 }, (_, i) => currentYear - i);
 
   // Check challenge type
   const selectedChallengeData = challenges.find((c) => c.id === selectedChallenge);
@@ -137,6 +138,7 @@ const AdminPage = () => {
   const isRiteOfPassage = selectedChallengeData?.slug === "rite-of-passage";
   const isMeetBetty = selectedChallengeData?.slug === "meet-betty";
   const isTheMile = selectedChallengeData?.slug === "the-mile";
+  const isKettlebellSwing = selectedChallengeData?.slug === "kettlebell-swing";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeChallenge = isTheMile || isMeetBetty;
@@ -229,6 +231,8 @@ const AdminPage = () => {
           initialValues[reg.id] = secondsToTimeString(reg.score);
         } else if (isSimpleSinister) {
           initialValues[reg.id] = secondsToTimeString(reg.score);
+        } else if (isKettlebellSwing) {
+          initialValues[reg.id] = reg.score === 1 ? "pass" : "fail";
         } else {
           initialValues[reg.id] = reg.score?.toString() ?? "0";
         }
@@ -263,12 +267,14 @@ const AdminPage = () => {
     
     if (isMurphChallenge || isSimpleSinister) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
+    } else if (isKettlebellSwing) {
+      updateData.score = values[registrationId] === "pass" ? 1 : 0;
     } else if (!isKettlebellChallenge && !isTheMile) {
       updateData.score = parseInt(values[registrationId] || "0", 10);
     }
     
     // Kettlebell specific fields
-    if (isKettlebellChallenge) {
+    if (isKettlebellChallenge || isKettlebellSwing) {
       const weight = kettlebellWeights[registrationId];
       if (weight) {
         updateData.kettlebell_weight_kg = parseInt(weight, 10);
@@ -277,6 +283,14 @@ const AdminPage = () => {
       const date = completionDates[registrationId];
       if (date) {
         updateData.completion_date = date;
+      }
+    }
+    
+    // Kettlebell Swing total reps
+    if (isKettlebellSwing) {
+      const reps = totalReps[registrationId];
+      if (reps) {
+        updateData.total_reps = parseInt(reps, 10);
       }
     }
     
@@ -451,6 +465,10 @@ const AdminPage = () => {
     if (isMurphChallenge) {
       insertData.score = timeStringToSeconds(newParticipantValue);
       insertData.murph_version = newParticipantVersion;
+    } else if (isKettlebellSwing) {
+      insertData.score = newParticipantValue === "pass" ? 1 : 0;
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
     } else if (isSimpleSinister) {
       insertData.score = timeStringToSeconds(newParticipantValue);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
@@ -501,6 +519,7 @@ const AdminPage = () => {
   const getResultLabel = () => {
     if (isMurphChallenge || isSimpleSinister) return "Zeiten";
     if (isAnySnatchTest) return "Wiederholungen";
+    if (isKettlebellSwing) return "Ergebnisse";
     if (isRiteOfPassage) return "Ergebnisse";
     if (isTheMile || isMeetBetty) return "Zeiten";
     return "Punktzahlen";
@@ -531,12 +550,18 @@ const AdminPage = () => {
           break;
         case "result":
           // Different result fields based on challenge type
-          if (isAnySnatchTest) {
+          if (isKettlebellSwing) {
+            // Pass first, then reps, then weight
+            const passDiff = (b.score || 0) - (a.score || 0);
+            if (passDiff !== 0) { comparison = passDiff; break; }
+            const repsDiff = (b.total_reps || 0) - (a.total_reps || 0);
+            if (repsDiff !== 0) { comparison = repsDiff; break; }
+            comparison = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+          } else if (isAnySnatchTest) {
             comparison = (a.total_reps || 0) - (b.total_reps || 0);
           } else if (isTheMile || isMeetBetty) {
             comparison = (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
           } else if (isRiteOfPassage) {
-            // First by weight, then by time
             const weightDiff = (a.kettlebell_weight_kg || 0) - (b.kettlebell_weight_kg || 0);
             if (weightDiff !== 0) {
               comparison = weightDiff;
@@ -544,7 +569,6 @@ const AdminPage = () => {
               comparison = (a.total_time_seconds || 0) - (b.total_time_seconds || 0);
             }
           } else if (isSimpleSinister) {
-            // First by weight, then by time
             const weightDiff = (a.kettlebell_weight_kg || 0) - (b.kettlebell_weight_kg || 0);
             if (weightDiff !== 0) {
               comparison = weightDiff;
@@ -783,7 +807,7 @@ const AdminPage = () => {
                     )}
                     
                     {/* Challenge-specific fields */}
-                    {isKettlebellChallenge && (
+                    {(isKettlebellChallenge || isKettlebellSwing) && (
                       <div className="space-y-2">
                         <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
                         <Input
@@ -796,6 +820,34 @@ const AdminPage = () => {
                           max={92}
                         />
                       </div>
+                    )}
+                    
+                    {isKettlebellSwing && (
+                      <>
+                        <div className="space-y-2">
+                          <Label>Pass / Fail</Label>
+                          <Select value={newParticipantValue || "fail"} onValueChange={setNewParticipantValue}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Status wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pass">Pass ✓</SelectItem>
+                              <SelectItem value="fail">Fail ✗</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="totalRepsSwing">Gesamtzahl Swings</Label>
+                          <Input
+                            id="totalRepsSwing"
+                            type="number"
+                            placeholder="z.B. 10000"
+                            value={newParticipantTotalReps}
+                            onChange={(e) => setNewParticipantTotalReps(e.target.value)}
+                            min={0}
+                          />
+                        </div>
+                      </>
                     )}
                     
                     {isAnySnatchTest && (
@@ -1040,13 +1092,25 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
-                          {isKettlebellChallenge && registration.kettlebell_weight_kg && (
+                          {(isKettlebellChallenge || isKettlebellSwing) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Dumbbell className="w-3 h-3" />
                                 {registration.kettlebell_weight_kg} kg
                               </span>
+                            </>
+                          )}
+                          {isKettlebellSwing && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.score === 1 ? "✓ Pass" : "✗ Fail"}</span>
+                              {registration.total_reps && (
+                                <>
+                                  <span>•</span>
+                                  <span>{registration.total_reps.toLocaleString()} Swings</span>
+                                </>
+                              )}
                             </>
                           )}
                           {registration.completion_date && (
@@ -1063,7 +1127,7 @@ const AdminPage = () => {
                       
                       {/* Edit Fields */}
                       <div className="flex flex-wrap items-center gap-3">
-                        {isKettlebellChallenge && (
+                        {(isKettlebellChallenge || isKettlebellSwing) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="kg"
@@ -1081,6 +1145,41 @@ const AdminPage = () => {
                             />
                             <span className="text-muted-foreground text-sm">kg</span>
                           </div>
+                        )}
+                        
+                        {isKettlebellSwing && (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={values[registration.id] || "fail"}
+                                onValueChange={(v) => handleValueChange(registration.id, v)}
+                              >
+                                <SelectTrigger className="w-24">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pass">Pass</SelectItem>
+                                  <SelectItem value="fail">Fail</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                placeholder="Swings"
+                                type="number"
+                                min={0}
+                                className="w-28"
+                                value={totalReps[registration.id] || ""}
+                                onChange={(e) =>
+                                  setTotalReps((prev) => ({
+                                    ...prev,
+                                    [registration.id]: e.target.value,
+                                  }))
+                                }
+                              />
+                              <span className="text-muted-foreground text-sm">Swings</span>
+                            </div>
+                          </>
                         )}
                         
                         {isAnySnatchTest && (
@@ -1151,7 +1250,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {!isKettlebellChallenge && !isTheMile && (
+                        {!isKettlebellChallenge && !isTheMile && !isKettlebellSwing && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder={isMurphChallenge ? "MM:SS" : "0"}

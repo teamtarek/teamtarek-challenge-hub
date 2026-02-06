@@ -79,6 +79,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
   const isMeetBetty = challengeSlug === "meet-betty";
   const isTheMile = challengeSlug === "the-mile";
+  const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   useEffect(() => {
@@ -198,18 +199,24 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   // Sorting logic based on challenge type
   const getSortedRegistrations = (regs: Registration[]) => {
-    if (isSnatchTest || isSecretServiceSnatchTest) {
-      // For snatch tests: higher reps is better
+    if (isKettlebellSwing) {
+      // Pass first, then total swings desc, then weight desc
+      return [...regs].sort((a, b) => {
+        const passDiff = (b.score || 0) - (a.score || 0);
+        if (passDiff !== 0) return passDiff;
+        const repsDiff = (b.total_reps || 0) - (a.total_reps || 0);
+        if (repsDiff !== 0) return repsDiff;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
+    } else if (isSnatchTest || isSecretServiceSnatchTest) {
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
     } else if (isTheMile) {
-      // For The Mile: faster time is better (total_time_seconds)
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
         return timeA - timeB;
       });
     } else if (isRiteOfPassage || isMeetBetty) {
-      // For RoP and Meet Betty: by time (faster is better), then by kettlebell weight (heavier is better)
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
@@ -217,19 +224,18 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isSimpleSinister) {
-      // For S&S: by kettlebell weight (heavier is better), then by time (faster is better)
       return [...regs].sort((a, b) => {
         const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
         if (weightDiff !== 0) return weightDiff;
         return (a.score || 0) - (b.score || 0);
       });
     } else {
-      // Default: by score (time, lower is better)
       return [...regs].sort((a, b) => (a.score || 0) - (b.score || 0));
     }
   };
 
   const hasResult = (reg: Registration) => {
+    if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isTheMile) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
@@ -272,7 +278,28 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
 
   const renderResultColumn = (registration: Registration) => {
-    if (isSnatchTest || isSecretServiceSnatchTest) {
+    if (isKettlebellSwing) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className={`font-semibold text-lg ${registration.score === 1 ? "text-green-500" : "text-destructive"}`}>
+              {registration.score === 1 ? "Pass ✓" : "Fail ✗"}
+            </span>
+          </div>
+          {registration.total_reps && (
+            <div className="text-sm text-primary font-semibold">
+              {registration.total_reps.toLocaleString()} Swings
+            </div>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
+        </div>
+      );
+    } else if (isSnatchTest || isSecretServiceSnatchTest) {
       return (
         <div className="text-right">
           <div className="font-mono">

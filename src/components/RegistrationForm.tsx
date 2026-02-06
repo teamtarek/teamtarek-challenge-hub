@@ -43,7 +43,10 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [validationType, setValidationType] = useState<string>("coach");
   const [videoUrl, setVideoUrl] = useState("");
   const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
-  const [year] = useState(new Date().getFullYear());
+  const [swingPassFail, setSwingPassFail] = useState<string>("pass");
+  const [totalSwings, setTotalSwings] = useState<string>("");
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState<number>(currentYear);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -53,6 +56,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const isSimpleSinister = challengeSlug === "simple-sinister";
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
   const isTheMile = challengeSlug === "the-mile";
+  const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,7 +107,11 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
       insertData.murph_version = murphVersion;
     }
 
-    if (isKettlebellChallenge && kettlebellWeight) {
+    if (isKettlebellSwing) {
+      insertData.score = swingPassFail === "pass" ? 1 : 0;
+      insertData.kettlebell_weight_kg = kettlebellWeight ? parseInt(kettlebellWeight) : null;
+      insertData.total_reps = totalSwings ? parseInt(totalSwings) : null;
+    } else if (isKettlebellChallenge && kettlebellWeight) {
       insertData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     }
 
@@ -215,14 +223,74 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
         </div>
       )}
 
+      {isKettlebellSwing && (
+        <>
+          <div className="space-y-2">
+            <Label>Pass / Fail</Label>
+            <Select value={swingPassFail} onValueChange={setSwingPassFail}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pass">Pass ✓</SelectItem>
+                <SelectItem value="fail">Fail ✗</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="kettlebellWeightSwing">Verwendetes Gewicht (kg)</Label>
+            <Input
+              id="kettlebellWeightSwing"
+              type="number"
+              placeholder="z.B. 24"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+            <p className="text-xs text-muted-foreground">
+              Bei mehreren Gewichten: Hauptgewicht eintragen
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="totalSwings">Gesamtzahl Swings</Label>
+            <Input
+              id="totalSwings"
+              type="number"
+              placeholder="z.B. 10000"
+              value={totalSwings}
+              onChange={(e) => setTotalSwings(e.target.value)}
+              className="input-minimal"
+              min={0}
+            />
+          </div>
+        </>
+      )}
+
       <div className="space-y-2">
         <Label>Jahr</Label>
-        <Input
-          type="text"
-          value={year}
-          disabled
-          className="input-minimal bg-muted"
-        />
+        {isKettlebellSwing ? (
+          <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Jahr wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: currentYear - 2018 }, (_, i) => currentYear - i).map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            type="text"
+            value={year}
+            disabled
+            className="input-minimal bg-muted"
+          />
+        )}
       </div>
 
       {/* Validation Type Section */}
