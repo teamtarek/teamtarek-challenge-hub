@@ -370,15 +370,13 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <div className="container py-8 max-w-2xl">
         <Link
-          to="/"
+          to="/dashboard"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurück zu den Challenges
+          Zurück
         </Link>
 
         <div className="flex items-center gap-3 mb-8">
