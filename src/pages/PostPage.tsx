@@ -360,7 +360,7 @@ const PostPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
       <main className="container py-8">
         <div className="max-w-3xl mx-auto">
           <Link
