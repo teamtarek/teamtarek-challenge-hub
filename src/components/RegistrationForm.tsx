@@ -56,6 +56,9 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const isSimpleSinister = challengeSlug === "simple-sinister";
   const isRiteOfPassage = challengeSlug === "rite-of-passage";
   const isTheMile = challengeSlug === "the-mile";
+  const is5k = challengeSlug === "5-kilometer-run";
+  const is10k = challengeSlug === "10-kilometer-run";
+  const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage;
 
