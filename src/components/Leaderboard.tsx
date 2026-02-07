@@ -84,8 +84,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
+  const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
+  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -221,6 +222,14 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         const timeB = b.total_time_seconds || Infinity;
         return timeA - timeB;
       });
+    } else if (is10RoundsOfPain) {
+      // Primary: fastest time, Secondary: heavier weight is better
+      return [...regs].sort((a, b) => {
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
     } else if (isRiteOfPassage || isMeetBetty) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
@@ -242,7 +251,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const hasResult = (reg: Registration) => {
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
-    if (isEnduranceRun || isSpringChallenge) return reg.total_time_seconds && reg.total_time_seconds > 0;
+    if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
@@ -328,6 +337,22 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               {formatTime(registration.total_time_seconds)}
             </span>
           </div>
+        </div>
+      );
+    } else if (is10RoundsOfPain) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
         </div>
       );
     } else if (isEnduranceRun) {
