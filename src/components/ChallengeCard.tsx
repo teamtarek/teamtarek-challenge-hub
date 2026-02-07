@@ -19,6 +19,7 @@ import theMileImg from "@/assets/challenges/the-mile.jpg";
 import ssstImg from "@/assets/challenges/secret-service-snatch-test.jpg";
 import fiveKImg from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKImg from "@/assets/challenges/10-kilometer-run.jpg";
+import tenRoundsImg from "@/assets/challenges/10-rounds-of-pain.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -40,6 +41,7 @@ const challengeImages: Record<string, string> = {
   "secret-service-snatch-test": ssstImg,
   "5-kilometer-run": fiveKImg,
   "10-kilometer-run": tenKImg,
+  "10-rounds-of-pain": tenRoundsImg,
 };
 
 // Custom object positions for specific challenges
