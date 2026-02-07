@@ -66,16 +66,17 @@ export const ResultEntryForm = ({
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
+  const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain;
 
   // Initialize from existing result
   const getInitialTime = (): string => {
     if (isMurphChallenge || isSimpleSinister) return secondsToTimeString(existingResult.score);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
@@ -89,7 +90,7 @@ export const ResultEntryForm = ({
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage) return (existingResult.total_time_seconds ?? 0) > 0;
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.kettlebell_weight_kg ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
     return (existingResult.score ?? 0) > 0;
@@ -129,6 +130,11 @@ export const ResultEntryForm = ({
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
+    } else if (is10RoundsOfPain) {
+      const seconds = timeStringToSeconds(timeValue);
+      if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
+      updateData.total_time_seconds = seconds;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isMeetBetty) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
@@ -188,6 +194,39 @@ export const ResultEntryForm = ({
       )}
 
       {/* Time-based challenges */}
+      {/* 10 Rounds of Pain: time + weight */}
+      {is10RoundsOfPain && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 25:30"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 16, Männer: 24"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
       {(isMurphChallenge || isEnduranceRun || isSpringChallenge || isSimpleSinister) && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
@@ -342,7 +381,7 @@ export const ResultEntryForm = ({
       )}
 
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input
