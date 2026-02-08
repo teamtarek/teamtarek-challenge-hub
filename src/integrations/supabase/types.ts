@@ -378,6 +378,92 @@ export type Database = {
           },
         ]
       }
+      training_content: {
+        Row: {
+          content_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          duration: string | null
+          equipment: string | null
+          goal: string | null
+          id: string
+          level: string
+          pdf_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+          visibility: string
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration?: string | null
+          equipment?: string | null
+          goal?: string | null
+          id?: string
+          level?: string
+          pdf_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+          visibility?: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration?: string | null
+          equipment?: string | null
+          goal?: string | null
+          id?: string
+          level?: string
+          pdf_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+          visibility?: string
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          program_id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          program_id: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          program_id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -398,6 +484,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_session_progress: {
+        Row: {
+          completed_at: string
+          id: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_session_progress_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
