@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTrainingContent, useDeleteTrainingContent } from "@/hooks/useTrainingContent";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -25,7 +25,7 @@ const TrainingContentList = () => {
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
   const { data: content, isLoading } = useTrainingContent(contentType, levelFilter);
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin, isCoach } = useUserRole();
   const deleteMutation = useDeleteTrainingContent();
 
   const handleDelete = async (id: string) => {

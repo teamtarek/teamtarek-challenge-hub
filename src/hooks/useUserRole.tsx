@@ -2,22 +2,33 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-export type MemberType = "webmaster" | "admin" | "member" | "prospect" | null;
+export type MemberType = "webmaster" | "admin" | "coach" | "member" | "prospect" | null;
 
 const WEBMASTER_EMAIL = "tobias.gunst@googlemail.com";
 
 export const useUserRole = () => {
   const { user } = useAuth();
   const [memberType, setMemberType] = useState<MemberType>(null);
+  const [isFoundingMember, setIsFoundingMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   const checkMemberType = async () => {
     if (!user) {
       setMemberType(null);
+      setIsFoundingMember(false);
       setLoading(false);
       return;
     }
+
+    // Fetch founding member status
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("is_founding_member")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    setIsFoundingMember(profileData?.is_founding_member ?? false);
 
     // Check if webmaster first (by email)
     if (user.email === WEBMASTER_EMAIL) {
@@ -26,16 +37,22 @@ export const useUserRole = () => {
       return;
     }
 
-    // Check if admin
-    const { data: adminData } = await supabase
+    // Check roles in user_roles table
+    const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", user.id);
 
-    if (adminData) {
+    const roles = roleData?.map((r) => r.role) ?? [];
+
+    if (roles.includes("admin")) {
       setMemberType("admin");
+      setLoading(false);
+      return;
+    }
+
+    if (roles.includes("coach")) {
+      setMemberType("coach");
       setLoading(false);
       return;
     }
@@ -76,19 +93,8 @@ export const useUserRole = () => {
       }
     }
 
-    // Check if prospect (has any registration)
-    const { data: prospectData } = await supabase
-      .from("registrations")
-      .select("id")
-      .eq("user_id", user.id)
-      .limit(1);
-
-    if (prospectData && prospectData.length > 0) {
-      setMemberType("prospect");
-    } else {
-      setMemberType("prospect"); // Default for logged-in users without registrations
-    }
-
+    // Default for logged-in users
+    setMemberType("prospect");
     setLoading(false);
   };
 
@@ -103,7 +109,8 @@ export const useUserRole = () => {
 
   const isWebmaster = memberType === "webmaster";
   const isAdmin = memberType === "admin" || memberType === "webmaster";
-  const isMember = memberType === "member" || memberType === "admin" || memberType === "webmaster";
+  const isCoach = memberType === "coach" || isAdmin;
+  const isMember = memberType === "member" || memberType === "coach" || isAdmin;
   const canAccessCoachesCorner = isMember;
 
   return { 
@@ -111,7 +118,9 @@ export const useUserRole = () => {
     loading, 
     isWebmaster, 
     isAdmin, 
+    isCoach,
     isMember, 
+    isFoundingMember,
     canAccessCoachesCorner,
     refetch
   };
@@ -123,6 +132,8 @@ export const getMemberTypeBadge = (memberType: MemberType) => {
       return { label: "Webmaster", className: "bg-purple-500/20 text-purple-400 border-purple-500/30" };
     case "admin":
       return { label: "Admin", className: "bg-red-500/20 text-red-400 border-red-500/30" };
+    case "coach":
+      return { label: "Coach", className: "bg-blue-500/20 text-blue-400 border-blue-500/30" };
     case "member":
       return { label: "Member", className: "bg-green-500/20 text-green-400 border-green-500/30" };
     case "prospect":
@@ -131,6 +142,11 @@ export const getMemberTypeBadge = (memberType: MemberType) => {
       return null;
   }
 };
+
+export const getFoundingMemberBadge = () => ({
+  label: "Founding Member",
+  className: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+});
 
 export const AGE_CLASSES = [
   { value: "14-29", label: "14-29 Jahre" },

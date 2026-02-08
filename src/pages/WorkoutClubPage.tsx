@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Dumbbell, Video, FileText, Lightbulb, Plus } from "lucide-react";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +38,7 @@ const SECTIONS = [
 
 const WorkoutClubPage = () => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin, isCoach } = useUserRole();
   const [adminDialogOpen, setAdminDialogOpen] = useState(false);
 
   const toggleSection = (key: string, soon: boolean) => {
@@ -84,7 +84,7 @@ const WorkoutClubPage = () => {
             {/* Expanded Trainingspläne section */}
             {expandedSection === "trainingsplaene" && section.key === "trainingsplaene" && (
               <div className="border border-t-0 border-border bg-card/50 p-6">
-                {isAdmin && (
+                {(isAdmin || isCoach) && (
                   <div className="mb-4">
                     <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
                       <DialogTrigger asChild>
