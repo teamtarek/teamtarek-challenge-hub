@@ -79,6 +79,27 @@ export type Database = {
           },
         ]
       }
+      founding_crew_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invite_tokens: {
         Row: {
           created_at: string
@@ -577,6 +598,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_webmaster: { Args: { _user_id: string }; Returns: boolean }
+      is_founding_member: { Args: { _user_id: string }; Returns: boolean }
       is_webmaster: { Args: { _user_id: string }; Returns: boolean }
       update_membership_activity: {
         Args: { _user_id: string }

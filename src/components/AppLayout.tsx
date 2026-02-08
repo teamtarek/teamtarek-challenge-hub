@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dumbbell, LogOut, Shield, User, Menu, X } from "lucide-react";
+import { Award, Dumbbell, LogOut, Shield, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,11 +21,13 @@ const NAV_ITEMS = [
   { label: "Challenges", path: "/challenges" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Workout Club", path: "/workout-club" },
-];
+] as const;
+
+const FOUNDING_CREW_ITEM = { label: "Founding Crew", path: "/founding-crew", icon: Award } as const;
 
 export const AppLayout = () => {
   const { user, loading, signOut } = useAuth();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isFoundingMember } = useUserRole();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,6 +102,19 @@ export const AppLayout = () => {
                   {item.label}
                 </Link>
               ))}
+              {(isFoundingMember || isAdmin) && (
+                <Link
+                  to={FOUNDING_CREW_ITEM.path}
+                  className={`px-3 py-2 text-sm font-medium uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+                    isActive(FOUNDING_CREW_ITEM.path)
+                      ? "text-amber-500"
+                      : "text-amber-500/60 hover:text-amber-500"
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  {FOUNDING_CREW_ITEM.label}
+                </Link>
+              )}
             </nav>
 
             {/* Right side */}
@@ -173,6 +188,20 @@ export const AppLayout = () => {
                   {item.label}
                 </Link>
               ))}
+              {(isFoundingMember || isAdmin) && (
+                <Link
+                  to={FOUNDING_CREW_ITEM.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm font-medium uppercase tracking-wider transition-colors ${
+                    isActive(FOUNDING_CREW_ITEM.path)
+                      ? "text-amber-500 bg-amber-500/5"
+                      : "text-amber-500/60 hover:text-amber-500"
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  {FOUNDING_CREW_ITEM.label}
+                </Link>
+              )}
             </nav>
           )}
         </div>

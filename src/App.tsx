@@ -17,6 +17,7 @@ import CommunityPage from "./pages/CommunityPage";
 import PostPage from "./pages/PostPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import WorkoutClubPage from "./pages/WorkoutClubPage";
+import FoundingCrewPage from "./pages/FoundingCrewPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/challenge/:slug" element={<ChallengePage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/workout-club" element={<WorkoutClubPage />} />
+              <Route path="/founding-crew" element={<FoundingCrewPage />} />
               <Route path="/profil" element={<ProfilePage />} />
               <Route path="/profil/:userId" element={<PublicProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />
