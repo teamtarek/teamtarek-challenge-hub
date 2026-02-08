@@ -1,15 +1,15 @@
-import { MemberType, getMemberTypeBadge } from "@/hooks/useUserRole";
-import { Shield, Crown, Star, UserCheck } from "lucide-react";
+import { MemberType, getMemberTypeBadge, getFoundingMemberBadge } from "@/hooks/useUserRole";
+import { Shield, Crown, Star, UserCheck, Award, Dumbbell } from "lucide-react";
 
 interface MemberBadgeProps {
   memberType: MemberType;
+  isFoundingMember?: boolean;
   size?: "sm" | "md" | "lg";
   showIcon?: boolean;
 }
 
-export const MemberBadge = ({ memberType, size = "md", showIcon = true }: MemberBadgeProps) => {
+export const MemberBadge = ({ memberType, isFoundingMember = false, size = "md", showIcon = true }: MemberBadgeProps) => {
   const badge = getMemberTypeBadge(memberType);
-  if (!badge) return null;
 
   const sizeClasses = {
     sm: "text-xs px-1.5 py-0.5",
@@ -23,19 +23,34 @@ export const MemberBadge = ({ memberType, size = "md", showIcon = true }: Member
     lg: "w-4 h-4",
   };
 
-  const Icon = {
+  const IconMap: Record<string, typeof Crown> = {
     webmaster: Crown,
     admin: Shield,
+    coach: Dumbbell,
     member: Star,
     prospect: UserCheck,
-  }[memberType || "prospect"];
+  };
+
+  const Icon = IconMap[memberType || "prospect"];
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border font-medium ${badge.className} ${sizeClasses[size]}`}
-    >
-      {showIcon && Icon && <Icon className={iconSize[size]} />}
-      {badge.label}
+    <span className="inline-flex items-center gap-1 flex-wrap">
+      {badge && (
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border font-medium ${badge.className} ${sizeClasses[size]}`}
+        >
+          {showIcon && Icon && <Icon className={iconSize[size]} />}
+          {badge.label}
+        </span>
+      )}
+      {isFoundingMember && (
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border font-medium ${getFoundingMemberBadge().className} ${sizeClasses[size]}`}
+        >
+          {showIcon && <Award className={iconSize[size]} />}
+          {getFoundingMemberBadge().label}
+        </span>
+      )}
     </span>
   );
 };

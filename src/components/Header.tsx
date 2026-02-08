@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, User, LogIn, Shield, MessageSquare } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 
 export const Header = () => {
   const { user, loading } = useAuth();
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin } = useUserRole();
 
   return (
     <header className="border-b border-border">
