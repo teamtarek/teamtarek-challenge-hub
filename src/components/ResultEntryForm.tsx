@@ -129,6 +129,14 @@ export const ResultEntryForm = ({
       if (isNaN(repsNum) || repsNum <= 0) { toast.error("Bitte eine gültige Anzahl Wiederholungen eingeben"); setLoading(false); return; }
       updateData.total_reps = repsNum;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (is1234Complex) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || roundsNum <= 0) { toast.error("Bitte eine gültige Rundenzahl eingeben"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
+      const seconds = timeStringToSeconds(timeValue);
+      if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
+      updateData.total_time_seconds = seconds;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isEnduranceRun || isSpringChallenge) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
