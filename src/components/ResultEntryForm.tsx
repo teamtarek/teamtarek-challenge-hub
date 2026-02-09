@@ -83,6 +83,7 @@ export const ResultEntryForm = ({
 
   const [timeValue, setTimeValue] = useState(getInitialTime());
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
+  const [rounds, setRounds] = useState(is1234Complex ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
