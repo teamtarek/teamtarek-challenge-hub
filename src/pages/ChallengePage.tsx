@@ -311,12 +311,15 @@ const ChallengePage = () => {
             </div>
 
             {/* Mile Level Info Box */}
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
                   ? TEN_K_LEVEL_DESCRIPTIONS 
-                  : MILE_LEVEL_DESCRIPTIONS;
+                  : challenge.slug === "1234-complex"
+                    ? COMPLEX_1234_LEVEL_DESCRIPTIONS
+                    : MILE_LEVEL_DESCRIPTIONS;
+              const isComplex = challenge.slug === "1234-complex";
               return (
                 <div className="challenge-card">
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
