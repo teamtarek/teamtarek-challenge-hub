@@ -274,7 +274,7 @@ const PostPage = () => {
   };
 
   const handleDeletePost = async () => {
-    if (!post || !user || post.user_id !== user.id) return;
+    if (!post || !user || (post.user_id !== user.id && !isAdmin)) return;
 
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
 
