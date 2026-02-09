@@ -26,6 +26,7 @@ interface UserChallenge {
   id: string;
   challenge_name: string;
   challenge_slug: string;
+  challenge_category: string;
   is_verified: boolean;
   score: number | null;
 }
