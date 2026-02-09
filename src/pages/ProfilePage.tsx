@@ -616,7 +616,45 @@ const ProfilePage = () => {
                 disabled
                 className="input-minimal opacity-50"
               />
-              <p className="text-xs text-muted-foreground">E-Mail kann nicht geändert werden</p>
+            </div>
+
+            {/* Email Change */}
+            <div className="space-y-2 p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <Label className="font-medium">E-Mail ändern</Label>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Neue E-Mail-Adresse"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="input-minimal flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={changingEmail || !newEmail.trim()}
+                  onClick={async () => {
+                    if (!newEmail.trim()) return;
+                    setChangingEmail(true);
+                    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+                    if (error) {
+                      toast.error("E-Mail konnte nicht geändert werden.");
+                    } else {
+                      toast.success("Bestätigungs-E-Mail wurde an die neue Adresse gesendet.");
+                      setNewEmail("");
+                    }
+                    setChangingEmail(false);
+                  }}
+                >
+                  {changingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ändern"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Du erhältst eine Bestätigungs-E-Mail an die neue Adresse.
+              </p>
             </div>
 
             <div className="flex gap-3">
