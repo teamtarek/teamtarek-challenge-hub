@@ -77,7 +77,7 @@ export const ResultEntryForm = ({
   // Initialize from existing result
   const getInitialTime = (): string => {
     if (isMurphChallenge || isSimpleSinister) return secondsToTimeString(existingResult.score);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
