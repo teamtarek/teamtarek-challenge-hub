@@ -357,6 +357,8 @@ const AuthPage = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            </>
+          )}
           </div>
         </div>
       </div>
