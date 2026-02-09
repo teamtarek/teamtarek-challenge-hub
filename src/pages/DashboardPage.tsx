@@ -110,10 +110,9 @@ const DashboardPage = () => {
       // Fetch user's challenges
       const { data: regData } = await supabase
         .from("registrations")
-        .select("id, score, is_verified, challenges(name, slug)")
+        .select("id, score, is_verified, challenges(name, slug, category)")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+        .order("created_at", { ascending: false });
 
       if (regData) {
         setUserChallenges(
@@ -121,6 +120,7 @@ const DashboardPage = () => {
             id: r.id,
             challenge_name: r.challenges?.name || "Challenge",
             challenge_slug: r.challenges?.slug || "",
+            challenge_category: r.challenges?.category || "",
             is_verified: r.is_verified || false,
             score: r.score,
           }))

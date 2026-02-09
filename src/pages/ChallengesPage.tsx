@@ -37,7 +37,7 @@ const ChallengesPage = () => {
         Melde dich an, trainiere und reiche dein Ergebnis ein.
       </p>
 
-      {SECTIONS.map((section) => {
+      {CHALLENGE_SECTIONS.map((section) => {
         const sectionChallenges = challenges.filter((c) => c.category === section.key);
         if (!loading && sectionChallenges.length === 0) return null;
 
