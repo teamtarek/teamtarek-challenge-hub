@@ -70,7 +70,9 @@ const AuthPage = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("Invalid login credentials")) {
+      if (error.message.includes("Email not confirmed")) {
+        toast.error("Bitte bestätige zuerst deine E-Mail-Adresse, bevor du dich anmelden kannst.");
+      } else if (error.message.includes("Invalid login credentials")) {
         toast.error("Ungültige E-Mail oder Passwort");
       } else {
         toast.error("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
