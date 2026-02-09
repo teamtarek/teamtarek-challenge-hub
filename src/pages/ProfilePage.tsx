@@ -262,7 +262,8 @@ const ProfilePage = () => {
           challenges (
             name,
             slug,
-            start_date
+            start_date,
+            category
           )
         `)
         .eq("user_id", user.id)
