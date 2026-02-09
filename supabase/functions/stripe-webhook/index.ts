@@ -104,6 +104,11 @@ serve(async (req) => {
       }
 
       const user = userData.users.find(u => u.email === customerEmail);
+      // Get subscription ID early so it's available for both paths
+      const subscriptionId = typeof session.subscription === 'string' 
+        ? session.subscription 
+        : session.subscription?.id;
+
       if (!user) {
         logStep("No user found for email, creating signup authorization", { email: customerEmail });
         
