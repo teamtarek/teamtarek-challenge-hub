@@ -31,6 +31,7 @@ import theMile from "@/assets/challenges/the-mile.jpg";
 import secretServiceSnatchTest from "@/assets/challenges/secret-service-snatch-test.jpg";
 import fiveKRun from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKRun from "@/assets/challenges/10-kilometer-run.jpg";
+import complex1234 from "@/assets/challenges/1234-complex.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
