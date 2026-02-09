@@ -105,10 +105,24 @@ serve(async (req) => {
 
       const user = userData.users.find(u => u.email === customerEmail);
       if (!user) {
-        logStep("WARNING: No user found for email", { email: customerEmail });
-        // Still return success - the user might not have an account yet
-        // They can link their account later
-        return new Response(JSON.stringify({ received: true, warning: "User not found" }), {
+        logStep("No user found for email, creating signup authorization", { email: customerEmail });
+        
+        // Create signup authorization so the user can register after payment
+        const { error: authInsertError } = await supabaseAdmin
+          .from("signup_authorizations")
+          .insert({
+            email: customerEmail.toLowerCase().trim(),
+            stripe_customer_id: customerId || null,
+            stripe_subscription_id: subscriptionId || null,
+          });
+
+        if (authInsertError) {
+          logStep("WARNING: Failed to create signup authorization", { error: authInsertError.message });
+        } else {
+          logStep("Signup authorization created for email", { email: customerEmail });
+        }
+
+        return new Response(JSON.stringify({ received: true, authorization_created: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
