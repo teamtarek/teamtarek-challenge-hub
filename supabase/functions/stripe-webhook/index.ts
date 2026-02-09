@@ -139,13 +139,19 @@ serve(async (req) => {
       let currentPeriodEnd: string | null = null;
 
       if (subscriptionId) {
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        logStep("Subscription details", { 
-          subscriptionId, 
-          currentPeriodEnd,
-          status: subscription.status 
-        });
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          if (subscription.current_period_end) {
+            currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+          }
+          logStep("Subscription details", { 
+            subscriptionId, 
+            currentPeriodEnd,
+            status: subscription.status 
+          });
+        } catch (subErr) {
+          logStep("WARNING: Could not retrieve subscription", { error: subErr instanceof Error ? subErr.message : String(subErr) });
+        }
       }
 
       // Upsert membership record
