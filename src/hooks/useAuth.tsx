@@ -50,17 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: new Error(data.error) };
     }
 
-    // Registration successful — now sign in the user
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      return { error: new Error("Account erstellt, aber Anmeldung fehlgeschlagen. Bitte melde dich manuell an.") };
-    }
-
-    return { error: null };
+    // Registration successful — user must verify email before signing in
+    return { error: null, emailVerificationRequired: true };
   };
 
   const signIn = async (email: string, password: string) => {
