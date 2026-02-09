@@ -256,6 +256,10 @@ const PostPage = () => {
       toast.error("Kommentar konnte nicht gesendet werden.");
     } else {
       setNewComment("");
+      // Trigger notification email (fire and forget)
+      supabase.functions.invoke("send-notification-email", {
+        body: { post_id: postId, comment_content: newComment.trim() },
+      }).catch(() => {});
     }
     setSubmitting(false);
   };
