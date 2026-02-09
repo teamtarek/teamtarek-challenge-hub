@@ -349,6 +349,50 @@ const PostPage = () => {
     setLikingComment(null);
   };
 
+  const handleEditPost = () => {
+    if (!post) return;
+    setEditPostTitle(post.title);
+    setEditPostContent(post.content);
+    setEditingPost(true);
+  };
+
+  const handleSavePost = async () => {
+    if (!post || !editPostTitle.trim() || !editPostContent.trim()) return;
+    setSavingPost(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({ title: editPostTitle.trim(), content: editPostContent.trim() } as any)
+      .eq("id", post.id);
+    if (error) toast.error("Beitrag konnte nicht gespeichert werden.");
+    else {
+      toast.success("Beitrag aktualisiert.");
+      setEditingPost(false);
+      fetchPost();
+    }
+    setSavingPost(false);
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentContent(comment.content);
+  };
+
+  const handleSaveComment = async (commentId: string) => {
+    if (!editingCommentContent.trim()) return;
+    setSavingComment(true);
+    const { error } = await supabase
+      .from("comments")
+      .update({ content: editingCommentContent.trim() })
+      .eq("id", commentId);
+    if (error) toast.error("Kommentar konnte nicht gespeichert werden.");
+    else {
+      toast.success("Kommentar aktualisiert.");
+      setEditingCommentId(null);
+      fetchComments();
+    }
+    setSavingComment(false);
+  };
+
   const getInitials = (name: string | null) => {
     return name ? name.slice(0, 2).toUpperCase() : "??";
   };
