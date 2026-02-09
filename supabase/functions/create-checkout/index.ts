@@ -93,7 +93,7 @@ serve(async (req) => {
     // Determine success URL based on whether user is authenticated
     const successUrl = userId
       ? `${origin}/profil?checkout=success`
-      : `${origin}/auth?tab=signup&stripe_email=${encodeURIComponent(userEmail || '')}&checkout=success`;
+      : `${origin}/auth?tab=signup&checkout=success`;
 
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({

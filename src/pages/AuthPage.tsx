@@ -46,19 +46,9 @@ const AuthPage = () => {
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [signupToken, setSignupToken] = useState(searchParams.get("token") || "");
 
-  // Determine signup mode
-  const hasStripeEmail = searchParams.get("stripe_email") || "";
-  const signupMode: "token" | "stripe" | "choose" = signupToken
-    ? "token"
-    : hasStripeEmail
-    ? "stripe"
-    : "choose";
-
-  useEffect(() => {
-    if (hasStripeEmail && !signupEmail) {
-      setSignupEmail(hasStripeEmail);
-    }
-  }, [hasStripeEmail, signupEmail]);
+  // Detect Stripe checkout success from redirect
+  const checkoutSuccess = searchParams.get("checkout") === "success";
+  const hasStripeAuth = checkoutSuccess;
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -108,7 +98,7 @@ const AuthPage = () => {
     }
 
     // Must have a token or stripe authorization
-    if (!signupToken && !hasStripeEmail) {
+    if (!signupToken && !hasStripeAuth) {
       toast.error("Registrierung nur mit Einladung oder nach Stripe-Zahlung möglich.");
       return;
     }
@@ -239,7 +229,7 @@ const AuthPage = () => {
                   </div>
 
                   {/* Stripe checkout option */}
-                  {!signupToken && !hasStripeEmail && (
+                  {!signupToken && !hasStripeAuth && (
                     <div className="border border-border rounded-md p-4 text-center">
                       <p className="text-sm text-muted-foreground mb-3">
                         Kein Einladungscode? Starte mit einer Mitgliedschaft.
@@ -263,17 +253,17 @@ const AuthPage = () => {
                     </div>
                   )}
 
-                  {/* Show email confirmation for Stripe flow */}
-                  {hasStripeEmail && (
+                  {/* Show confirmation for Stripe flow */}
+                  {hasStripeAuth && (
                     <div className="bg-primary/10 border border-primary/20 rounded-md p-3">
                       <p className="text-sm text-primary">
-                        ✓ Zahlung bestätigt. Erstelle jetzt deinen Account.
+                        ✓ Zahlung bestätigt. Erstelle jetzt deinen Account mit der E-Mail, die du bei der Zahlung verwendet hast.
                       </p>
                     </div>
                   )}
 
                   {/* Only show registration fields if token or stripe auth exists */}
-                  {(signupToken || hasStripeEmail) && (
+                  {(signupToken || hasStripeAuth) && (
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="signup-name">Name</Label>
@@ -298,7 +288,6 @@ const AuthPage = () => {
                           onChange={(e) => setSignupEmail(e.target.value)}
                           className="input-minimal"
                           required
-                          readOnly={!!hasStripeEmail}
                         />
                       </div>
 
