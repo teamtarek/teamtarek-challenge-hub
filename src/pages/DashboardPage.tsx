@@ -9,6 +9,7 @@ import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock } from "lucide-react
 import { formatDistanceToNow } from "date-fns";
 import { StarterJourneyPanel } from "@/components/StarterJourneyPanel";
 import { de } from "date-fns/locale";
+import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 interface RecentThread {
   id: string;
