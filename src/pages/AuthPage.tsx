@@ -157,7 +157,28 @@ const AuthPage = () => {
             Zurück zur Startseite
           </Link>
 
-          <div className="challenge-card">
+          {showVerificationMessage ? (
+            <div className="text-center space-y-4 py-6">
+              <MailCheck className="w-12 h-12 text-primary mx-auto" />
+              <h1 className="text-2xl font-bold">E-Mail bestätigen</h1>
+              <p className="text-muted-foreground">
+                Wir haben dir eine Bestätigungs-E-Mail gesendet. Bitte klicke auf den Link in der E-Mail, um deinen Account zu aktivieren.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Nach der Bestätigung kannst du dich hier anmelden.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowVerificationMessage(false);
+                  setActiveTab("login");
+                }}
+              >
+                Zur Anmeldung
+              </Button>
+            </div>
+          ) : (
+            <>
             <h1 className="text-2xl font-bold mb-6 text-center">Willkommen</h1>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
