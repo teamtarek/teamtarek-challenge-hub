@@ -92,6 +92,7 @@ export const ResultEntryForm = ({
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
+    if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.kettlebell_weight_kg ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
