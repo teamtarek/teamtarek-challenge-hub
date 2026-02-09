@@ -104,6 +104,11 @@ serve(async (req) => {
       }
 
       const user = userData.users.find(u => u.email === customerEmail);
+      // Get subscription ID early so it's available for both paths
+      const subscriptionId = typeof session.subscription === 'string' 
+        ? session.subscription 
+        : session.subscription?.id;
+
       if (!user) {
         logStep("No user found for email, creating signup authorization", { email: customerEmail });
         
@@ -132,9 +137,6 @@ serve(async (req) => {
 
       // Get subscription details for period end
       let currentPeriodEnd: string | null = null;
-      const subscriptionId = typeof session.subscription === 'string' 
-        ? session.subscription 
-        : session.subscription?.id;
 
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);

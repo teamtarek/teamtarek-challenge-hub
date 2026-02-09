@@ -9,20 +9,16 @@ export const useCheckout = () => {
     setLoading(true);
     
     try {
-      // Get the current session to ensure we have a valid token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        toast.error("Bitte melde dich an, um eine Mitgliedschaft zu starten.");
-        setLoading(false);
-        return;
+      // Try to get session - checkout works for both authenticated and guest users
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
       }
 
-      // Call the edge function - supabase.functions.invoke automatically includes the auth token
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers,
       });
 
       if (error) {
