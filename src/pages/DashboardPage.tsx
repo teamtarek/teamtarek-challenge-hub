@@ -239,22 +239,37 @@ const DashboardPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {userChallenges.map((ch) => (
-              <Link
-                key={ch.id}
-                to={`/challenge/${ch.challenge_slug}`}
-                className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
-              >
-                <div>
-                  <p className="font-medium">{ch.challenge_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
+          <div className="space-y-4">
+            {CHALLENGE_SECTIONS.map((section) => {
+              const sectionChallenges = userChallenges.filter(
+                (ch) => ch.challenge_category === section.key
+              );
+              if (sectionChallenges.length === 0) return null;
+              return (
+                <div key={section.key}>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                    {section.label}
                   </p>
+                  <div className="space-y-2">
+                    {sectionChallenges.map((ch) => (
+                      <Link
+                        key={ch.id}
+                        to={`/challenge/${ch.challenge_slug}`}
+                        className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
+                      >
+                        <div>
+                          <p className="font-medium">{ch.challenge_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
+                          </p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
