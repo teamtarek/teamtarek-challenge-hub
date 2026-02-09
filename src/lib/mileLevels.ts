@@ -115,3 +115,10 @@ export const TEN_K_LEVEL_DESCRIPTIONS = [
   { level: 3, male: "≤ 45:00", female: "≤ 50:00" },
   { level: 4, male: "≤ 40:00", female: "≤ 43:00" },
 ];
+
+export const COMPLEX_1234_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "10 Runden / 5 Min / 20 kg", female: "10 Runden / 5 Min / 12 kg" },
+  { level: 2, male: "20 Runden / 10 Min / 20 kg", female: "20 Runden / 10 Min / 12 kg" },
+  { level: 3, male: "30 Runden / 15 Min / 20 kg", female: "30 Runden / 15 Min / 12 kg" },
+  { level: 4, male: "30 Runden / 15 Min / 24 kg", female: "30 Runden / 15 Min / 16 kg" },
+];
