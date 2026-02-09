@@ -85,6 +85,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
   const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
+  const is1234Complex = challengeSlug === "1234-complex";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain;
 
