@@ -327,7 +327,9 @@ const ChallengePage = () => {
                     Level-Stufen
                   </h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht.
+                    {isComplex 
+                      ? "Erreiche ein Level basierend auf Runden, Zeit und Gewicht. Die Anforderungen unterscheiden sich nach Geschlecht."
+                      : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
