@@ -675,6 +675,70 @@ const ProfilePage = () => {
           </form>
         </div>
 
+        {/* Account Deletion */}
+        <div className="challenge-card mb-8 border-destructive/30">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <h2 className="text-lg font-semibold text-destructive">Konto löschen</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Wenn du dein Konto löschst, werden alle deine Daten unwiderruflich entfernt. Diese Aktion kann nicht rückgängig gemacht werden.
+          </p>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Konto unwiderruflich löschen
+          </Button>
+        </div>
+
+        {/* Delete Account Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Konto endgültig löschen?
+              </DialogTitle>
+              <DialogDescription>
+                Alle deine Daten werden unwiderruflich gelöscht: Profil, Beiträge, Kommentare, Likes und Mitgliedschaft.
+                Tippe <strong>LÖSCHEN</strong> ein, um zu bestätigen.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder='Tippe "LÖSCHEN" ein'
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText(""); }}>
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteConfirmText !== "LÖSCHEN" || deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) { toast.error("Sitzung abgelaufen."); setDeletingAccount(false); return; }
+                  const { error } = await supabase.functions.invoke("delete-account", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                  });
+                  if (error) {
+                    toast.error("Konto konnte nicht gelöscht werden.");
+                    setDeletingAccount(false);
+                  } else {
+                    toast.success("Dein Konto wurde gelöscht.");
+                    await signOut();
+                    navigate("/");
+                  }
+                }}
+              >
+                {deletingAccount ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Endgültig löschen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Achievements - Completed Challenges with Results */}
         {completedChallenges.length > 0 && (
           <div className="challenge-card mb-8">
