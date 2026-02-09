@@ -57,6 +57,7 @@ interface Registration {
     name: string;
     slug: string;
     start_date: string;
+    category: string;
   };
 }
 
