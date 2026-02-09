@@ -82,6 +82,8 @@ const AuthPage = () => {
     navigate("/dashboard");
   };
 
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -104,7 +106,7 @@ const AuthPage = () => {
     }
 
     setLoading(true);
-    const { error } = await signUp(
+    const result = await signUp(
       validation.data.email,
       validation.data.password,
       validation.data.displayName,
@@ -112,13 +114,13 @@ const AuthPage = () => {
     );
     setLoading(false);
 
-    if (error) {
-      toast.error(error.message);
+    if (result.error) {
+      toast.error(result.error.message);
       return;
     }
 
-    toast.success("Erfolgreich registriert!");
-    navigate("/dashboard");
+    // Show email verification message instead of redirecting
+    setShowVerificationMessage(true);
   };
 
   if (authLoading) {
