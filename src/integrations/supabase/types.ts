@@ -402,6 +402,39 @@ export type Database = {
           },
         ]
       }
+      signup_authorizations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          used: boolean
+          used_by_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          used?: boolean
+          used_by_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          used?: boolean
+          used_by_user_id?: string | null
+        }
+        Relationships: []
+      }
       training_content: {
         Row: {
           content_type: string

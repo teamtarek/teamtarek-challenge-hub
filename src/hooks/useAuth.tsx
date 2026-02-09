@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName: string, token?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -28,7 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -38,20 +36,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, displayName: string, token?: string) => {
+    // Call the register edge function which validates token/stripe authorization
+    const { data, error: fnError } = await supabase.functions.invoke("register", {
+      body: { email, password, displayName, token },
+    });
+
+    if (fnError) {
+      return { error: new Error(fnError.message || "Registrierung fehlgeschlagen.") };
+    }
+
+    if (data?.error) {
+      return { error: new Error(data.error) };
+    }
+
+    // Registration successful — now sign in the user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: displayName,
-        },
-      },
     });
-    return { error };
+
+    if (signInError) {
+      return { error: new Error("Account erstellt, aber Anmeldung fehlgeschlagen. Bitte melde dich manuell an.") };
+    }
+
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {

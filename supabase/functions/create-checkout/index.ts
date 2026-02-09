@@ -90,6 +90,11 @@ serve(async (req) => {
       metadata.user_id = userId;
     }
 
+    // Determine success URL based on whether user is authenticated
+    const successUrl = userId
+      ? `${origin}/profil?checkout=success`
+      : `${origin}/auth?tab=signup&stripe_email=${encodeURIComponent(userEmail || '')}&checkout=success`;
+
     // Create a subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -101,8 +106,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/profil?checkout=success`,
-      cancel_url: `${origin}/profil?checkout=canceled`,
+      success_url: successUrl,
+      cancel_url: `${origin}/?checkout=canceled`,
       metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
