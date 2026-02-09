@@ -15,8 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getMileLevel } from "@/lib/mileLevels";
 
@@ -183,6 +191,11 @@ const ProfilePage = () => {
   const [hatedExercise, setHatedExercise] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -603,7 +616,45 @@ const ProfilePage = () => {
                 disabled
                 className="input-minimal opacity-50"
               />
-              <p className="text-xs text-muted-foreground">E-Mail kann nicht geändert werden</p>
+            </div>
+
+            {/* Email Change */}
+            <div className="space-y-2 p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <Label className="font-medium">E-Mail ändern</Label>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Neue E-Mail-Adresse"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="input-minimal flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={changingEmail || !newEmail.trim()}
+                  onClick={async () => {
+                    if (!newEmail.trim()) return;
+                    setChangingEmail(true);
+                    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+                    if (error) {
+                      toast.error("E-Mail konnte nicht geändert werden.");
+                    } else {
+                      toast.success("Bestätigungs-E-Mail wurde an die neue Adresse gesendet.");
+                      setNewEmail("");
+                    }
+                    setChangingEmail(false);
+                  }}
+                >
+                  {changingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ändern"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Du erhältst eine Bestätigungs-E-Mail an die neue Adresse.
+              </p>
             </div>
 
             <div className="flex gap-3">
@@ -623,6 +674,70 @@ const ProfilePage = () => {
             </div>
           </form>
         </div>
+
+        {/* Account Deletion */}
+        <div className="challenge-card mb-8 border-destructive/30">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <h2 className="text-lg font-semibold text-destructive">Konto löschen</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Wenn du dein Konto löschst, werden alle deine Daten unwiderruflich entfernt. Diese Aktion kann nicht rückgängig gemacht werden.
+          </p>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Konto unwiderruflich löschen
+          </Button>
+        </div>
+
+        {/* Delete Account Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Konto endgültig löschen?
+              </DialogTitle>
+              <DialogDescription>
+                Alle deine Daten werden unwiderruflich gelöscht: Profil, Beiträge, Kommentare, Likes und Mitgliedschaft.
+                Tippe <strong>LÖSCHEN</strong> ein, um zu bestätigen.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder='Tippe "LÖSCHEN" ein'
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText(""); }}>
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteConfirmText !== "LÖSCHEN" || deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) { toast.error("Sitzung abgelaufen."); setDeletingAccount(false); return; }
+                  const { error } = await supabase.functions.invoke("delete-account", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                  });
+                  if (error) {
+                    toast.error("Konto konnte nicht gelöscht werden.");
+                    setDeletingAccount(false);
+                  } else {
+                    toast.success("Dein Konto wurde gelöscht.");
+                    await signOut();
+                    navigate("/");
+                  }
+                }}
+              >
+                {deletingAccount ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Endgültig löschen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Achievements - Completed Challenges with Results */}
         {completedChallenges.length > 0 && (

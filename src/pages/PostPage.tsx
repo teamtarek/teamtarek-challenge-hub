@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart, Pencil, X, Check } from "lucide-react";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import { toast } from "sonner";
@@ -64,6 +66,7 @@ const PostPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +75,13 @@ const PostPage = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [likingPost, setLikingPost] = useState(false);
   const [likingComment, setLikingComment] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState("");
+  const [savingComment, setSavingComment] = useState(false);
+  const [editingPost, setEditingPost] = useState(false);
+  const [editPostContent, setEditPostContent] = useState("");
+  const [editPostTitle, setEditPostTitle] = useState("");
+  const [savingPost, setSavingPost] = useState(false);
 
   const fetchPost = async () => {
     if (!postId) return;
@@ -246,6 +256,10 @@ const PostPage = () => {
       toast.error("Kommentar konnte nicht gesendet werden.");
     } else {
       setNewComment("");
+      // Trigger notification email (fire and forget)
+      supabase.functions.invoke("send-notification-email", {
+        body: { post_id: postId, comment_content: newComment.trim() },
+      }).catch(() => {});
     }
     setSubmitting(false);
   };
@@ -264,7 +278,7 @@ const PostPage = () => {
   };
 
   const handleDeletePost = async () => {
-    if (!post || !user || post.user_id !== user.id) return;
+    if (!post || !user || (post.user_id !== user.id && !isAdmin)) return;
 
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
 
@@ -340,6 +354,50 @@ const PostPage = () => {
     setLikingComment(null);
   };
 
+  const handleEditPost = () => {
+    if (!post) return;
+    setEditPostTitle(post.title);
+    setEditPostContent(post.content);
+    setEditingPost(true);
+  };
+
+  const handleSavePost = async () => {
+    if (!post || !editPostTitle.trim() || !editPostContent.trim()) return;
+    setSavingPost(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({ title: editPostTitle.trim(), content: editPostContent.trim() } as any)
+      .eq("id", post.id);
+    if (error) toast.error("Beitrag konnte nicht gespeichert werden.");
+    else {
+      toast.success("Beitrag aktualisiert.");
+      setEditingPost(false);
+      fetchPost();
+    }
+    setSavingPost(false);
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentContent(comment.content);
+  };
+
+  const handleSaveComment = async (commentId: string) => {
+    if (!editingCommentContent.trim()) return;
+    setSavingComment(true);
+    const { error } = await supabase
+      .from("comments")
+      .update({ content: editingCommentContent.trim() })
+      .eq("id", commentId);
+    if (error) toast.error("Kommentar konnte nicht gespeichert werden.");
+    else {
+      toast.success("Kommentar aktualisiert.");
+      setEditingCommentId(null);
+      fetchComments();
+    }
+    setSavingComment(false);
+  };
+
   const getInitials = (name: string | null) => {
     return name ? name.slice(0, 2).toUpperCase() : "??";
   };
@@ -390,7 +448,16 @@ const PostPage = () => {
                     {getCategoryLabel(post.category)}
                   </span>
                 </div>
-                <h1 className="text-2xl font-bold">{post.title}</h1>
+                {editingPost ? (
+                  <Input
+                    value={editPostTitle}
+                    onChange={(e) => setEditPostTitle(e.target.value)}
+                    className="text-2xl font-bold"
+                    maxLength={200}
+                  />
+                ) : (
+                  <h1 className="text-2xl font-bold">{post.title}</h1>
+                )}
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap">
                   <Link 
                     to={`/profil/${post.user_id}`} 
@@ -410,19 +477,51 @@ const PostPage = () => {
                   </span>
                 </div>
               </div>
-              {user?.id === post.user_id && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDeletePost}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+              <div className="flex gap-1">
+                {user?.id === post.user_id && !editingPost && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEditPost}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                )}
+                {editingPost && (
+                  <>
+                    <Button variant="ghost" size="icon" onClick={() => setEditingPost(false)} className="text-muted-foreground">
+                      <X className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleSavePost} disabled={savingPost} className="text-primary">
+                      {savingPost ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    </Button>
+                  </>
+                )}
+                {(user?.id === post.user_id || isAdmin) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDeletePost}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
-            <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
-            
+            {editingPost ? (
+              <Textarea
+                value={editPostContent}
+                onChange={(e) => setEditPostContent(e.target.value)}
+                className="mt-4"
+                rows={5}
+                maxLength={5000}
+              />
+            ) : (
+              <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
+            )}
+
             {/* Post Image */}
             {post.image_url && (
               <div className="mt-4">
@@ -537,37 +636,39 @@ const PostPage = () => {
                             })}
                           </span>
                         </div>
-                        {user?.id === comment.user_id && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDeleteComment(comment.id)}
-                            disabled={deleting === comment.id}
-                          >
-                            {deleting === comment.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3 h-3" />
-                            )}
-                          </Button>
-                        )}
+                        <div className="flex gap-1">
+                          {user?.id === comment.user_id && editingCommentId !== comment.id && (
+                            <button onClick={() => handleEditComment(comment)} className="p-1 text-muted-foreground hover:text-foreground">
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          )}
+                          {editingCommentId === comment.id && (
+                            <>
+                              <button onClick={() => setEditingCommentId(null)} className="p-1 text-muted-foreground"><X className="w-3 h-3" /></button>
+                              <button onClick={() => handleSaveComment(comment.id)} disabled={savingComment} className="p-1 text-primary">
+                                {savingComment ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                              </button>
+                            </>
+                          )}
+                          {(user?.id === comment.user_id || isAdmin) && (
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeleteComment(comment.id)} disabled={deleting === comment.id}>
+                              {deleting === comment.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
-                      
-                      {/* Comment Like Button */}
+                      {editingCommentId === comment.id ? (
+                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={2000} />
+                      ) : (
+                        <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
+                      )}
                       <button
                         onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
                         disabled={likingComment === comment.id}
-                        className={`flex items-center gap-1 mt-2 text-xs transition-colors ${
-                          comment.user_has_liked
-                            ? "text-red-500"
-                            : "text-muted-foreground hover:text-red-500"
-                        }`}
+                        className={`flex items-center gap-1 mt-2 text-xs transition-colors ${comment.user_has_liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}
                       >
-                        <Heart
-                          className={`w-3.5 h-3.5 ${comment.user_has_liked ? "fill-current" : ""}`}
-                        />
+                        <Heart className={`w-3.5 h-3.5 ${comment.user_has_liked ? "fill-current" : ""}`} />
                         <span>{comment.like_count}</span>
                       </button>
                     </div>
