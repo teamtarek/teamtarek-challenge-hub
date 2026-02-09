@@ -7,6 +7,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, Send, Trash2, MessageSquare, Heart, Pencil, X, Check } from "lucide-react";
 import { EmojiPicker } from "@/components/EmojiPicker";
