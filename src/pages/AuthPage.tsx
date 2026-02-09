@@ -157,6 +157,7 @@ const AuthPage = () => {
             Zurück zur Startseite
           </Link>
 
+          <div className="challenge-card">
           {showVerificationMessage ? (
             <div className="text-center space-y-4 py-6">
               <MailCheck className="w-12 h-12 text-primary mx-auto" />
@@ -179,184 +180,179 @@ const AuthPage = () => {
             </div>
           ) : (
             <>
-            <h1 className="text-2xl font-bold mb-6 text-center">Willkommen</h1>
+              <h1 className="text-2xl font-bold mb-6 text-center">Willkommen</h1>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Anmelden</TabsTrigger>
-                <TabsTrigger value="signup">Registrieren</TabsTrigger>
-              </TabsList>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="login">Anmelden</TabsTrigger>
+                  <TabsTrigger value="signup">Registrieren</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">E-Mail</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="deine@email.de"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      className="input-minimal"
-                      required
-                    />
+                <TabsContent value="login">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">E-Mail</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="deine@email.de"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        className="input-minimal"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Passwort</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="input-minimal"
+                        required
+                      />
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Anmelden...
+                        </>
+                      ) : (
+                        "Anmelden"
+                      )}
+                    </Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup">
+                  <div className="bg-muted/50 border border-border rounded-md p-4 mb-6">
+                    <p className="text-sm text-muted-foreground">
+                      Registrierung nur mit Einladungscode oder nach erfolgreichem Stripe-Checkout möglich.
+                    </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Passwort</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className="input-minimal"
-                      required
-                    />
-                  </div>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-token" className="flex items-center gap-2">
+                        <Ticket className="w-4 h-4" />
+                        Einladungscode
+                      </Label>
+                      <Input
+                        id="signup-token"
+                        type="text"
+                        placeholder="Dein Einladungscode (falls vorhanden)"
+                        value={signupToken}
+                        onChange={(e) => setSignupToken(e.target.value)}
+                        className="input-minimal"
+                      />
+                    </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Anmelden...
-                      </>
-                    ) : (
-                      "Anmelden"
+                    {!signupToken && !hasStripeAuth && (
+                      <div className="border border-border rounded-md p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Kein Einladungscode? Starte mit einer Mitgliedschaft.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={startCheckout}
+                          disabled={checkoutLoading}
+                        >
+                          {checkoutLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Wird geladen...
+                            </>
+                          ) : (
+                            "Mitgliedschaft starten (7,99 €/Monat)"
+                          )}
+                        </Button>
+                      </div>
                     )}
-                  </Button>
-                </form>
-              </TabsContent>
 
-              <TabsContent value="signup">
-                {/* Info box about closed registration */}
-                <div className="bg-muted/50 border border-border rounded-md p-4 mb-6">
-                  <p className="text-sm text-muted-foreground">
-                    Registrierung nur mit Einladungscode oder nach erfolgreichem Stripe-Checkout möglich.
-                  </p>
-                </div>
-
-                <form onSubmit={handleSignup} className="space-y-4">
-                  {/* Token input */}
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-token" className="flex items-center gap-2">
-                      <Ticket className="w-4 h-4" />
-                      Einladungscode
-                    </Label>
-                    <Input
-                      id="signup-token"
-                      type="text"
-                      placeholder="Dein Einladungscode (falls vorhanden)"
-                      value={signupToken}
-                      onChange={(e) => setSignupToken(e.target.value)}
-                      className="input-minimal"
-                    />
-                  </div>
-
-                  {/* Stripe checkout option */}
-                  {!signupToken && !hasStripeAuth && (
-                    <div className="border border-border rounded-md p-4 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Kein Einladungscode? Starte mit einer Mitgliedschaft.
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={startCheckout}
-                        disabled={checkoutLoading}
-                      >
-                        {checkoutLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Wird geladen...
-                          </>
-                        ) : (
-                          "Mitgliedschaft starten (7,99 €/Monat)"
-                        )}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Show confirmation for Stripe flow */}
-                  {hasStripeAuth && (
-                    <div className="bg-primary/10 border border-primary/20 rounded-md p-3">
-                      <p className="text-sm text-primary">
-                        ✓ Zahlung bestätigt. Erstelle jetzt deinen Account mit der E-Mail, die du bei der Zahlung verwendet hast.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Only show registration fields if token or stripe auth exists */}
-                  {(signupToken || hasStripeAuth) && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-name">Name</Label>
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Dein Name"
-                          value={signupName}
-                          onChange={(e) => setSignupName(e.target.value)}
-                          className="input-minimal"
-                          required
-                        />
+                    {hasStripeAuth && (
+                      <div className="bg-primary/10 border border-primary/20 rounded-md p-3">
+                        <p className="text-sm text-primary">
+                          ✓ Zahlung bestätigt. Erstelle jetzt deinen Account mit der E-Mail, die du bei der Zahlung verwendet hast.
+                        </p>
                       </div>
+                    )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-email">E-Mail</Label>
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="deine@email.de"
-                          value={signupEmail}
-                          onChange={(e) => setSignupEmail(e.target.value)}
-                          className="input-minimal"
-                          required
-                        />
-                      </div>
+                    {(signupToken || hasStripeAuth) && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-name">Name</Label>
+                          <Input
+                            id="signup-name"
+                            type="text"
+                            placeholder="Dein Name"
+                            value={signupName}
+                            onChange={(e) => setSignupName(e.target.value)}
+                            className="input-minimal"
+                            required
+                          />
+                        </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-password">Passwort</Label>
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
-                          className="input-minimal"
-                          required
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email">E-Mail</Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="deine@email.de"
+                            value={signupEmail}
+                            onChange={(e) => setSignupEmail(e.target.value)}
+                            className="input-minimal"
+                            required
+                          />
+                        </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
-                        <Input
-                          id="signup-confirm-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={signupConfirmPassword}
-                          onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                          className="input-minimal"
-                          required
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password">Passwort</Label>
+                          <Input
+                            id="signup-password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={signupPassword}
+                            onChange={(e) => setSignupPassword(e.target.value)}
+                            className="input-minimal"
+                            required
+                          />
+                        </div>
 
-                      <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Registrieren...
-                          </>
-                        ) : (
-                          "Registrieren"
-                        )}
-                      </Button>
-                    </>
-                  )}
-                </form>
-              </TabsContent>
-            </Tabs>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-confirm-password">Passwort bestätigen</Label>
+                          <Input
+                            id="signup-confirm-password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={signupConfirmPassword}
+                            onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                            className="input-minimal"
+                            required
+                          />
+                        </div>
+
+                        <Button type="submit" className="w-full" disabled={loading}>
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Registrieren...
+                            </>
+                          ) : (
+                            "Registrieren"
+                          )}
+                        </Button>
+                      </>
+                    )}
+                  </form>
+                </TabsContent>
+              </Tabs>
             </>
           )}
           </div>
