@@ -194,6 +194,20 @@ serve(async (req) => {
       logStep("Profile created");
     }
 
+    // Automatically assign founding member status for token-based registrations (first 20)
+    if (membershipSource === "token") {
+      const { data: foundingResult, error: foundingError } = await supabaseAdmin
+        .rpc("try_assign_founding_member", { _user_id: userId });
+
+      if (foundingError) {
+        logStep("WARNING: founding member check failed", { error: foundingError.message });
+      } else if (foundingResult) {
+        logStep("Founding member status assigned");
+      } else {
+        logStep("Founding member limit reached, not assigned");
+      }
+    }
+
     // Assign default 'user' role
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
