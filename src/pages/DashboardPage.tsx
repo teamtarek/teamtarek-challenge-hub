@@ -9,6 +9,7 @@ import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock } from "lucide-react
 import { formatDistanceToNow } from "date-fns";
 import { StarterJourneyPanel } from "@/components/StarterJourneyPanel";
 import { de } from "date-fns/locale";
+import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 interface RecentThread {
   id: string;
@@ -25,6 +26,7 @@ interface UserChallenge {
   id: string;
   challenge_name: string;
   challenge_slug: string;
+  challenge_category: string;
   is_verified: boolean;
   score: number | null;
 }
@@ -108,10 +110,9 @@ const DashboardPage = () => {
       // Fetch user's challenges
       const { data: regData } = await supabase
         .from("registrations")
-        .select("id, score, is_verified, challenges(name, slug)")
+        .select("id, score, is_verified, challenges(name, slug, category)")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+        .order("created_at", { ascending: false });
 
       if (regData) {
         setUserChallenges(
@@ -119,6 +120,7 @@ const DashboardPage = () => {
             id: r.id,
             challenge_name: r.challenges?.name || "Challenge",
             challenge_slug: r.challenges?.slug || "",
+            challenge_category: r.challenges?.category || "",
             is_verified: r.is_verified || false,
             score: r.score,
           }))
@@ -237,22 +239,37 @@ const DashboardPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {userChallenges.map((ch) => (
-              <Link
-                key={ch.id}
-                to={`/challenge/${ch.challenge_slug}`}
-                className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
-              >
-                <div>
-                  <p className="font-medium">{ch.challenge_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
+          <div className="space-y-4">
+            {CHALLENGE_SECTIONS.map((section) => {
+              const sectionChallenges = userChallenges.filter(
+                (ch) => ch.challenge_category === section.key
+              );
+              if (sectionChallenges.length === 0) return null;
+              return (
+                <div key={section.key}>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                    {section.label}
                   </p>
+                  <div className="space-y-2">
+                    {sectionChallenges.map((ch) => (
+                      <Link
+                        key={ch.id}
+                        to={`/challenge/${ch.challenge_slug}`}
+                        className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
+                      >
+                        <div>
+                          <p className="font-medium">{ch.challenge_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
+                          </p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

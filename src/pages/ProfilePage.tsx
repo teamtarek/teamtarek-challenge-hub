@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getMileLevel } from "@/lib/mileLevels";
+import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -56,6 +57,7 @@ interface Registration {
     name: string;
     slug: string;
     start_date: string;
+    category: string;
   };
 }
 
@@ -260,7 +262,8 @@ const ProfilePage = () => {
           challenges (
             name,
             slug,
-            start_date
+            start_date,
+            category
           )
         `)
         .eq("user_id", user.id)
@@ -746,41 +749,56 @@ const ProfilePage = () => {
               <Trophy className="w-5 h-5 text-primary" />
               Achievements
             </h2>
-            <div className="space-y-3">
-              {completedChallenges.map((reg) => (
-                <Link
-                  key={reg.id}
-                  to={`/challenge/${reg.challenges.slug}`}
-                  className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium">{reg.challenges.name}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+            <div className="space-y-5">
+              {CHALLENGE_SECTIONS.map((section) => {
+                const sectionRegs = completedChallenges.filter(
+                  (reg) => reg.challenges.category === section.key
+                );
+                if (sectionRegs.length === 0) return null;
+                return (
+                  <div key={section.key}>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                      {section.label}
+                    </p>
+                    <div className="space-y-3">
+                      {sectionRegs.map((reg) => (
+                        <Link
+                          key={reg.id}
+                          to={`/challenge/${reg.challenges.slug}`}
+                          className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{reg.challenges.name}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
+                              <Calendar className="w-3 h-3" />
+                              {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {(() => {
+                              const result = formatChallengeResult(reg, gender || null);
+                              return (
+                                <div className="flex flex-col items-end gap-1">
+                                  <div>
+                                    <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
+                                    {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
+                                  </div>
+                                  {result.mileLevel && (
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
+                                      <Zap className="w-3 h-3" />
+                                      {result.mileLevel.label}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div className="text-right">
-                    {(() => {
-                      const result = formatChallengeResult(reg, gender || null);
-                      return (
-                        <div className="flex flex-col items-end gap-1">
-                          <div>
-                            <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
-                            {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
-                          </div>
-                          {result.mileLevel && (
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
-                              <Zap className="w-3 h-3" />
-                              {result.mileLevel.label}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -795,30 +813,45 @@ const ProfilePage = () => {
           {pendingRegistrations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>Du hast keine offenen Challenge-Anmeldungen.</p>
-              <Link to="/" className="text-primary hover:underline mt-2 inline-block">
+              <Link to="/challenges" className="text-primary hover:underline mt-2 inline-block">
                 Challenges entdecken →
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {pendingRegistrations.map((reg) => (
-                <Link
-                  key={reg.id}
-                  to={`/challenge/${reg.challenges.slug}`}
-                  className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium">{reg.challenges.name}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+            <div className="space-y-5">
+              {CHALLENGE_SECTIONS.map((section) => {
+                const sectionRegs = pendingRegistrations.filter(
+                  (reg) => reg.challenges.category === section.key
+                );
+                if (sectionRegs.length === 0) return null;
+                return (
+                  <div key={section.key}>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                      {section.label}
+                    </p>
+                    <div className="space-y-3">
+                      {sectionRegs.map((reg) => (
+                        <Link
+                          key={reg.id}
+                          to={`/challenge/${reg.challenges.slug}`}
+                          className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{reg.challenges.name}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
+                              <Calendar className="w-3 h-3" />
+                              {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-muted-foreground text-sm">Ausstehend</span>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-muted-foreground text-sm">Ausstehend</span>
-                  </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

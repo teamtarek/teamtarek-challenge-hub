@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChallengeCard } from "@/components/ChallengeCard";
+import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 interface Challenge {
   id: string;
@@ -11,13 +12,6 @@ interface Challenge {
   end_date: string | null;
   category: string;
 }
-
-const SECTIONS = [
-  { key: "outdoor", label: "Outdoor Community Challenges" },
-  { key: "gym", label: "Gym Community Challenges" },
-  { key: "kettlebell", label: "Benchmark Workouts — Kettlebell" },
-  { key: "endurance", label: "Benchmark Workouts — Endurance" },
-];
 
 const ChallengesPage = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -43,7 +37,7 @@ const ChallengesPage = () => {
         Melde dich an, trainiere und reiche dein Ergebnis ein.
       </p>
 
-      {SECTIONS.map((section) => {
+      {CHALLENGE_SECTIONS.map((section) => {
         const sectionChallenges = challenges.filter((c) => c.category === section.key);
         if (!loading && sectionChallenges.length === 0) return null;
 
