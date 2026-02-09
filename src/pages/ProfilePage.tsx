@@ -813,30 +813,45 @@ const ProfilePage = () => {
           {pendingRegistrations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>Du hast keine offenen Challenge-Anmeldungen.</p>
-              <Link to="/" className="text-primary hover:underline mt-2 inline-block">
+              <Link to="/challenges" className="text-primary hover:underline mt-2 inline-block">
                 Challenges entdecken →
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {pendingRegistrations.map((reg) => (
-                <Link
-                  key={reg.id}
-                  to={`/challenge/${reg.challenges.slug}`}
-                  className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium">{reg.challenges.name}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+            <div className="space-y-5">
+              {CHALLENGE_SECTIONS.map((section) => {
+                const sectionRegs = pendingRegistrations.filter(
+                  (reg) => reg.challenges.category === section.key
+                );
+                if (sectionRegs.length === 0) return null;
+                return (
+                  <div key={section.key}>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                      {section.label}
+                    </p>
+                    <div className="space-y-3">
+                      {sectionRegs.map((reg) => (
+                        <Link
+                          key={reg.id}
+                          to={`/challenge/${reg.challenges.slug}`}
+                          className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{reg.challenges.name}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
+                              <Calendar className="w-3 h-3" />
+                              {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-muted-foreground text-sm">Ausstehend</span>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-muted-foreground text-sm">Ausstehend</span>
-                  </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
