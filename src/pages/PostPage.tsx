@@ -443,7 +443,16 @@ const PostPage = () => {
                     {getCategoryLabel(post.category)}
                   </span>
                 </div>
-                <h1 className="text-2xl font-bold">{post.title}</h1>
+                {editingPost ? (
+                  <Input
+                    value={editPostTitle}
+                    onChange={(e) => setEditPostTitle(e.target.value)}
+                    className="text-2xl font-bold"
+                    maxLength={200}
+                  />
+                ) : (
+                  <h1 className="text-2xl font-bold">{post.title}</h1>
+                )}
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap">
                   <Link 
                     to={`/profil/${post.user_id}`} 
@@ -463,19 +472,51 @@ const PostPage = () => {
                   </span>
                 </div>
               </div>
-              {user?.id === post.user_id && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDeletePost}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+              <div className="flex gap-1">
+                {user?.id === post.user_id && !editingPost && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEditPost}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                )}
+                {editingPost && (
+                  <>
+                    <Button variant="ghost" size="icon" onClick={() => setEditingPost(false)} className="text-muted-foreground">
+                      <X className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleSavePost} disabled={savingPost} className="text-primary">
+                      {savingPost ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    </Button>
+                  </>
+                )}
+                {(user?.id === post.user_id || isAdmin) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDeletePost}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
-            <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
-            
+            {editingPost ? (
+              <Textarea
+                value={editPostContent}
+                onChange={(e) => setEditPostContent(e.target.value)}
+                className="mt-4"
+                rows={5}
+                maxLength={5000}
+              />
+            ) : (
+              <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
+            )}
+
             {/* Post Image */}
             {post.image_url && (
               <div className="mt-4">
