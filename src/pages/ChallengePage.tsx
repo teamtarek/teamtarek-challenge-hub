@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { ResultEntryForm } from "@/components/ResultEntryForm";
+import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
 
