@@ -632,37 +632,39 @@ const PostPage = () => {
                             })}
                           </span>
                         </div>
-                        {user?.id === comment.user_id && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDeleteComment(comment.id)}
-                            disabled={deleting === comment.id}
-                          >
-                            {deleting === comment.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3 h-3" />
-                            )}
-                          </Button>
-                        )}
+                        <div className="flex gap-1">
+                          {user?.id === comment.user_id && editingCommentId !== comment.id && (
+                            <button onClick={() => handleEditComment(comment)} className="p-1 text-muted-foreground hover:text-foreground">
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          )}
+                          {editingCommentId === comment.id && (
+                            <>
+                              <button onClick={() => setEditingCommentId(null)} className="p-1 text-muted-foreground"><X className="w-3 h-3" /></button>
+                              <button onClick={() => handleSaveComment(comment.id)} disabled={savingComment} className="p-1 text-primary">
+                                {savingComment ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                              </button>
+                            </>
+                          )}
+                          {(user?.id === comment.user_id || isAdmin) && (
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeleteComment(comment.id)} disabled={deleting === comment.id}>
+                              {deleting === comment.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
-                      
-                      {/* Comment Like Button */}
+                      {editingCommentId === comment.id ? (
+                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={2000} />
+                      ) : (
+                        <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
+                      )}
                       <button
                         onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
                         disabled={likingComment === comment.id}
-                        className={`flex items-center gap-1 mt-2 text-xs transition-colors ${
-                          comment.user_has_liked
-                            ? "text-red-500"
-                            : "text-muted-foreground hover:text-red-500"
-                        }`}
+                        className={`flex items-center gap-1 mt-2 text-xs transition-colors ${comment.user_has_liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}
                       >
-                        <Heart
-                          className={`w-3.5 h-3.5 ${comment.user_has_liked ? "fill-current" : ""}`}
-                        />
+                        <Heart className={`w-3.5 h-3.5 ${comment.user_has_liked ? "fill-current" : ""}`} />
                         <span>{comment.like_count}</span>
                       </button>
                     </div>
