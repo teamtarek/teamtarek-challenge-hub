@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string, token?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName: string, token?: string) => Promise<{ error: Error | null; emailVerificationRequired?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -50,17 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: new Error(data.error) };
     }
 
-    // Registration successful — now sign in the user
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      return { error: new Error("Account erstellt, aber Anmeldung fehlgeschlagen. Bitte melde dich manuell an.") };
-    }
-
-    return { error: null };
+    // Registration successful — user must verify email before signing in
+    return { error: null, emailVerificationRequired: true };
   };
 
   const signIn = async (email: string, password: string) => {
