@@ -137,9 +137,6 @@ serve(async (req) => {
 
       // Get subscription details for period end
       let currentPeriodEnd: string | null = null;
-      const subscriptionId = typeof session.subscription === 'string' 
-        ? session.subscription 
-        : session.subscription?.id;
 
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
