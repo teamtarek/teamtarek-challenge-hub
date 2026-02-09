@@ -65,6 +65,7 @@ const PostPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,13 @@ const PostPage = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [likingPost, setLikingPost] = useState(false);
   const [likingComment, setLikingComment] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState("");
+  const [savingComment, setSavingComment] = useState(false);
+  const [editingPost, setEditingPost] = useState(false);
+  const [editPostContent, setEditPostContent] = useState("");
+  const [editPostTitle, setEditPostTitle] = useState("");
+  const [savingPost, setSavingPost] = useState(false);
 
   const fetchPost = async () => {
     if (!postId) return;
