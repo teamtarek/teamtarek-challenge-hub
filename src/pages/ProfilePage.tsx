@@ -15,8 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getMileLevel } from "@/lib/mileLevels";
 
