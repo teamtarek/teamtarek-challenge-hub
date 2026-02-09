@@ -67,21 +67,23 @@ export const ResultEntryForm = ({
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
   const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
+  const is1234Complex = challengeSlug === "1234-complex";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex;
 
   // Initialize from existing result
   const getInitialTime = (): string => {
     if (isMurphChallenge || isSimpleSinister) return secondsToTimeString(existingResult.score);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
   const [timeValue, setTimeValue] = useState(getInitialTime());
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
+  const [rounds, setRounds] = useState(is1234Complex ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
@@ -90,6 +92,7 @@ export const ResultEntryForm = ({
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
+    if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.kettlebell_weight_kg ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
@@ -125,6 +128,14 @@ export const ResultEntryForm = ({
       const repsNum = parseInt(reps);
       if (isNaN(repsNum) || repsNum <= 0) { toast.error("Bitte eine gültige Anzahl Wiederholungen eingeben"); setLoading(false); return; }
       updateData.total_reps = repsNum;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (is1234Complex) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || roundsNum <= 0) { toast.error("Bitte eine gültige Rundenzahl eingeben"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
+      const seconds = timeStringToSeconds(timeValue);
+      if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
+      updateData.total_time_seconds = seconds;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isEnduranceRun || isSpringChallenge) {
       const seconds = timeStringToSeconds(timeValue);
@@ -380,8 +391,56 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* 1-2-3-4 Complex: rounds + time + weight */}
+      {is1234Complex && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="rounds" className="flex items-center gap-1">
+              <Hash className="w-3 h-3" />
+              Absolvierte Runden
+            </Label>
+            <Input
+              id="rounds"
+              type="number"
+              placeholder="z.B. 20"
+              value={rounds}
+              onChange={(e) => setRounds(e.target.value)}
+              className="input-minimal"
+              min={1}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 10:00"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 12, Männer: 20"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input
