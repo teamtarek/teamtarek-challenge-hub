@@ -749,41 +749,56 @@ const ProfilePage = () => {
               <Trophy className="w-5 h-5 text-primary" />
               Achievements
             </h2>
-            <div className="space-y-3">
-              {completedChallenges.map((reg) => (
-                <Link
-                  key={reg.id}
-                  to={`/challenge/${reg.challenges.slug}`}
-                  className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium">{reg.challenges.name}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+            <div className="space-y-5">
+              {CHALLENGE_SECTIONS.map((section) => {
+                const sectionRegs = completedChallenges.filter(
+                  (reg) => reg.challenges.category === section.key
+                );
+                if (sectionRegs.length === 0) return null;
+                return (
+                  <div key={section.key}>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                      {section.label}
+                    </p>
+                    <div className="space-y-3">
+                      {sectionRegs.map((reg) => (
+                        <Link
+                          key={reg.id}
+                          to={`/challenge/${reg.challenges.slug}`}
+                          className="flex items-center justify-between p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{reg.challenges.name}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
+                              <Calendar className="w-3 h-3" />
+                              {reg.year || new Date(reg.challenges.start_date).getFullYear()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {(() => {
+                              const result = formatChallengeResult(reg, gender || null);
+                              return (
+                                <div className="flex flex-col items-end gap-1">
+                                  <div>
+                                    <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
+                                    {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
+                                  </div>
+                                  {result.mileLevel && (
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
+                                      <Zap className="w-3 h-3" />
+                                      {result.mileLevel.label}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div className="text-right">
-                    {(() => {
-                      const result = formatChallengeResult(reg, gender || null);
-                      return (
-                        <div className="flex flex-col items-end gap-1">
-                          <div>
-                            <span className="text-primary font-semibold font-mono text-lg">{result.value}</span>
-                            {result.label && <span className="text-muted-foreground text-sm ml-1">{result.label}</span>}
-                          </div>
-                          {result.mileLevel && (
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${result.mileLevel.className}`}>
-                              <Zap className="w-3 h-3" />
-                              {result.mileLevel.label}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
