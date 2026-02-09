@@ -307,7 +307,20 @@ const ChallengePage = () => {
             <div className="challenge-card">
               <h2 className="text-xl font-semibold mb-4">Über diese Challenge</h2>
               <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                {challenge.description}
+                {challenge.description?.split('\n').map((line, i) => {
+                  // Check if the line contains a video URL
+                  const urlMatch = line.match(/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/)\S+)/);
+                  if (urlMatch && isValidVideoUrl(urlMatch[1])) {
+                    const before = line.substring(0, line.indexOf(urlMatch[1])).replace(/🎥\s*Workout\s*Video:\s*/i, '').trim();
+                    return (
+                      <div key={i}>
+                        {before && <span>{before} </span>}
+                        <VideoEmbed url={urlMatch[1]} className="mt-3 mb-1" />
+                      </div>
+                    );
+                  }
+                  return <span key={i}>{line}{'\n'}</span>;
+                })}
               </div>
             </div>
 
