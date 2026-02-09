@@ -633,6 +633,10 @@ export type Database = {
       is_admin_or_webmaster: { Args: { _user_id: string }; Returns: boolean }
       is_founding_member: { Args: { _user_id: string }; Returns: boolean }
       is_webmaster: { Args: { _user_id: string }; Returns: boolean }
+      try_assign_founding_member: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       update_membership_activity: {
         Args: { _user_id: string }
         Returns: undefined
