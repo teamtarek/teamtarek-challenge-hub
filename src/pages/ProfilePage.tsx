@@ -191,6 +191,11 @@ const ProfilePage = () => {
   const [hatedExercise, setHatedExercise] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
