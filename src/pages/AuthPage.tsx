@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, Loader2, ArrowLeft, Ticket } from "lucide-react";
+import { Dumbbell, Loader2, ArrowLeft, Ticket, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useCheckout } from "@/hooks/useCheckout";
