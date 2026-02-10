@@ -76,7 +76,8 @@ export const ResultEntryForm = ({
 
   // Initialize from existing result
   const getInitialTime = (): string => {
-    if (isMurphChallenge || isSimpleSinister) return secondsToTimeString(existingResult.score);
+    if (isMurphChallenge) return secondsToTimeString(existingResult.score);
+    if (isSimpleSinister) return secondsToTimeString(existingResult.total_time_seconds);
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
@@ -87,6 +88,7 @@ export const ResultEntryForm = ({
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [bettyLevel, setBettyLevel] = useState(isMeetBetty ? (existingResult.score?.toString() || "") : "");
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
+  const [ssLevel, setSsLevel] = useState(isSimpleSinister ? (existingResult.score?.toString() || "") : "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
   const [loading, setLoading] = useState(false);
@@ -97,7 +99,7 @@ export const ResultEntryForm = ({
     if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isRiteOfPassage) return (existingResult.score ?? 0) > 0;
-    if (isSimpleSinister) return (existingResult.kettlebell_weight_kg ?? 0) > 0;
+    if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
     return (existingResult.score ?? 0) > 0;
   };
@@ -117,8 +119,11 @@ export const ResultEntryForm = ({
     } else if (isSimpleSinister) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
-      updateData.score = seconds;
+      updateData.total_time_seconds = seconds;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+      const levelNum = parseInt(ssLevel);
+      if (isNaN(levelNum) || levelNum < 1 || levelNum > 4) { toast.error("Bitte ein Level (1-4) auswählen"); setLoading(false); return; }
+      updateData.score = levelNum;
     } else if (isKettlebellSwing) {
       updateData.score = swingPassFail === "pass" ? 1 : 0;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
@@ -355,24 +360,40 @@ export const ResultEntryForm = ({
         </>
       )}
 
-      {/* Simple & Sinister: weight field */}
+      {/* Simple & Sinister: level + time + weight */}
       {isSimpleSinister && (
-        <div className="space-y-2">
-          <Label htmlFor="weight" className="flex items-center gap-1">
-            <Dumbbell className="w-3 h-3" />
-            Kettlebell Gewicht (kg)
-          </Label>
-          <Input
-            id="weight"
-            type="number"
-            placeholder="z.B. 32"
-            value={kettlebellWeight}
-            onChange={(e) => setKettlebellWeight(e.target.value)}
-            className="input-minimal"
-            min={4}
-            max={92}
-          />
-        </div>
+        <>
+          <div className="space-y-2">
+            <Label>Geschafftes Level</Label>
+            <Select value={ssLevel} onValueChange={setSsLevel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Level wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Level 1 — 20kg (M) / 12kg (F)</SelectItem>
+                <SelectItem value="2">Level 2 — 24kg (M) / 16kg (F)</SelectItem>
+                <SelectItem value="3">Level 3 — Simple (32kg M / 24kg F)</SelectItem>
+                <SelectItem value="4">Level 4 — Sinister (48kg M / 32kg F)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Kettlebell Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="z.B. 32"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
       )}
 
       {/* Snatch tests: reps + weight */}

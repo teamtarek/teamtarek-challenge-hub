@@ -137,6 +137,13 @@ export const RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS = [
   { level: 4, male: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 50% BW", female: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 33% BW" },
 ];
 
+export const SIMPLE_SINISTER_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "20 kg / 20 Min", female: "12 kg / 20 Min" },
+  { level: 2, male: "24 kg / 20 Min", female: "16 kg / 20 Min" },
+  { level: 3, male: "32 kg / 20 Min (Simple-Standard)", female: "24 kg / 20 Min (Simple-Standard)" },
+  { level: 4, male: "48 kg / 20 Min (Sinister-Standard)", female: "32 kg / 20 Min (Sinister-Standard)" },
+];
+
 export const SNATCH_TEST_INFO = {
   "5-minute-snatch-test": "Der 5-Minute Snatch Test ist eine reine Level 3 Challenge.",
   "secret-service-snatch-test": "Der Secret Service Snatch Test (10 Min) ist eine reine Level 4 Challenge.",

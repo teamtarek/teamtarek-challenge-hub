@@ -263,10 +263,15 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         return timeA - timeB;
       });
     } else if (isSimpleSinister) {
+      // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
       return [...regs].sort((a, b) => {
+        const levelDiff = (b.score || 0) - (a.score || 0);
+        if (levelDiff !== 0) return levelDiff;
         const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
         if (weightDiff !== 0) return weightDiff;
-        return (a.score || 0) - (b.score || 0);
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        return timeA - timeB;
       });
     } else {
       return [...regs].sort((a, b) => (a.score || 0) - (b.score || 0));
@@ -279,7 +284,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex) return reg.total_reps && reg.total_reps > 0;
     if (isRiteOfPassage) return reg.score && reg.score > 0;
-    if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
+    if (isSimpleSinister) return reg.score && reg.score > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
     return reg.score && reg.score > 0;
   };
@@ -486,6 +491,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     } else if (isSimpleSinister) {
       return (
         <div className="text-right">
+          {registration.score && registration.score >= 1 && registration.score <= 4 && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border mb-1 ${getLevelClassName(registration.score)}`}>
+              <Zap className="w-3 h-3" />
+              Level {registration.score}
+            </span>
+          )}
           {registration.kettlebell_weight_kg && (
             <div className="font-mono">
               <span className="text-primary font-semibold text-lg">
@@ -493,15 +504,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               </span>
             </div>
           )}
-          {registration.score > 0 && (
+          {registration.total_time_seconds && registration.total_time_seconds > 0 && (
             <div className="text-xs text-muted-foreground">
-              Zeit: {formatTime(registration.score)}
-            </div>
-          )}
-          {registration.completion_date && (
-            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-              <Calendar className="w-3 h-3" />
-              {formatDate(registration.completion_date)}
+              Zeit: {formatTime(registration.total_time_seconds)}
             </div>
           )}
         </div>
