@@ -241,7 +241,17 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         if (timeA !== timeB) return timeA - timeB;
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
-    } else if (isRiteOfPassage || isMeetBetty) {
+    } else if (isMeetBetty) {
+      // Primary: fastest time, Secondary: higher level, Tertiary: heavier weight
+      return [...regs].sort((a, b) => {
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        const levelDiff = (b.score || 0) - (a.score || 0);
+        if (levelDiff !== 0) return levelDiff;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
+    } else if (isRiteOfPassage) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
@@ -437,6 +447,17 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                 {formatTime(registration.total_time_seconds)}
               </span>
             </div>
+          )}
+          {registration.score && registration.score >= 1 && registration.score <= 4 && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${
+              registration.score === 4 ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
+              registration.score === 3 ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+              registration.score === 2 ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
+              "bg-green-500/20 text-green-400 border-green-500/30"
+            }`}>
+              <Zap className="w-3 h-3" />
+              Level {registration.score}
+            </span>
           )}
           {registration.kettlebell_weight_kg && (
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
