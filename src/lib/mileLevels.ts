@@ -122,3 +122,10 @@ export const COMPLEX_1234_LEVEL_DESCRIPTIONS = [
   { level: 3, male: "30 Runden / 15 Min / 20 kg", female: "30 Runden / 15 Min / 12 kg" },
   { level: 4, male: "30 Runden / 15 Min / 24 kg", female: "30 Runden / 15 Min / 16 kg" },
 ];
+
+export const MEET_BETTY_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "5 Runden / 10 Min / 20 kg — Box Jumps (Höhe nach Wahl), Goblet Presses, Russian KB Swings", female: "5 Runden / 10 Min / 12 kg — Box Jumps (Höhe nach Wahl), Goblet Presses, Russian KB Swings" },
+  { level: 2, male: "5 Runden / 10 Min / 24 kg — Box Jumps (60cm), SA KB Push Presses, Russian KB Swings", female: "5 Runden / 10 Min / 16 kg — Box Jumps (40cm), SA KB Push Presses, Russian KB Swings" },
+  { level: 3, male: "5 Runden / 10 Min / 24 kg Presses + 32 kg Swings — Box Jumps (60cm), Double KB Push Presses, Russian KB Swings", female: "5 Runden / 10 Min / 16 kg Presses + 24 kg Swings — Box Jumps (40cm), Double KB Push Presses, Russian KB Swings" },
+  { level: 4, male: "5 Runden / 10 Min / 24 kg — Box Jumps (60cm), Double KB Push Presses, Double KB Swings", female: "5 Runden / 10 Min / 16 kg — Box Jumps (40cm), Double KB Push Presses, Double KB Swings" },
+];

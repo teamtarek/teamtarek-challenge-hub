@@ -85,6 +85,7 @@ export const ResultEntryForm = ({
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
   const [rounds, setRounds] = useState(is1234Complex ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
+  const [bettyLevel, setBettyLevel] = useState(isMeetBetty ? (existingResult.score?.toString() || "") : "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
   const [loading, setLoading] = useState(false);
@@ -151,6 +152,9 @@ export const ResultEntryForm = ({
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+      const levelNum = parseInt(bettyLevel);
+      if (isNaN(levelNum) || levelNum < 1 || levelNum > 4) { toast.error("Bitte ein Level (1-4) auswählen"); setLoading(false); return; }
+      updateData.score = levelNum;
     } else if (isRiteOfPassage) {
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
       const seconds = timeStringToSeconds(timeValue);
@@ -252,8 +256,55 @@ export const ResultEntryForm = ({
         </div>
       )}
 
-      {/* Meet Betty & Rite of Passage: time + weight */}
-      {(isMeetBetty || isRiteOfPassage) && (
+      {/* Meet Betty: time + weight + level */}
+      {isMeetBetty && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 08:30"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="z.B. 24"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Geschafftes Level</Label>
+            <Select value={bettyLevel} onValueChange={setBettyLevel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Level wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Level 1 — Goblet Presses</SelectItem>
+                <SelectItem value="2">Level 2 — SA KB Push Presses</SelectItem>
+                <SelectItem value="3">Level 3 — Double KB Push Presses</SelectItem>
+                <SelectItem value="4">Level 4 — Double KB Presses & Swings</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {/* Rite of Passage: time + weight */}
+      {isRiteOfPassage && (
         <>
           <div className="space-y-2">
             <Label htmlFor="time">Zeit (MM:SS)</Label>

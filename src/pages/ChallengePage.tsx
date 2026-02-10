@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
+import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
 
 // Import challenge hero images
 import springChallenge from "@/assets/challenges/spring-challenge.jpg";
@@ -325,15 +325,18 @@ const ChallengePage = () => {
             </div>
 
             {/* Mile Level Info Box */}
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
                   ? TEN_K_LEVEL_DESCRIPTIONS 
                   : challenge.slug === "1234-complex"
                     ? COMPLEX_1234_LEVEL_DESCRIPTIONS
-                    : MILE_LEVEL_DESCRIPTIONS;
+                    : challenge.slug === "meet-betty"
+                      ? MEET_BETTY_LEVEL_DESCRIPTIONS
+                      : MILE_LEVEL_DESCRIPTIONS;
               const isComplex = challenge.slug === "1234-complex";
+              const isBetty = challenge.slug === "meet-betty";
               return (
                 <div className="challenge-card">
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -341,9 +344,11 @@ const ChallengePage = () => {
                     Level-Stufen
                   </h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {isComplex 
-                      ? "Erreiche ein Level basierend auf Runden, Zeit und Gewicht. Die Anforderungen unterscheiden sich nach Geschlecht."
-                      : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
+                    {isBetty
+                      ? "Wähle dein Level basierend auf Übungsvarianten und Gewicht. 5 Runden auf Zeit – Zielzeit: 10 Minuten."
+                      : isComplex 
+                        ? "Erreiche ein Level basierend auf Runden, Zeit und Gewicht. Die Anforderungen unterscheiden sich nach Geschlecht."
+                        : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
