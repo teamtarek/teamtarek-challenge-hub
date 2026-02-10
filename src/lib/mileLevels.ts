@@ -85,7 +85,7 @@ export const getMileLevel = (timeSeconds: number, gender: string | null, challen
   return null;
 };
 
-const getLevelClassName = (level: number): string => {
+export const getLevelClassName = (level: number): string => {
   switch (level) {
     case 4: return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     case 3: return "bg-purple-500/20 text-purple-400 border-purple-500/30";
@@ -129,3 +129,45 @@ export const MEET_BETTY_LEVEL_DESCRIPTIONS = [
   { level: 3, male: "5 Runden / 10 Min / 24 kg Presses + 32 kg Swings — Box Jumps (60cm), Double KB Push Presses, Russian KB Swings", female: "5 Runden / 10 Min / 16 kg Presses + 24 kg Swings — Box Jumps (40cm), Double KB Push Presses, Russian KB Swings" },
   { level: 4, male: "5 Runden / 10 Min / 24 kg — Box Jumps (60cm), Double KB Push Presses, Double KB Swings", female: "5 Runden / 10 Min / 16 kg — Box Jumps (40cm), Double KB Push Presses, Double KB Swings" },
 ];
+
+export const RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "3 Runden Leiter 1-2-3 SA C&P + Klimmzüge / 20 kg", female: "3 Runden Leiter 1-2-3 SA C&P + Klimmzüge (Band erlaubt) / 12 kg" },
+  { level: 2, male: "3 Runden Leiter 1-2-3 SA C&P + Klimmzüge / 24 kg", female: "3 Runden Leiter 1-2-3 SA C&P + Klimmzüge (Band erlaubt) / 16 kg" },
+  { level: 3, male: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 24 kg", female: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 16 kg" },
+  { level: 4, male: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 50% BW", female: "5 Runden Leiter 1-2-3-4-5 SA C&P + Klimmzüge / 33% BW" },
+];
+
+export const SNATCH_TEST_INFO = {
+  "5-minute-snatch-test": "Der 5-Minute Snatch Test ist eine reine Level 3 Challenge.",
+  "secret-service-snatch-test": "Der Secret Service Snatch Test (10 Min) ist eine reine Level 4 Challenge.",
+};
+
+// Calculate 1-2-3-4 Complex level from result data
+export const getComplexLevel = (rounds: number, timeSeconds: number, weightKg: number, gender: string | null): MileLevel | null => {
+  if (!rounds || rounds <= 0 || !timeSeconds || timeSeconds <= 0 || !weightKg || weightKg <= 0) return null;
+  const isFemale = gender === "female";
+
+  // Check from highest level down
+  // Level 4: 30 rounds, 15 min, 24kg(M)/16kg(F)
+  const l4Weight = isFemale ? 16 : 24;
+  if (rounds >= 30 && timeSeconds <= 15 * 60 && weightKg >= l4Weight) {
+    return { level: 4, label: "Level 4", className: getLevelClassName(4) };
+  }
+  // Level 3: 30 rounds, 15 min, 20kg(M)/12kg(F)
+  const l3Weight = isFemale ? 12 : 20;
+  if (rounds >= 30 && timeSeconds <= 15 * 60 && weightKg >= l3Weight) {
+    return { level: 3, label: "Level 3", className: getLevelClassName(3) };
+  }
+  // Level 2: 20 rounds, 10 min, 20kg(M)/12kg(F)
+  if (rounds >= 20 && timeSeconds <= 10 * 60 && weightKg >= l3Weight) {
+    return { level: 2, label: "Level 2", className: getLevelClassName(2) };
+  }
+  // Level 1: 10 rounds, 5 min, 20kg(M)/12kg(F)
+  if (rounds >= 10 && timeSeconds <= 5 * 60 && weightKg >= l3Weight) {
+    return { level: 1, label: "Level 1", className: getLevelClassName(1) };
+  }
+
+  return null;
+};
+
+

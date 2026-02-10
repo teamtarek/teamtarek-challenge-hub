@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
-import { getMileLevel } from "@/lib/mileLevels";
+import { getMileLevel, getComplexLevel, getLevelClassName } from "@/lib/mileLevels";
 import {
   Select,
   SelectContent,
@@ -252,11 +252,15 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isRiteOfPassage) {
+      // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
       return [...regs].sort((a, b) => {
+        const levelDiff = (b.score || 0) - (a.score || 0);
+        if (levelDiff !== 0) return levelDiff;
+        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+        if (weightDiff !== 0) return weightDiff;
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
-        if (timeA !== timeB) return timeA - timeB;
-        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+        return timeA - timeB;
       });
     } else if (isSimpleSinister) {
       return [...regs].sort((a, b) => {
@@ -274,7 +278,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex) return reg.total_reps && reg.total_reps > 0;
-    if (isRiteOfPassage) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
+    if (isRiteOfPassage) return reg.score && reg.score > 0;
     if (isSimpleSinister) return reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
     return reg.score && reg.score > 0;
@@ -378,6 +382,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         </div>
       );
     } else if (is1234Complex) {
+      const complexLevel = getComplexLevel(
+        registration.total_reps || 0,
+        registration.total_time_seconds || 0,
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
       return (
         <div className="text-right">
           <div className="font-mono">
@@ -389,6 +399,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             <div className="text-xs text-muted-foreground">
               Zeit: {formatTime(registration.total_time_seconds)}
             </div>
+          )}
+          {complexLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${complexLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {complexLevel.label}
+            </span>
           )}
           {registration.kettlebell_weight_kg && (
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
@@ -418,6 +434,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     } else if (isRiteOfPassage) {
       return (
         <div className="text-right">
+          {registration.score && registration.score >= 1 && registration.score <= 4 && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border mb-1 ${getLevelClassName(registration.score)}`}>
+              <Zap className="w-3 h-3" />
+              Level {registration.score}
+            </span>
+          )}
           {registration.kettlebell_weight_kg && (
             <div className="font-mono">
               <span className="text-primary font-semibold text-lg">
@@ -428,12 +450,6 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           {registration.total_time_seconds && (
             <div className="text-xs text-muted-foreground">
               Zeit: {formatTime(registration.total_time_seconds)}
-            </div>
-          )}
-          {registration.completion_date && (
-            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-              <Calendar className="w-3 h-3" />
-              {formatDate(registration.completion_date)}
             </div>
           )}
         </div>
