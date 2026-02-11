@@ -375,9 +375,11 @@ const ChallengePage = () => {
                         ? "Wähle dein Level basierend auf Leiter-Struktur und Gewicht."
                         : isSS
                           ? "Wähle dein Level basierend auf dem verwendeten Gewicht. Zielzeit: 20 Minuten."
-                          : isComplex 
-                            ? "Dein Level wird automatisch aus Runden, Zeit und Gewicht berechnet."
-                            : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
+                          : isQuadrant
+                            ? "Dein Level wird automatisch aus Gesamtzeit und Gewicht berechnet. 10 Runden in max. 20 Minuten."
+                            : isComplex 
+                              ? "Dein Level wird automatisch aus Runden, Zeit und Gewicht berechnet."
+                              : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
