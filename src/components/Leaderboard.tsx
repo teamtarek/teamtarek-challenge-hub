@@ -371,7 +371,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           </div>
         </div>
       );
-    } else if (is10RoundsOfPain) {
+    } else if (is10RoundsOfPain || isTheQuadrant) {
+      const quadrantLevel = isTheQuadrant ? getQuadrantLevel(
+        registration.total_time_seconds || 0,
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      ) : null;
       return (
         <div className="text-right">
           <div className="font-mono">
@@ -379,6 +384,12 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
               {formatTime(registration.total_time_seconds)}
             </span>
           </div>
+          {quadrantLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${quadrantLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {quadrantLevel.label}
+            </span>
+          )}
           {registration.kettlebell_weight_kg && (
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
               <Dumbbell className="w-3 h-3" />
