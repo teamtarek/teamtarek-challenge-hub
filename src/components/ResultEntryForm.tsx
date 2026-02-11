@@ -85,7 +85,7 @@ export const ResultEntryForm = ({
 
   const [timeValue, setTimeValue] = useState(getInitialTime());
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
-  const [rounds, setRounds] = useState(is1234Complex ? (existingResult.total_reps?.toString() || "") : "");
+  const [rounds, setRounds] = useState((is1234Complex || isRiteOfPassage) ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [bettyLevel, setBettyLevel] = useState(isMeetBetty ? (existingResult.score?.toString() || "") : "");
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
@@ -99,7 +99,7 @@ export const ResultEntryForm = ({
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant) return (existingResult.total_time_seconds ?? 0) > 0;
-    if (isRiteOfPassage) return (existingResult.score ?? 0) > 0;
+    if (isRiteOfPassage) return (existingResult.score ?? 0) > 0 || (existingResult.total_reps ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
     return (existingResult.score ?? 0) > 0;
@@ -169,6 +169,9 @@ export const ResultEntryForm = ({
       if (isNaN(levelNum) || levelNum < 1 || levelNum > 4) { toast.error("Bitte ein Level (1-4) auswählen"); setLoading(false); return; }
       updateData.score = levelNum;
     } else if (isRiteOfPassage) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || ![3, 4, 5].includes(roundsNum)) { toast.error("Bitte die Anzahl Runden (3, 4 oder 5) auswählen"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
       const seconds = timeStringToSeconds(timeValue);
       if (seconds) updateData.total_time_seconds = seconds;
@@ -322,6 +325,19 @@ export const ResultEntryForm = ({
       {/* Rite of Passage: level + time + weight */}
       {isRiteOfPassage && (
         <>
+          <div className="space-y-2">
+            <Label>Anzahl Runden</Label>
+            <Select value={rounds} onValueChange={setRounds}>
+              <SelectTrigger>
+                <SelectValue placeholder="Runden wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 Runden</SelectItem>
+                <SelectItem value="4">4 Runden</SelectItem>
+                <SelectItem value="5">5 Runden</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label>Geschafftes Level</Label>
             <Select value={ropLevel} onValueChange={setRopLevel}>

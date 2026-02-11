@@ -253,15 +253,14 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isRiteOfPassage) {
-      // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
+      // Primary: more rounds, Secondary: faster time, Tertiary: heavier weight
       return [...regs].sort((a, b) => {
-        const levelDiff = (b.score || 0) - (a.score || 0);
-        if (levelDiff !== 0) return levelDiff;
-        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
-        if (weightDiff !== 0) return weightDiff;
+        const roundsDiff = (b.total_reps || 0) - (a.total_reps || 0);
+        if (roundsDiff !== 0) return roundsDiff;
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
-        return timeA - timeB;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isSimpleSinister) {
       // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
@@ -284,7 +283,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex) return reg.total_reps && reg.total_reps > 0;
-    if (isRiteOfPassage) return (reg.score && reg.score > 0) || (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0);
+    if (isRiteOfPassage) return (reg.total_reps && reg.total_reps > 0) || (reg.score && reg.score > 0);
     if (isSimpleSinister) return reg.score && reg.score > 0;
     if (isMeetBetty) return reg.total_time_seconds && reg.total_time_seconds > 0;
     return reg.score && reg.score > 0;
@@ -451,22 +450,28 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     } else if (isRiteOfPassage) {
       return (
         <div className="text-right">
+          {registration.total_reps && registration.total_reps > 0 && (
+            <div className="font-mono">
+              <span className="text-primary font-semibold text-lg">
+                {registration.total_reps} Runden
+              </span>
+            </div>
+          )}
           {registration.score && registration.score >= 1 && registration.score <= 4 && (
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border mb-1 ${getLevelClassName(registration.score)}`}>
               <Zap className="w-3 h-3" />
               Level {registration.score}
             </span>
           )}
-          {registration.kettlebell_weight_kg && (
-            <div className="font-mono">
-              <span className="text-primary font-semibold text-lg">
-                {registration.kettlebell_weight_kg} kg
-              </span>
-            </div>
-          )}
           {registration.total_time_seconds && (
             <div className="text-xs text-muted-foreground">
               Zeit: {formatTime(registration.total_time_seconds)}
+            </div>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
             </div>
           )}
         </div>
