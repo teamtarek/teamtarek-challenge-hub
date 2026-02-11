@@ -73,7 +73,7 @@ export const ResultEntryForm = ({
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant;
 
   // Initialize from existing result
   const getInitialTime = (): string => {
