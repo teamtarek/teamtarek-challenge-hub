@@ -326,6 +326,19 @@ export const ResultEntryForm = ({
       {isRiteOfPassage && (
         <>
           <div className="space-y-2">
+            <Label>Anzahl Runden</Label>
+            <Select value={rounds} onValueChange={setRounds}>
+              <SelectTrigger>
+                <SelectValue placeholder="Runden wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 Runden</SelectItem>
+                <SelectItem value="4">4 Runden</SelectItem>
+                <SelectItem value="5">5 Runden</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label>Geschafftes Level</Label>
             <Select value={ropLevel} onValueChange={setRopLevel}>
               <SelectTrigger>

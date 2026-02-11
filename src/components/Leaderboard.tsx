@@ -450,22 +450,28 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     } else if (isRiteOfPassage) {
       return (
         <div className="text-right">
+          {registration.total_reps && registration.total_reps > 0 && (
+            <div className="font-mono">
+              <span className="text-primary font-semibold text-lg">
+                {registration.total_reps} Runden
+              </span>
+            </div>
+          )}
           {registration.score && registration.score >= 1 && registration.score <= 4 && (
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border mb-1 ${getLevelClassName(registration.score)}`}>
               <Zap className="w-3 h-3" />
               Level {registration.score}
             </span>
           )}
-          {registration.kettlebell_weight_kg && (
-            <div className="font-mono">
-              <span className="text-primary font-semibold text-lg">
-                {registration.kettlebell_weight_kg} kg
-              </span>
-            </div>
-          )}
           {registration.total_time_seconds && (
             <div className="text-xs text-muted-foreground">
               Zeit: {formatTime(registration.total_time_seconds)}
+            </div>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
             </div>
           )}
         </div>
