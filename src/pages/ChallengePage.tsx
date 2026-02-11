@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO } from "@/lib/mileLevels";
+import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO } from "@/lib/mileLevels";
 
 // Import challenge hero images
 import springChallenge from "@/assets/challenges/spring-challenge.jpg";
@@ -33,6 +33,7 @@ import secretServiceSnatchTest from "@/assets/challenges/secret-service-snatch-t
 import fiveKRun from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKRun from "@/assets/challenges/10-kilometer-run.jpg";
 import complex1234 from "@/assets/challenges/1234-complex.jpg";
+import theQuadrant from "@/assets/challenges/the-quadrant.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
@@ -65,6 +66,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "5-kilometer-run": fiveKRun,
     "10-kilometer-run": tenKRun,
     "1234-complex": complex1234,
+    "the-quadrant": theQuadrant,
   };
   return imageMap[slug] || heroBg;
 };
@@ -75,6 +77,7 @@ const getChallengeBackgroundPosition = (slug: string): string => {
     "winter-challenge-2026": "center 20%",
     "5-minute-snatch-test": "center top",
     "deadly-dozen": "center top",
+    "the-quadrant": "center 25%",
   };
   return positionMap[slug] || "center";
 };
@@ -338,7 +341,7 @@ const ChallengePage = () => {
               </div>
             )}
 
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
@@ -351,11 +354,14 @@ const ChallengePage = () => {
                         ? RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS
                         : challenge.slug === "simple-sinister"
                           ? SIMPLE_SINISTER_LEVEL_DESCRIPTIONS
-                          : MILE_LEVEL_DESCRIPTIONS;
+                          : challenge.slug === "the-quadrant"
+                            ? QUADRANT_LEVEL_DESCRIPTIONS
+                            : MILE_LEVEL_DESCRIPTIONS;
               const isComplex = challenge.slug === "1234-complex";
               const isBetty = challenge.slug === "meet-betty";
               const isRoP = challenge.slug === "rite-of-passage";
               const isSS = challenge.slug === "simple-sinister";
+              const isQuadrant = challenge.slug === "the-quadrant";
               return (
                 <div className="challenge-card">
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -369,9 +375,11 @@ const ChallengePage = () => {
                         ? "Wähle dein Level basierend auf Leiter-Struktur und Gewicht."
                         : isSS
                           ? "Wähle dein Level basierend auf dem verwendeten Gewicht. Zielzeit: 20 Minuten."
-                          : isComplex 
-                            ? "Dein Level wird automatisch aus Runden, Zeit und Gewicht berechnet."
-                            : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
+                          : isQuadrant
+                            ? "Dein Level wird automatisch aus Gesamtzeit und Gewicht berechnet. 10 Runden in max. 20 Minuten."
+                            : isComplex 
+                              ? "Dein Level wird automatisch aus Runden, Zeit und Gewicht berechnet."
+                              : "Erreiche ein Level basierend auf deiner Laufzeit. Die Anforderungen unterscheiden sich nach Geschlecht."}
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">

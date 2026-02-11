@@ -21,6 +21,7 @@ import fiveKImg from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKImg from "@/assets/challenges/10-kilometer-run.jpg";
 import tenRoundsImg from "@/assets/challenges/10-rounds-of-pain.jpg";
 import complexImg from "@/assets/challenges/1234-complex.jpg";
+import theQuadrantImg from "@/assets/challenges/the-quadrant.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -44,6 +45,7 @@ const challengeImages: Record<string, string> = {
   "10-kilometer-run": tenKImg,
   "10-rounds-of-pain": tenRoundsImg,
   "1234-complex": complexImg,
+  "the-quadrant": theQuadrantImg,
 };
 
 // Custom object positions for specific challenges
@@ -51,6 +53,7 @@ const challengeObjectPositions: Record<string, string> = {
   "winter-challenge-2026": "center 20%",
   "5-minute-snatch-test": "center top",
   "deadly-dozen": "center 30%",
+  "the-quadrant": "center 25%",
 };
 
 // Custom object fit for specific challenges (to show full image)

@@ -144,6 +144,32 @@ export const SIMPLE_SINISTER_LEVEL_DESCRIPTIONS = [
   { level: 4, male: "48 kg / 20 Min (Sinister-Standard)", female: "32 kg / 20 Min (Sinister-Standard)" },
 ];
 
+export const QUADRANT_LEVEL_DESCRIPTIONS = [
+  { level: 3, male: "10 Runden / 20 Min / 20 kg", female: "10 Runden / 20 Min / 12 kg" },
+  { level: 4, male: "10 Runden / 20 Min / 24 kg", female: "10 Runden / 20 Min / 16 kg" },
+];
+
+// Calculate Quadrant level from result data
+export const getQuadrantLevel = (timeSeconds: number, weightKg: number, gender: string | null): MileLevel | null => {
+  if (!timeSeconds || timeSeconds <= 0 || !weightKg || weightKg <= 0) return null;
+  const isFemale = gender === "female";
+
+  if (timeSeconds > 20 * 60) return null; // Must be within 20 minutes
+
+  // Level 4: 24kg(M)/16kg(F)
+  const l4Weight = isFemale ? 16 : 24;
+  if (weightKg >= l4Weight) {
+    return { level: 4, label: "Level 4", className: getLevelClassName(4) };
+  }
+  // Level 3: 20kg(M)/12kg(F)
+  const l3Weight = isFemale ? 12 : 20;
+  if (weightKg >= l3Weight) {
+    return { level: 3, label: "Level 3", className: getLevelClassName(3) };
+  }
+
+  return null;
+};
+
 export const SNATCH_TEST_INFO = {
   "5-minute-snatch-test": "Der 5-Minute Snatch Test ist eine reine Level 3 Challenge.",
   "secret-service-snatch-test": "Der Secret Service Snatch Test (10 Min) ist eine reine Level 4 Challenge.",
