@@ -224,7 +224,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         const timeB = b.total_time_seconds || Infinity;
         return timeA - timeB;
       });
-    } else if (is10RoundsOfPain) {
+    } else if (is10RoundsOfPain || isTheQuadrant) {
       // Primary: fastest time, Secondary: heavier weight is better
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
