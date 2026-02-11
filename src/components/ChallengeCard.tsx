@@ -53,7 +53,7 @@ const challengeObjectPositions: Record<string, string> = {
   "winter-challenge-2026": "center 20%",
   "5-minute-snatch-test": "center top",
   "deadly-dozen": "center 30%",
-  "the-quadrant": "center 25%",
+  "the-quadrant": "center 35%",
 };
 
 // Custom object fit for specific challenges (to show full image)
