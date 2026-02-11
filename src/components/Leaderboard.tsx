@@ -253,15 +253,14 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isRiteOfPassage) {
-      // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
+      // Primary: more rounds, Secondary: faster time, Tertiary: heavier weight
       return [...regs].sort((a, b) => {
-        const levelDiff = (b.score || 0) - (a.score || 0);
-        if (levelDiff !== 0) return levelDiff;
-        const weightDiff = (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
-        if (weightDiff !== 0) return weightDiff;
+        const roundsDiff = (b.total_reps || 0) - (a.total_reps || 0);
+        if (roundsDiff !== 0) return roundsDiff;
         const timeA = a.total_time_seconds || Infinity;
         const timeB = b.total_time_seconds || Infinity;
-        return timeA - timeB;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
     } else if (isSimpleSinister) {
       // Primary: higher level, Secondary: heavier weight, Tertiary: faster time
