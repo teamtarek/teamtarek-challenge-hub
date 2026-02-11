@@ -79,7 +79,7 @@ export const ResultEntryForm = ({
   const getInitialTime = (): string => {
     if (isMurphChallenge) return secondsToTimeString(existingResult.score);
     if (isSimpleSinister) return secondsToTimeString(existingResult.total_time_seconds);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
