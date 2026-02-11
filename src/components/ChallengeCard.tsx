@@ -21,6 +21,7 @@ import fiveKImg from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKImg from "@/assets/challenges/10-kilometer-run.jpg";
 import tenRoundsImg from "@/assets/challenges/10-rounds-of-pain.jpg";
 import complexImg from "@/assets/challenges/1234-complex.jpg";
+import theQuadrantImg from "@/assets/challenges/the-quadrant.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
