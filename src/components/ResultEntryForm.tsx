@@ -536,6 +536,39 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* The Quadrant: time + weight */}
+      {isTheQuadrant && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 18:30"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 12, Männer: 20"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
       {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && (
         <div className="space-y-2">
