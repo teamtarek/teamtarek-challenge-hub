@@ -169,6 +169,9 @@ export const ResultEntryForm = ({
       if (isNaN(levelNum) || levelNum < 1 || levelNum > 4) { toast.error("Bitte ein Level (1-4) auswählen"); setLoading(false); return; }
       updateData.score = levelNum;
     } else if (isRiteOfPassage) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || ![3, 4, 5].includes(roundsNum)) { toast.error("Bitte die Anzahl Runden (3, 4 oder 5) auswählen"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
       const seconds = timeStringToSeconds(timeValue);
       if (seconds) updateData.total_time_seconds = seconds;
