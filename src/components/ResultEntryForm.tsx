@@ -98,7 +98,7 @@ export const ResultEntryForm = ({
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain) return (existingResult.total_time_seconds ?? 0) > 0;
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isRiteOfPassage) return (existingResult.score ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
