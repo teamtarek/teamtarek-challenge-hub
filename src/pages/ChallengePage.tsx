@@ -341,7 +341,7 @@ const ChallengePage = () => {
               </div>
             )}
 
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
