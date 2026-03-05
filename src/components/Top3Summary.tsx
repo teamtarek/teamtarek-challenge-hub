@@ -219,7 +219,7 @@ export const Top3Summary = () => {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {challengeData.map(({ challenge, top3 }) => (
-        <div key={challenge.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+        <Link key={challenge.id} to={`/challenges/${challenge.slug}`} className="bg-card border border-border rounded-lg p-4 space-y-3 hover:border-primary/50 transition-colors">
           <h3 className="font-semibold text-sm text-foreground truncate">{challenge.name}</h3>
           <div className="space-y-2">
             {top3.map((entry, idx) => (
