@@ -51,10 +51,15 @@ const LeaderboardPage = () => {
         Ranglisten aller Challenges. Nur verifizierte Ergebnisse.
       </p>
 
-      <Tabs defaultValue="challenge" className="space-y-6">
+      <Tabs defaultValue="top3" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="top3">Top 3 Übersicht</TabsTrigger>
           <TabsTrigger value="challenge">Pro Challenge</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="top3">
+          <Top3Summary />
+        </TabsContent>
 
         <TabsContent value="challenge" className="space-y-6">
           {loading ? (
