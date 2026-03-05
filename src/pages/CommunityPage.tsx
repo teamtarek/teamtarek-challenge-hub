@@ -346,7 +346,7 @@ const CommunityPage = () => {
                   <div className="space-y-2">
                     <Label htmlFor="content">Inhalt</Label>
                     <div className="relative">
-                      <Textarea id="content" placeholder="Dein Beitrag..." value={newContent} onChange={(e) => setNewContent(e.target.value)} rows={5} maxLength={5000} />
+                      <Textarea id="content" placeholder="Dein Beitrag..." value={newContent} onChange={(e) => setNewContent(e.target.value)} rows={5} maxLength={isAdmin ? undefined : 3000} />
                       <div className="absolute bottom-2 right-2">
                         <EmojiPicker size="sm" onEmojiSelect={(emoji) => setNewContent((prev) => prev + emoji)} />
                       </div>

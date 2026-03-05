@@ -516,7 +516,7 @@ const PostPage = () => {
                 onChange={(e) => setEditPostContent(e.target.value)}
                 className="mt-4"
                 rows={5}
-                maxLength={5000}
+                maxLength={isAdmin ? undefined : 3000}
               />
             ) : (
               <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
@@ -579,7 +579,7 @@ const PostPage = () => {
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={!user}
                   rows={2}
-                  maxLength={2000}
+                  maxLength={isAdmin ? undefined : 3000}
                 />
                 {user && (
                   <div className="absolute bottom-2 right-2">
@@ -659,7 +659,7 @@ const PostPage = () => {
                         </div>
                       </div>
                       {editingCommentId === comment.id ? (
-                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={2000} />
+                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={isAdmin ? undefined : 3000} />
                       ) : (
                         <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
                       )}
