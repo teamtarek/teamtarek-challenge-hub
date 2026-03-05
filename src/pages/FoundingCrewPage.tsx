@@ -168,7 +168,7 @@ const FoundingCrewPage = () => {
             onChange={(e) => setNewContent(e.target.value)}
             rows={2}
             className="flex-1 resize-none"
-            maxLength={2000}
+            maxLength={isAdmin ? undefined : 3000}
           />
           <Button type="submit" size="icon" disabled={posting || !newContent.trim()} className="self-end h-10 w-10">
             {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

@@ -659,7 +659,7 @@ const PostPage = () => {
                         </div>
                       </div>
                       {editingCommentId === comment.id ? (
-                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={2000} />
+                        <Textarea value={editingCommentContent} onChange={(e) => setEditingCommentContent(e.target.value)} className="mt-1" rows={2} maxLength={isAdmin ? undefined : 3000} />
                       ) : (
                         <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
                       )}
