@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Leaderboard } from "@/components/Leaderboard";
+import { Top3Summary } from "@/components/Top3Summary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -10,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trophy } from "lucide-react";
-
 interface Challenge {
   id: string;
   name: string;
@@ -51,10 +51,15 @@ const LeaderboardPage = () => {
         Ranglisten aller Challenges. Nur verifizierte Ergebnisse.
       </p>
 
-      <Tabs defaultValue="challenge" className="space-y-6">
+      <Tabs defaultValue="top3" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="top3">Top 3 Übersicht</TabsTrigger>
           <TabsTrigger value="challenge">Pro Challenge</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="top3">
+          <Top3Summary />
+        </TabsContent>
 
         <TabsContent value="challenge" className="space-y-6">
           {loading ? (
