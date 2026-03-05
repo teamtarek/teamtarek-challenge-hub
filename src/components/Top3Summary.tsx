@@ -263,7 +263,7 @@ export const Top3Summary = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
