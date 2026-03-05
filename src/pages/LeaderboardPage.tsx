@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Leaderboard } from "@/components/Leaderboard";
+import { Top3Summary } from "@/components/Top3Summary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -10,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trophy } from "lucide-react";
-
 interface Challenge {
   id: string;
   name: string;
