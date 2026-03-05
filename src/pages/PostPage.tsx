@@ -579,7 +579,7 @@ const PostPage = () => {
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={!user}
                   rows={2}
-                  maxLength={2000}
+                  maxLength={isAdmin ? undefined : 3000}
                 />
                 {user && (
                   <div className="absolute bottom-2 right-2">
