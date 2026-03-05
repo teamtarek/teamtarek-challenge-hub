@@ -516,7 +516,7 @@ const PostPage = () => {
                 onChange={(e) => setEditPostContent(e.target.value)}
                 className="mt-4"
                 rows={5}
-                maxLength={5000}
+                maxLength={isAdmin ? undefined : 3000}
               />
             ) : (
               <p className="mt-4 whitespace-pre-wrap">{post.content}</p>
