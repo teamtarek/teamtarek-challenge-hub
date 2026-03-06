@@ -356,9 +356,11 @@ const ChallengePage = () => {
                         ? RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS
                         : challenge.slug === "simple-sinister"
                           ? SIMPLE_SINISTER_LEVEL_DESCRIPTIONS
-                          : challenge.slug === "the-quadrant"
+                   : challenge.slug === "the-quadrant"
                             ? QUADRANT_LEVEL_DESCRIPTIONS
-                            : MILE_LEVEL_DESCRIPTIONS;
+                            : challenge.slug === "the-classic-complex"
+                              ? CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS
+                              : MILE_LEVEL_DESCRIPTIONS;
               const isComplex = challenge.slug === "1234-complex";
               const isBetty = challenge.slug === "meet-betty";
               const isRoP = challenge.slug === "rite-of-passage";
