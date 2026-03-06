@@ -438,6 +438,32 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           )}
         </div>
       );
+    } else if (isClassicComplex) {
+      const classicLevel = getClassicComplexLevel(
+        registration.total_reps || 0,
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {registration.total_reps || "-"} Runden
+            </span>
+          </div>
+          {classicLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${classicLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {classicLevel.label}
+            </span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
+        </div>
     } else if (isEnduranceRun) {
       const mileLevel = getMileLevel(registration.total_time_seconds || 0, registration.gender, challengeSlug);
       return (
