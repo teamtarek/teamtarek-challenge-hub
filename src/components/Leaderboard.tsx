@@ -243,6 +243,13 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         if (timeA !== timeB) return timeA - timeB;
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
+    } else if (isClassicComplex) {
+      // Primary: more rounds, Secondary: heavier weight
+      return [...regs].sort((a, b) => {
+        const roundsDiff = (b.total_reps || 0) - (a.total_reps || 0);
+        if (roundsDiff !== 0) return roundsDiff;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
     } else if (isMeetBetty) {
       // Primary: fastest time, Secondary: higher level, Tertiary: heavier weight
       return [...regs].sort((a, b) => {
