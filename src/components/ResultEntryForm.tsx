@@ -69,6 +69,7 @@ export const ResultEntryForm = ({
   const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
+  const isClassicComplex = challengeSlug === "the-classic-complex";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
