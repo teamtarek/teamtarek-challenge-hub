@@ -87,7 +87,7 @@ export const ResultEntryForm = ({
 
   const [timeValue, setTimeValue] = useState(getInitialTime());
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
-  const [rounds, setRounds] = useState((is1234Complex || isRiteOfPassage) ? (existingResult.total_reps?.toString() || "") : "");
+  const [rounds, setRounds] = useState((is1234Complex || isRiteOfPassage || isClassicComplex) ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [bettyLevel, setBettyLevel] = useState(isMeetBetty ? (existingResult.score?.toString() || "") : "");
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
