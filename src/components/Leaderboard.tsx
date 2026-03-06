@@ -464,6 +464,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             </div>
           )}
         </div>
+      );
     } else if (isEnduranceRun) {
       const mileLevel = getMileLevel(registration.total_time_seconds || 0, registration.gender, challengeSlug);
       return (
