@@ -68,6 +68,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "10-kilometer-run": tenKRun,
     "1234-complex": complex1234,
     "the-quadrant": theQuadrant,
+    "the-classic-complex": theClassicComplex,
   };
   return imageMap[slug] || heroBg;
 };
