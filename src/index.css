@@ -92,7 +92,7 @@
 }
 
 /* Hide challenge name list when accordion is open */
-[data-state="open"] ~ .accordion-hide-when-open {
+[data-state="open"] > .accordion-hide-when-open {
   display: none;
 }
 
