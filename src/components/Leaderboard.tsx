@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
-import { getMileLevel, getComplexLevel, getQuadrantLevel, getLevelClassName } from "@/lib/mileLevels";
+import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName } from "@/lib/mileLevels";
 import {
   Select,
   SelectContent,
