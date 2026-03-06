@@ -559,6 +559,43 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* Classic Complex: rounds + weight */}
+      {isClassicComplex && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="rounds" className="flex items-center gap-1">
+              <Hash className="w-3 h-3" />
+              Absolvierte Runden
+            </Label>
+            <Input
+              id="rounds"
+              type="number"
+              placeholder="z.B. 15"
+              value={rounds}
+              onChange={(e) => setRounds(e.target.value)}
+              className="input-minimal"
+              min={1}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 12, Männer: 20"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
       {/* The Quadrant: time + weight */}
       {isTheQuadrant && (
         <>
