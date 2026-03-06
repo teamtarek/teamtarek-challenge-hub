@@ -366,6 +366,7 @@ const ChallengePage = () => {
               const isRoP = challenge.slug === "rite-of-passage";
               const isSS = challenge.slug === "simple-sinister";
               const isQuadrant = challenge.slug === "the-quadrant";
+              const isClassicComplex = challenge.slug === "the-classic-complex";
               return (
                 <div className="challenge-card">
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
