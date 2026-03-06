@@ -75,6 +75,7 @@ export const ResultEntryForm = ({
 
   // Determine if this is a time-based challenge
   const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant;
+  // Classic Complex uses rounds + weight only (no time)
 
   // Initialize from existing result
   const getInitialTime = (): string => {
