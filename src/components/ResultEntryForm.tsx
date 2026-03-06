@@ -630,7 +630,7 @@ export const ResultEntryForm = ({
       )}
 
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input
