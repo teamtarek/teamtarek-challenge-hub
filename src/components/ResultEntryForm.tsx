@@ -148,6 +148,11 @@ export const ResultEntryForm = ({
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (isClassicComplex) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || roundsNum <= 0) { toast.error("Bitte eine gültige Rundenzahl eingeben"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isTheQuadrant) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
