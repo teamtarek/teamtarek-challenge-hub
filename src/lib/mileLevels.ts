@@ -170,6 +170,38 @@ export const getQuadrantLevel = (timeSeconds: number, weightKg: number, gender: 
   return null;
 };
 
+export const CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "10 Runden / 20 kg", female: "10 Runden / 12 kg" },
+  { level: 2, male: "15 Runden / 20 kg", female: "15 Runden / 12 kg" },
+  { level: 3, male: "15 Runden / 24 kg", female: "15 Runden / 16 kg" },
+  { level: 4, male: "15 Runden / 32 kg", female: "15 Runden / 24 kg" },
+];
+
+// Calculate Classic Complex level from result data
+export const getClassicComplexLevel = (rounds: number, weightKg: number, gender: string | null): MileLevel | null => {
+  if (!rounds || rounds <= 0 || !weightKg || weightKg <= 0) return null;
+  const isFemale = gender === "female";
+
+  // Level 4: 15 rounds, 32kg(M)/24kg(F)
+  if (rounds >= 15 && weightKg >= (isFemale ? 24 : 32)) {
+    return { level: 4, label: "Level 4", className: getLevelClassName(4) };
+  }
+  // Level 3: 15 rounds, 24kg(M)/16kg(F)
+  if (rounds >= 15 && weightKg >= (isFemale ? 16 : 24)) {
+    return { level: 3, label: "Level 3", className: getLevelClassName(3) };
+  }
+  // Level 2: 15 rounds, 20kg(M)/12kg(F)
+  if (rounds >= 15 && weightKg >= (isFemale ? 12 : 20)) {
+    return { level: 2, label: "Level 2", className: getLevelClassName(2) };
+  }
+  // Level 1: 10 rounds, 20kg(M)/12kg(F)
+  if (rounds >= 10 && weightKg >= (isFemale ? 12 : 20)) {
+    return { level: 1, label: "Level 1", className: getLevelClassName(1) };
+  }
+
+  return null;
+};
+
 export const SNATCH_TEST_INFO = {
   "5-minute-snatch-test": "Der 5-Minute Snatch Test ist eine reine Level 3 Challenge.",
   "secret-service-snatch-test": "Der Secret Service Snatch Test (10 Min) ist eine reine Level 4 Challenge.",

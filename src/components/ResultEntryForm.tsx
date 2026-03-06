@@ -69,11 +69,13 @@ export const ResultEntryForm = ({
   const is10RoundsOfPain = challengeSlug === "10-rounds-of-pain";
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
+  const isClassicComplex = challengeSlug === "the-classic-complex";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
   const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant;
+  // Classic Complex uses rounds + weight only (no time)
 
   // Initialize from existing result
   const getInitialTime = (): string => {
@@ -85,7 +87,7 @@ export const ResultEntryForm = ({
 
   const [timeValue, setTimeValue] = useState(getInitialTime());
   const [reps, setReps] = useState(existingResult.total_reps?.toString() || "");
-  const [rounds, setRounds] = useState((is1234Complex || isRiteOfPassage) ? (existingResult.total_reps?.toString() || "") : "");
+  const [rounds, setRounds] = useState((is1234Complex || isRiteOfPassage || isClassicComplex) ? (existingResult.total_reps?.toString() || "") : "");
   const [kettlebellWeight, setKettlebellWeight] = useState(existingResult.kettlebell_weight_kg?.toString() || "");
   const [bettyLevel, setBettyLevel] = useState(isMeetBetty ? (existingResult.score?.toString() || "") : "");
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
@@ -97,7 +99,7 @@ export const ResultEntryForm = ({
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
-    if (is1234Complex) return (existingResult.total_reps ?? 0) > 0;
+    if (is1234Complex || isClassicComplex) return (existingResult.total_reps ?? 0) > 0;
     if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isRiteOfPassage) return (existingResult.score ?? 0) > 0 || (existingResult.total_reps ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
@@ -145,6 +147,11 @@ export const ResultEntryForm = ({
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (isClassicComplex) {
+      const roundsNum = parseInt(rounds);
+      if (isNaN(roundsNum) || roundsNum <= 0) { toast.error("Bitte eine gültige Rundenzahl eingeben"); setLoading(false); return; }
+      updateData.total_reps = roundsNum;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isTheQuadrant) {
       const seconds = timeStringToSeconds(timeValue);
@@ -552,6 +559,43 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* Classic Complex: rounds + weight */}
+      {isClassicComplex && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="rounds" className="flex items-center gap-1">
+              <Hash className="w-3 h-3" />
+              Absolvierte Runden
+            </Label>
+            <Input
+              id="rounds"
+              type="number"
+              placeholder="z.B. 15"
+              value={rounds}
+              onChange={(e) => setRounds(e.target.value)}
+              className="input-minimal"
+              min={1}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 12, Männer: 20"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
       {/* The Quadrant: time + weight */}
       {isTheQuadrant && (
         <>
@@ -586,7 +630,7 @@ export const ResultEntryForm = ({
       )}
 
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input
