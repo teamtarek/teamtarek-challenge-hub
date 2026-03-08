@@ -172,9 +172,9 @@ export const getQuadrantLevel = (timeSeconds: number, weightKg: number, gender: 
 
 export const CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS = [
   { level: 1, male: "10 Runden / 20 kg", female: "10 Runden / 12 kg" },
-  { level: 2, male: "15 Runden / 20 kg", female: "15 Runden / 12 kg" },
-  { level: 3, male: "15 Runden / 24 kg", female: "15 Runden / 16 kg" },
-  { level: 4, male: "15 Runden / 32 kg", female: "15 Runden / 24 kg" },
+  { level: 2, male: "12 Runden / 20 kg", female: "12 Runden / 12 kg" },
+  { level: 3, male: "12 Runden / 24 kg", female: "12 Runden / 16 kg" },
+  { level: 4, male: "12 Runden / 32 kg", female: "12 Runden / 24 kg" },
 ];
 
 // Calculate Classic Complex level from result data
