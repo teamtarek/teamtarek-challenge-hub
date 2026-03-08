@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Leaderboard } from "@/components/Leaderboard";
 import { Top3Summary } from "@/components/Top3Summary";
+import { OverallLeaderboard } from "@/components/OverallLeaderboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
