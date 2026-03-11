@@ -204,7 +204,41 @@ export const getClassicComplexLevel = (rounds: number, weightKg: number, gender:
 
 export const SNATCH_TEST_INFO = {
   "5-minute-snatch-test": "Der 5-Minute Snatch Test ist eine reine Level 3 Challenge.",
-  "secret-service-snatch-test": "Der Secret Service Snatch Test (10 Min) ist eine reine Level 4 Challenge.",
+};
+
+export const SSST_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "< 10 Min / 16 kg", female: "< 10 Min / 8 kg" },
+  { level: 2, male: "< 10 Min / 20 kg", female: "< 10 Min / 12 kg" },
+  { level: 3, male: "< 10 Min / 24 kg", female: "< 10 Min / 16 kg" },
+  { level: 4, male: "< 10 Min / > 24 kg", female: "< 10 Min / > 16 kg" },
+];
+
+// Calculate SSST level from time and weight
+export const getSsstLevel = (timeSeconds: number, weightKg: number, gender: string | null): MileLevel | null => {
+  if (!timeSeconds || timeSeconds <= 0 || !weightKg || weightKg <= 0) return null;
+  // Must be under 10 minutes
+  if (timeSeconds >= 10 * 60) return null;
+  
+  const isFemale = gender === "female";
+  
+  // Level 4: > 24kg(M) / > 16kg(F)
+  if (weightKg > (isFemale ? 16 : 24)) {
+    return { level: 4, label: "Level 4", className: getLevelClassName(4) };
+  }
+  // Level 3: 24kg(M) / 16kg(F)
+  if (weightKg >= (isFemale ? 16 : 24)) {
+    return { level: 3, label: "Level 3", className: getLevelClassName(3) };
+  }
+  // Level 2: 20kg(M) / 12kg(F)
+  if (weightKg >= (isFemale ? 12 : 20)) {
+    return { level: 2, label: "Level 2", className: getLevelClassName(2) };
+  }
+  // Level 1: 16kg(M) / 8kg(F)
+  if (weightKg >= (isFemale ? 8 : 16)) {
+    return { level: 1, label: "Level 1", className: getLevelClassName(1) };
+  }
+  
+  return null;
 };
 
 // Calculate 1-2-3-4 Complex level from result data
