@@ -1152,7 +1152,7 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
-                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && registration.kettlebell_weight_kg && (
+                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
                               <span className="flex items-center gap-1">
