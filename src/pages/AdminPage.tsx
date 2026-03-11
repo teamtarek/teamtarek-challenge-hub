@@ -1145,13 +1145,25 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
-                          {(isKettlebellChallenge || isKettlebellSwing) && registration.kettlebell_weight_kg && (
+                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Dumbbell className="w-3 h-3" />
                                 {registration.kettlebell_weight_kg} kg
                               </span>
+                            </>
+                          )}
+                          {(is1234Complex || isClassicComplex) && registration.total_reps && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.total_reps} Runden</span>
+                            </>
+                          )}
+                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex) && registration.total_time_seconds && (
+                            <>
+                              <span>•</span>
+                              <span>{secondsToTimeString(registration.total_time_seconds)}</span>
                             </>
                           )}
                           {isKettlebellSwing && (
