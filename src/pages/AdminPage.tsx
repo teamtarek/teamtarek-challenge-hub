@@ -431,24 +431,31 @@ const AdminPage = () => {
       }
     }
     
-    if (!participantName || !participantEmail) {
-      toast.error("Name und E-Mail sind erforderlich");
+    if (!participantName) {
+      toast.error("Name ist erforderlich");
       return;
+    }
+
+    // Generate placeholder email if not provided
+    if (!participantEmail) {
+      participantEmail = `admin-${crypto.randomUUID().slice(0, 8)}@placeholder.local`;
     }
 
     // Check if this participant already has a result for this year
     const yearToCheck = parseInt(newParticipantYear, 10);
-    const { data: existingResult } = await supabase
-      .from("registrations")
-      .select("id")
-      .eq("challenge_id", selectedChallenge)
-      .eq("email", participantEmail)
-      .eq("year", yearToCheck)
-      .maybeSingle();
-    
-    if (existingResult) {
-      toast.error(`Dieser Teilnehmer hat bereits ein Ergebnis für ${yearToCheck}`);
-      return;
+    if (!participantEmail.includes("@placeholder.local")) {
+      const { data: existingResult } = await supabase
+        .from("registrations")
+        .select("id")
+        .eq("challenge_id", selectedChallenge)
+        .eq("email", participantEmail)
+        .eq("year", yearToCheck)
+        .maybeSingle();
+      
+      if (existingResult) {
+        toast.error(`Dieser Teilnehmer hat bereits ein Ergebnis für ${yearToCheck}`);
+        return;
+      }
     }
 
     setAddingParticipant(true);
