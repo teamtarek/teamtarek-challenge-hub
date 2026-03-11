@@ -55,6 +55,7 @@ const challengeObjectPositions: Record<string, string> = {
   "deadly-dozen": "center 30%",
   "the-quadrant": "center 35%",
   "the-classic-complex": "center 40%",
+  "10-rounds-of-pain": "center 40%",
 };
 
 // Custom object fit for specific challenges (to show full image)
