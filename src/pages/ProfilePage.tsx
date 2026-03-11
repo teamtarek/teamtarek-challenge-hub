@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getMileLevel, getSsstLevel } from "@/lib/mileLevels";
+import snatchMasterBadge from "@/assets/badges/snatch-master.png";
 import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
