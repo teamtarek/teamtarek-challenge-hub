@@ -833,7 +833,7 @@ const AdminPage = () => {
                     
                     {/* Challenge-specific fields */}
                     {/* Weight for applicable challenges */}
-                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
+                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && (
                       <div className="space-y-2">
                         <Label htmlFor="kettlebellWeight">Gewicht (kg)</Label>
                         <Input
