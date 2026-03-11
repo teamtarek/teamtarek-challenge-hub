@@ -335,14 +335,14 @@ const ChallengePage = () => {
 
             {/* Mile Level Info Box */}
             {/* Snatch Test Level Info */}
-            {(challenge.slug === "5-minute-snatch-test" || challenge.slug === "secret-service-snatch-test") && (
+            {challenge.slug === "5-minute-snatch-test" && (
               <div className="challenge-card">
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="w-5 h-5 text-primary" />
                   <h2 className="text-xl font-semibold">Level-Info</h2>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {SNATCH_TEST_INFO[challenge.slug as keyof typeof SNATCH_TEST_INFO]}
+                  {SNATCH_TEST_INFO["5-minute-snatch-test"]}
                 </p>
               </div>
             )}
