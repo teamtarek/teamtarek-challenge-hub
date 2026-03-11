@@ -306,7 +306,7 @@ export const ResultEntryForm = ({
             />
           </div>
         </>
-      )
+      )}
 
       {(isMurphChallenge || isEnduranceRun || isSpringChallenge || isSimpleSinister) && (
         <div className="space-y-2">
