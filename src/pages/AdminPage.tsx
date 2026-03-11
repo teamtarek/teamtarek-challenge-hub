@@ -825,9 +825,10 @@ const AdminPage = () => {
                     )}
                     
                     {/* Challenge-specific fields */}
-                    {(isKettlebellChallenge || isKettlebellSwing) && (
+                    {/* Weight for applicable challenges */}
+                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
                       <div className="space-y-2">
-                        <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
+                        <Label htmlFor="kettlebellWeight">Gewicht (kg)</Label>
                         <Input
                           id="kettlebellWeight"
                           type="number"
@@ -840,6 +841,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
+                    {/* Swing pass/fail + total reps */}
                     {isKettlebellSwing && (
                       <>
                         <div className="space-y-2">
@@ -868,6 +870,7 @@ const AdminPage = () => {
                       </>
                     )}
                     
+                    {/* Snatch test reps */}
                     {isAnySnatchTest && (
                       <div className="space-y-2">
                         <Label htmlFor="totalReps">Wiederholungen gesamt</Label>
@@ -882,19 +885,36 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) && (
+                    {/* Rounds for 1234 Complex, Classic Complex */}
+                    {(is1234Complex || isClassicComplex) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="totalReps">Absolvierte Runden</Label>
+                        <Input
+                          id="totalReps"
+                          type="number"
+                          placeholder="z.B. 15"
+                          value={newParticipantTotalReps}
+                          onChange={(e) => setNewParticipantTotalReps(e.target.value)}
+                          min={1}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Time for applicable challenges */}
+                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
                       <div className="space-y-2">
                         <Label htmlFor="totalTime">Zeit (MM:SS)</Label>
                         <Input
                           id="totalTime"
                           type="text"
-                          placeholder="6:30"
+                          placeholder="z.B. 25:30"
                           value={newParticipantTotalTime}
                           onChange={(e) => setNewParticipantTotalTime(e.target.value)}
                         />
                       </div>
                     )}
                     
+                    {/* Simple Sinister time */}
                     {isSimpleSinister && (
                       <div className="space-y-2">
                         <Label htmlFor="value">Zeit (MM:SS)</Label>
@@ -908,6 +928,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
+                    {/* Kettlebell date */}
                     {isKettlebellChallenge && (
                       <div className="space-y-2">
                         <Label htmlFor="completionDate">Datum</Label>
@@ -920,14 +941,28 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && (
+                    {/* Murph time */}
+                    {isMurphChallenge && (
                       <div className="space-y-2">
-                        <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
+                        <Label htmlFor="value">Zeit (MM:SS oder H:MM:SS)</Label>
                         <Input
                           id="value"
-                          placeholder={isMurphChallenge ? "45:30" : "0"}
-                          type={isMurphChallenge ? "text" : "number"}
-                          min={isMurphChallenge ? undefined : 0}
+                          placeholder="45:30"
+                          type="text"
+                          value={newParticipantValue}
+                          onChange={(e) => setNewParticipantValue(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Default: time-based for other challenges */}
+                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                      <div className="space-y-2">
+                        <Label htmlFor="value">Gesamtzeit (MM:SS)</Label>
+                        <Input
+                          id="value"
+                          placeholder="45:30"
+                          type="text"
                           value={newParticipantValue}
                           onChange={(e) => setNewParticipantValue(e.target.value)}
                         />
