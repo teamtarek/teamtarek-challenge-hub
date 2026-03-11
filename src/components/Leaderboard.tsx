@@ -322,6 +322,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (!r.is_verified) return false;
     if (filterYear !== "all" && r.year !== parseInt(filterYear)) return false;
     if (filterVersion !== "all" && r.murph_version !== filterVersion) return false;
+    // 10 Rounds of Pain: only show entries under 30 minutes (1800 seconds)
+    if (is10RoundsOfPain && r.total_time_seconds && r.total_time_seconds >= 1800) return false;
     return true;
   });
 
