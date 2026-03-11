@@ -492,8 +492,19 @@ const AdminPage = () => {
     } else if (isMeetBetty) {
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is1234Complex) {
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (isClassicComplex) {
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is10RoundsOfPain || isTheQuadrant) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
     } else {
-      insertData.score = parseInt(newParticipantValue || "0", 10);
+      // Default: time-based
+      insertData.score = timeStringToSeconds(newParticipantValue || "");
     }
 
     const { error } = await supabase.from("registrations").insert(insertData);
