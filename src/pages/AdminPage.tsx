@@ -1192,7 +1192,8 @@ const AdminPage = () => {
                       
                       {/* Edit Fields */}
                       <div className="flex flex-wrap items-center gap-3">
-                        {(isKettlebellChallenge || isKettlebellSwing) && (
+                        {/* Weight fields */}
+                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="kg"
@@ -1212,6 +1213,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Swing fields */}
                         {isKettlebellSwing && (
                           <>
                             <div className="flex items-center gap-2">
@@ -1247,6 +1249,7 @@ const AdminPage = () => {
                           </>
                         )}
                         
+                        {/* Reps for snatch tests */}
                         {isAnySnatchTest && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1266,7 +1269,28 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) && (
+                        {/* Rounds for 1234 Complex, Classic Complex */}
+                        {(is1234Complex || isClassicComplex) && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Runden"
+                              type="number"
+                              min={1}
+                              className="w-24"
+                              value={totalReps[registration.id] || ""}
+                              onChange={(e) =>
+                                setTotalReps((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Runden</span>
+                          </div>
+                        )}
+                        
+                        {/* Time fields */}
+                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="MM:SS"
@@ -1284,6 +1308,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Simple Sinister time */}
                         {isSimpleSinister && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1299,6 +1324,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Date for kettlebell challenges */}
                         {isKettlebellChallenge && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1315,19 +1341,35 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {!isKettlebellChallenge && !isEnduranceRun && !isKettlebellSwing && !isSpringChallenge && (
+                        {/* Murph time */}
+                        {isMurphChallenge && (
                           <div className="flex items-center gap-2">
                             <Input
-                              placeholder={isMurphChallenge ? "MM:SS" : "0"}
-                              type={isMurphChallenge ? "text" : "number"}
-                              min={isMurphChallenge ? undefined : 0}
+                              placeholder="MM:SS"
+                              type="text"
                               className="w-28"
                               value={values[registration.id] || ""}
                               onChange={(e) =>
                                 handleValueChange(registration.id, e.target.value)
                               }
                             />
-                            <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                            <span className="text-muted-foreground text-sm">Zeit</span>
+                          </div>
+                        )}
+                        
+                        {/* Default: time-based for unknown challenges */}
+                        {!isKettlebellChallenge && !isEnduranceRun && !isKettlebellSwing && !isSpringChallenge && !isMurphChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="MM:SS"
+                              type="text"
+                              className="w-28"
+                              value={values[registration.id] || ""}
+                              onChange={(e) =>
+                                handleValueChange(registration.id, e.target.value)
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Zeit</span>
                           </div>
                         )}
                         

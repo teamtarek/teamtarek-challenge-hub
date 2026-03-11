@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          is_resolved: boolean
+          resolved_at: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_resolved?: boolean
+          resolved_at?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          is_resolved?: boolean
+          resolved_at?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           category: string
@@ -342,7 +369,7 @@ export type Database = {
           challenge_id: string
           completion_date: string | null
           created_at: string
-          email: string
+          email: string | null
           id: string
           is_verified: boolean | null
           kettlebell_weight_kg: number | null
@@ -360,7 +387,7 @@ export type Database = {
           challenge_id: string
           completion_date?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           is_verified?: boolean | null
           kettlebell_weight_kg?: number | null
@@ -378,7 +405,7 @@ export type Database = {
           challenge_id?: string
           completion_date?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           is_verified?: boolean | null
           kettlebell_weight_kg?: number | null
