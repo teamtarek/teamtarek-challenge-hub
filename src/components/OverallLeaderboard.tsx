@@ -167,9 +167,14 @@ export const OverallLeaderboard = () => {
       const pointsMap: Record<string, { participant_name: string; user_id: string | null; avatar_url: string | null; totalPoints: number; breakdown: { challengeName: string; rank: number; points: number }[] }> = {};
 
       for (const ch of challenges) {
-        const chRegs = registrations
+        let chRegs = registrations
           .filter(r => r.challenge_id === ch.id)
           .map(r => ({ ...r, score: r.score ?? 0 }));
+
+        // 10 Rounds of Pain: only count entries under 30 minutes
+        if (ch.slug === "10-rounds-of-pain") {
+          chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 1800);
+        }
 
         const withResults = chRegs.filter(e => hasResult(ch.slug, e));
         const sorted = sortEntries(ch.slug, withResults);
