@@ -143,6 +143,10 @@ const AdminPage = () => {
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = selectedChallengeData?.slug === "kettlebell-swing";
   const isSpringChallenge = selectedChallengeData?.slug === "spring-challenge-2026";
+  const is10RoundsOfPain = selectedChallengeData?.slug === "10-rounds-of-pain";
+  const is1234Complex = selectedChallengeData?.slug === "1234-complex";
+  const isClassicComplex = selectedChallengeData?.slug === "the-classic-complex";
+  const isTheQuadrant = selectedChallengeData?.slug === "the-quadrant";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
