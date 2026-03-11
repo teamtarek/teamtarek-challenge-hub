@@ -46,8 +46,8 @@ const PASS_FAIL_POINTS = 10;
 // ---- Sorting logic mirrored from Top3Summary / Leaderboard ----
 
 const hasResult = (slug: string, entry: Registration): boolean => {
-  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
-  const repSlugs = ["5-minute-snatch-test", "secret-service-snatch-test", "kettlebell-swing"];
+  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty", "secret-service-snatch-test"];
+  const repSlugs = ["5-minute-snatch-test", "kettlebell-swing"];
   const roundSlugs = ["1234-complex", "the-classic-complex"];
 
   if (timeSlugs.includes(slug)) return (entry.total_time_seconds ?? 0) > 0;
@@ -72,7 +72,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   if (timeSortedSlugs.includes(slug)) {
     return [...entries].sort((a, b) => (a.total_time_seconds || Infinity) - (b.total_time_seconds || Infinity));
   }
-  if (slug === "10-rounds-of-pain" || slug === "the-quadrant") {
+  if (slug === "10-rounds-of-pain" || slug === "the-quadrant" || slug === "secret-service-snatch-test") {
     return [...entries].sort((a, b) => {
       const timeDiff = (a.total_time_seconds || Infinity) - (b.total_time_seconds || Infinity);
       if (timeDiff !== 0) return timeDiff;
@@ -95,7 +95,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
       return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
     });
   }
-  if (slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") {
+  if (slug === "5-minute-snatch-test") {
     return [...entries].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
   }
   if (slug === "simple-sinister") {
@@ -174,6 +174,10 @@ export const OverallLeaderboard = () => {
         // 10 Rounds of Pain: only count entries under 30 minutes
         if (ch.slug === "10-rounds-of-pain") {
           chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 1800);
+        }
+        // SSST: only count entries under 10 minutes
+        if (ch.slug === "secret-service-snatch-test") {
+          chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 600);
         }
 
         const withResults = chRegs.filter(e => hasResult(ch.slug, e));

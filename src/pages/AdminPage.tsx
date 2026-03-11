@@ -148,9 +148,9 @@ const AdminPage = () => {
   const is1234Complex = selectedChallengeData?.slug === "1234-complex";
   const isClassicComplex = selectedChallengeData?.slug === "the-classic-complex";
   const isTheQuadrant = selectedChallengeData?.slug === "the-quadrant";
-  const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
-  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
+  const isAnySnatchTest = isSnatchTest; // Only 5-min uses reps
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || isSecretServiceSnatchTest;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -284,7 +284,7 @@ const AdminPage = () => {
     // No score for challenges that use other fields
     
     // Weight fields
-    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) {
+    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) {
       const weight = kettlebellWeights[registrationId];
       if (weight) updateData.kettlebell_weight_kg = parseInt(weight, 10);
     }
@@ -302,7 +302,7 @@ const AdminPage = () => {
     }
     
     // Time fields
-    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) {
+    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) {
       const time = totalTimes[registrationId];
       if (time) updateData.total_time_seconds = timeStringToSeconds(time);
     }
@@ -484,6 +484,9 @@ const AdminPage = () => {
       insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.completion_date = newParticipantCompletionDate || null;
+    } else if (isSecretServiceSnatchTest) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
     } else if (isRiteOfPassage) {
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
@@ -830,7 +833,7 @@ const AdminPage = () => {
                     
                     {/* Challenge-specific fields */}
                     {/* Weight for applicable challenges */}
-                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
+                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && (
                       <div className="space-y-2">
                         <Label htmlFor="kettlebellWeight">Gewicht (kg)</Label>
                         <Input
@@ -905,7 +908,7 @@ const AdminPage = () => {
                     )}
                     
                     {/* Time for applicable challenges */}
-                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
+                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) && (
                       <div className="space-y-2">
                         <Label htmlFor="totalTime">Zeit (MM:SS)</Label>
                         <Input
@@ -1149,7 +1152,7 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
-                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && registration.kettlebell_weight_kg && (
+                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
                               <span className="flex items-center gap-1">
@@ -1164,7 +1167,7 @@ const AdminPage = () => {
                               <span>{registration.total_reps} Runden</span>
                             </>
                           )}
-                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex) && registration.total_time_seconds && (
+                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex || isSecretServiceSnatchTest) && registration.total_time_seconds && (
                             <>
                               <span>•</span>
                               <span>{secondsToTimeString(registration.total_time_seconds)}</span>
@@ -1197,7 +1200,7 @@ const AdminPage = () => {
                       {/* Edit Fields */}
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Weight fields */}
-                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
+                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="kg"
@@ -1294,7 +1297,7 @@ const AdminPage = () => {
                         )}
                         
                         {/* Time fields */}
-                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
+                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="MM:SS"

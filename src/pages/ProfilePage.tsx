@@ -26,7 +26,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Camera, Lock, Globe, Zap, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { getMileLevel } from "@/lib/mileLevels";
+import { getMileLevel, getSsstLevel } from "@/lib/mileLevels";
+import snatchMasterBadge from "@/assets/badges/snatch-master.png";
 import { CHALLENGE_SECTIONS } from "@/lib/challengeCategories";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -140,8 +141,8 @@ const formatChallengeResult = (reg: Registration, userGender: string | null): { 
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
   }
   
-  // 5-Minute Snatch Test & Secret Service Snatch Test - Reps und Gewicht
-  if (slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") {
+  // 5-Minute Snatch Test - Reps und Gewicht
+  if (slug === "5-minute-snatch-test") {
     const parts: string[] = [];
     if (reg.total_reps && reg.total_reps > 0) {
       parts.push(`${reg.total_reps} Reps`);
@@ -150,6 +151,24 @@ const formatChallengeResult = (reg: Registration, userGender: string | null): { 
       parts.push(`${reg.kettlebell_weight_kg} kg`);
     }
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // Secret Service Snatch Test - Zeit und Gewicht + Level
+  if (slug === "secret-service-snatch-test") {
+    const parts: string[] = [];
+    if (reg.total_time_seconds && reg.total_time_seconds > 0) {
+      parts.push(formatTimeFromSeconds(reg.total_time_seconds));
+      if (reg.total_time_seconds < 600) parts.push("PASS ✓");
+    }
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    const sstLevel = getSsstLevel(reg.total_time_seconds || 0, reg.kettlebell_weight_kg || 0, userGender);
+    return { 
+      value: parts.length > 0 ? parts.join(" • ") : "-", 
+      label: sstLevel?.level === 4 ? "🏆 Snatch Master" : "",
+      mileLevel: sstLevel
+    };
   }
   
   // Meet Betty - Zeit und Gewicht
@@ -741,6 +760,23 @@ const ProfilePage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Snatch Master Badge */}
+        {completedChallenges.some((reg) => {
+          if (reg.challenges.slug !== "secret-service-snatch-test") return false;
+          const level = getSsstLevel(reg.total_time_seconds || 0, reg.kettlebell_weight_kg || 0, gender || null);
+          return level?.level === 4;
+        }) && (
+          <div className="challenge-card mb-8">
+            <div className="flex items-center gap-4">
+              <img src={snatchMasterBadge} alt="Snatch Master Badge" className="w-16 h-16" />
+              <div>
+                <h3 className="text-lg font-bold text-yellow-500">🏆 Snatch Master</h3>
+                <p className="text-sm text-muted-foreground">Level 4 im Secret Service Snatch Test erreicht!</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Achievements - Completed Challenges with Results */}
         {completedChallenges.length > 0 && (

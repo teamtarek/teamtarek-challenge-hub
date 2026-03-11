@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock, Zap } from "lucide-react";
-import { getMileLevel } from "@/lib/mileLevels";
+import { getMileLevel, getSsstLevel } from "@/lib/mileLevels";
+import snatchMasterBadge from "@/assets/badges/snatch-master.png";
 
 interface Profile {
   display_name: string | null;
@@ -126,8 +127,17 @@ const PublicProfilePage = () => {
       const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null, slug);
       return { value: `${mins}:${secs.toString().padStart(2, "0")}`, mileLevel };
     }
-    if ((slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") && reg.total_reps) {
+    if (slug === "5-minute-snatch-test" && reg.total_reps) {
       return { value: `${reg.total_reps} Reps` };
+    }
+    if (slug === "secret-service-snatch-test" && reg.total_time_seconds) {
+      const mins = Math.floor(reg.total_time_seconds / 60);
+      const secs = reg.total_time_seconds % 60;
+      const parts = [`${mins}:${secs.toString().padStart(2, "0")}`];
+      if (reg.total_time_seconds < 600) parts.push("PASS ✓");
+      if (reg.kettlebell_weight_kg) parts.push(`${reg.kettlebell_weight_kg} kg`);
+      const sstLevel = getSsstLevel(reg.total_time_seconds, reg.kettlebell_weight_kg || 0, profile?.gender || null);
+      return { value: parts.join(" • "), mileLevel: sstLevel };
     }
     if ((slug === "simple-sinister" || slug === "rite-of-passage") && reg.kettlebell_weight_kg) {
       const time = reg.total_time_seconds || reg.score;
@@ -271,6 +281,23 @@ const PublicProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Snatch Master Badge */}
+        {completedChallenges.some((reg) => {
+          if (reg.challenges.slug !== "secret-service-snatch-test") return false;
+          const level = getSsstLevel(reg.total_time_seconds || 0, reg.kettlebell_weight_kg || 0, profile?.gender || null);
+          return level?.level === 4;
+        }) && (
+          <div className="challenge-card mb-4">
+            <div className="flex items-center gap-4">
+              <img src={snatchMasterBadge} alt="Snatch Master Badge" className="w-16 h-16" />
+              <div>
+                <h3 className="text-lg font-bold text-yellow-500">🏆 Snatch Master</h3>
+                <p className="text-sm text-muted-foreground">Level 4 im Secret Service Snatch Test erreicht!</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Achievements */}
         <div className="challenge-card">

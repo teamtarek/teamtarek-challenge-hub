@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
-import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName } from "@/lib/mileLevels";
+import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName, getSsstLevel } from "@/lib/mileLevels";
 import {
   Select,
   SelectContent,
@@ -88,8 +88,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
-  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant;
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isSecretServiceSnatchTest;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -217,8 +217,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         if (repsDiff !== 0) return repsDiff;
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
-    } else if (isSnatchTest || isSecretServiceSnatchTest) {
+    } else if (isSnatchTest) {
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
+    } else if (isSecretServiceSnatchTest) {
+      // Primary: fastest time, Secondary: heavier weight
+      return [...regs].sort((a, b) => {
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
     } else if (isEnduranceRun || isSpringChallenge) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
@@ -288,7 +296,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   const hasResult = (reg: Registration) => {
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
-    if (isSnatchTest || isSecretServiceSnatchTest) return reg.total_reps && reg.total_reps > 0;
+    if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
+    if (isSecretServiceSnatchTest) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex || isClassicComplex) return reg.total_reps && reg.total_reps > 0;
     if (isRiteOfPassage) return (reg.total_reps && reg.total_reps > 0) || (reg.score && reg.score > 0);
@@ -324,6 +333,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (filterVersion !== "all" && r.murph_version !== filterVersion) return false;
     // 10 Rounds of Pain: only show entries under 30 minutes (1800 seconds)
     if (is10RoundsOfPain && r.total_time_seconds && r.total_time_seconds >= 1800) return false;
+    // SSST: only show entries under 10 minutes (600 seconds)
+    if (isSecretServiceSnatchTest && r.total_time_seconds && r.total_time_seconds >= 600) return false;
     return true;
   });
 
@@ -354,7 +365,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           )}
         </div>
       );
-    } else if (isSnatchTest || isSecretServiceSnatchTest) {
+    } else if (isSnatchTest) {
       return (
         <div className="text-right">
           <div className="font-mono">
@@ -366,6 +377,38 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
               <Calendar className="w-3 h-3" />
               {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else if (isSecretServiceSnatchTest) {
+      const isPassed = registration.total_time_seconds && registration.total_time_seconds < 600;
+      const sstLevel = getSsstLevel(
+        registration.total_time_seconds || 0,
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {isPassed && (
+            <span className="text-xs font-semibold text-green-500">PASS ✓</span>
+          )}
+          {sstLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${sstLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {sstLevel.label}
+              {sstLevel.level === 4 && " 🏆 Snatch Master"}
+            </span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
             </div>
           )}
         </div>
