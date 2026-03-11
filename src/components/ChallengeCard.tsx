@@ -47,6 +47,7 @@ const challengeImages: Record<string, string> = {
   "10-rounds-of-pain": tenRoundsImg,
   "1234-complex": complexImg,
   "the-quadrant": theQuadrantImg,
+  "the-classic-complex": theClassicComplexImg,
 };
 
 // Custom object positions for specific challenges
