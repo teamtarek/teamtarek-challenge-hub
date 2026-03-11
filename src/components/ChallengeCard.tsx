@@ -54,6 +54,7 @@ const challengeObjectPositions: Record<string, string> = {
   "5-minute-snatch-test": "center top",
   "deadly-dozen": "center 30%",
   "the-quadrant": "center 35%",
+  "the-classic-complex": "center 40%",
 };
 
 // Custom object fit for specific challenges (to show full image)
