@@ -72,7 +72,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   if (timeSortedSlugs.includes(slug)) {
     return [...entries].sort((a, b) => (a.total_time_seconds || Infinity) - (b.total_time_seconds || Infinity));
   }
-  if (slug === "10-rounds-of-pain" || slug === "the-quadrant") {
+  if (slug === "10-rounds-of-pain" || slug === "the-quadrant" || slug === "secret-service-snatch-test") {
     return [...entries].sort((a, b) => {
       const timeDiff = (a.total_time_seconds || Infinity) - (b.total_time_seconds || Infinity);
       if (timeDiff !== 0) return timeDiff;
