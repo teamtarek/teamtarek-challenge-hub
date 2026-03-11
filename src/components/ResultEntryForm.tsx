@@ -274,6 +274,40 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* Secret Service Snatch Test: time + weight */}
+      {isSecretServiceSnatchTest && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 8:45"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+            <p className="text-xs text-muted-foreground">Nur Zeiten unter 10:00 Minuten gelten als PASS.</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Männer: 24, Frauen: 16"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )
+
       {(isMurphChallenge || isEnduranceRun || isSpringChallenge || isSimpleSinister) && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
