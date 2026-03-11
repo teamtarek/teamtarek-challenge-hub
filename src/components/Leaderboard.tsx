@@ -88,8 +88,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
-  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant;
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isSecretServiceSnatchTest;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
