@@ -127,8 +127,17 @@ const PublicProfilePage = () => {
       const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null, slug);
       return { value: `${mins}:${secs.toString().padStart(2, "0")}`, mileLevel };
     }
-    if ((slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") && reg.total_reps) {
+    if (slug === "5-minute-snatch-test" && reg.total_reps) {
       return { value: `${reg.total_reps} Reps` };
+    }
+    if (slug === "secret-service-snatch-test" && reg.total_time_seconds) {
+      const mins = Math.floor(reg.total_time_seconds / 60);
+      const secs = reg.total_time_seconds % 60;
+      const parts = [`${mins}:${secs.toString().padStart(2, "0")}`];
+      if (reg.total_time_seconds < 600) parts.push("PASS ✓");
+      if (reg.kettlebell_weight_kg) parts.push(`${reg.kettlebell_weight_kg} kg`);
+      const sstLevel = getSsstLevel(reg.total_time_seconds, reg.kettlebell_weight_kg || 0, profile?.gender || null);
+      return { value: parts.join(" • "), mileLevel: sstLevel };
     }
     if ((slug === "simple-sinister" || slug === "rite-of-passage") && reg.kettlebell_weight_kg) {
       const time = reg.total_time_seconds || reg.score;
