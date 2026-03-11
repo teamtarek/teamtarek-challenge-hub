@@ -95,7 +95,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
       return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
     });
   }
-  if (slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") {
+  if (slug === "5-minute-snatch-test") {
     return [...entries].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
   }
   if (slug === "simple-sinister") {
