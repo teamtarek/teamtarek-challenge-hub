@@ -1167,7 +1167,7 @@ const AdminPage = () => {
                               <span>{registration.total_reps} Runden</span>
                             </>
                           )}
-                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex) && registration.total_time_seconds && (
+                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex || isSecretServiceSnatchTest) && registration.total_time_seconds && (
                             <>
                               <span>•</span>
                               <span>{secondsToTimeString(registration.total_time_seconds)}</span>
