@@ -80,6 +80,7 @@ const getChallengeBackgroundPosition = (slug: string): string => {
     "5-minute-snatch-test": "center top",
     "deadly-dozen": "center top",
     "the-quadrant": "center 35%",
+    "the-classic-complex": "center 40%",
   };
   return positionMap[slug] || "center";
 };
