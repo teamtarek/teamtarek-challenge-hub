@@ -217,8 +217,16 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         if (repsDiff !== 0) return repsDiff;
         return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
       });
-    } else if (isSnatchTest || isSecretServiceSnatchTest) {
+    } else if (isSnatchTest) {
       return [...regs].sort((a, b) => (b.total_reps || 0) - (a.total_reps || 0));
+    } else if (isSecretServiceSnatchTest) {
+      // Primary: fastest time, Secondary: heavier weight
+      return [...regs].sort((a, b) => {
+        const timeA = a.total_time_seconds || Infinity;
+        const timeB = b.total_time_seconds || Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        return (b.kettlebell_weight_kg || 0) - (a.kettlebell_weight_kg || 0);
+      });
     } else if (isEnduranceRun || isSpringChallenge) {
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
