@@ -538,8 +538,9 @@ const AdminPage = () => {
     if (isAnySnatchTest) return "Wiederholungen";
     if (isKettlebellSwing) return "Ergebnisse";
     if (isRiteOfPassage) return "Ergebnisse";
-    if (isEnduranceRun || isMeetBetty || isSpringChallenge) return "Zeiten";
-    return "Punktzahlen";
+    if (isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return "Zeiten";
+    if (is1234Complex || isClassicComplex) return "Runden & Gewicht";
+    return "Ergebnisse";
   };
 
   // Filter and sort registrations
