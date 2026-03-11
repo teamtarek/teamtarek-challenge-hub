@@ -322,6 +322,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (!r.is_verified) return false;
     if (filterYear !== "all" && r.year !== parseInt(filterYear)) return false;
     if (filterVersion !== "all" && r.murph_version !== filterVersion) return false;
+    // 10 Rounds of Pain: only show entries under 30 minutes (1800 seconds)
+    if (is10RoundsOfPain && r.total_time_seconds && r.total_time_seconds >= 1800) return false;
     return true;
   });
 
@@ -378,12 +380,32 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           </div>
         </div>
       );
-    } else if (is10RoundsOfPain || isTheQuadrant) {
-      const quadrantLevel = isTheQuadrant ? getQuadrantLevel(
+    } else if (is10RoundsOfPain) {
+      const isPassed = registration.total_time_seconds && registration.total_time_seconds < 1800;
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {isPassed && (
+            <span className="text-xs font-semibold text-green-500">PASS ✓</span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
+        </div>
+      );
+    } else if (isTheQuadrant) {
+      const quadrantLevel = getQuadrantLevel(
         registration.total_time_seconds || 0,
         registration.kettlebell_weight_kg || 0,
         registration.gender
-      ) : null;
+      );
       return (
         <div className="text-right">
           <div className="font-mono">

@@ -81,6 +81,7 @@ const getChallengeBackgroundPosition = (slug: string): string => {
     "deadly-dozen": "center top",
     "the-quadrant": "center 35%",
     "the-classic-complex": "center 40%",
+    "10-rounds-of-pain": "center 40%",
   };
   return positionMap[slug] || "center";
 };
