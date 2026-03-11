@@ -484,6 +484,9 @@ const AdminPage = () => {
       insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.completion_date = newParticipantCompletionDate || null;
+    } else if (isSecretServiceSnatchTest) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
     } else if (isRiteOfPassage) {
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
