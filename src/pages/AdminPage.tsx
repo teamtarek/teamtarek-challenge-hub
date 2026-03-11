@@ -908,7 +908,7 @@ const AdminPage = () => {
                     )}
                     
                     {/* Time for applicable challenges */}
-                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
+                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) && (
                       <div className="space-y-2">
                         <Label htmlFor="totalTime">Zeit (MM:SS)</Label>
                         <Input
