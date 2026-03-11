@@ -140,8 +140,8 @@ const formatChallengeResult = (reg: Registration, userGender: string | null): { 
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
   }
   
-  // 5-Minute Snatch Test & Secret Service Snatch Test - Reps und Gewicht
-  if (slug === "5-minute-snatch-test" || slug === "secret-service-snatch-test") {
+  // 5-Minute Snatch Test - Reps und Gewicht
+  if (slug === "5-minute-snatch-test") {
     const parts: string[] = [];
     if (reg.total_reps && reg.total_reps > 0) {
       parts.push(`${reg.total_reps} Reps`);
@@ -150,6 +150,24 @@ const formatChallengeResult = (reg: Registration, userGender: string | null): { 
       parts.push(`${reg.kettlebell_weight_kg} kg`);
     }
     return { value: parts.length > 0 ? parts.join(" • ") : "-", label: "" };
+  }
+  
+  // Secret Service Snatch Test - Zeit und Gewicht + Level
+  if (slug === "secret-service-snatch-test") {
+    const parts: string[] = [];
+    if (reg.total_time_seconds && reg.total_time_seconds > 0) {
+      parts.push(formatTimeFromSeconds(reg.total_time_seconds));
+      if (reg.total_time_seconds < 600) parts.push("PASS ✓");
+    }
+    if (reg.kettlebell_weight_kg && reg.kettlebell_weight_kg > 0) {
+      parts.push(`${reg.kettlebell_weight_kg} kg`);
+    }
+    const sstLevel = getSsstLevel(reg.total_time_seconds || 0, reg.kettlebell_weight_kg || 0, userGender);
+    return { 
+      value: parts.length > 0 ? parts.join(" • ") : "-", 
+      label: sstLevel?.level === 4 ? "🏆 Snatch Master" : "",
+      mileLevel: sstLevel
+    };
   }
   
   // Meet Betty - Zeit und Gewicht
