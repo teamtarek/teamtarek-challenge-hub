@@ -273,50 +273,41 @@ const AdminPage = () => {
     
     const updateData: any = {};
     
-    if (isMurphChallenge || isSimpleSinister) {
+    if (isMurphChallenge) {
+      updateData.score = timeStringToSeconds(values[registrationId] || "");
+    } else if (isSimpleSinister) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     } else if (isKettlebellSwing) {
       updateData.score = values[registrationId] === "pass" ? 1 : 0;
-    } else if (!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge) {
-      updateData.score = parseInt(values[registrationId] || "0", 10);
     }
+    // No score for challenges that use other fields
     
-    // Kettlebell specific fields
-    if (isKettlebellChallenge || isKettlebellSwing) {
+    // Weight fields
+    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) {
       const weight = kettlebellWeights[registrationId];
-      if (weight) {
-        updateData.kettlebell_weight_kg = parseInt(weight, 10);
-      }
-      
+      if (weight) updateData.kettlebell_weight_kg = parseInt(weight, 10);
+    }
+    
+    // Date fields
+    if (isKettlebellChallenge || isKettlebellSwing) {
       const date = completionDates[registrationId];
-      if (date) {
-        updateData.completion_date = date;
-      }
+      if (date) updateData.completion_date = date;
     }
     
-    // Kettlebell Swing total reps
-    if (isKettlebellSwing) {
+    // Reps/Rounds fields
+    if (isKettlebellSwing || isAnySnatchTest || is1234Complex || isClassicComplex) {
       const reps = totalReps[registrationId];
-      if (reps) {
-        updateData.total_reps = parseInt(reps, 10);
-      }
+      if (reps) updateData.total_reps = parseInt(reps, 10);
     }
     
-    if (isAnySnatchTest) {
-      const reps = totalReps[registrationId];
-      if (reps) {
-        updateData.total_reps = parseInt(reps, 10);
-      }
-    }
-    
-    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) {
+    // Time fields
+    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) {
       const time = totalTimes[registrationId];
-      if (time) {
-        updateData.total_time_seconds = timeStringToSeconds(time);
-      }
+      if (time) updateData.total_time_seconds = timeStringToSeconds(time);
     }
     
-    if (isSimpleSinister) {
+    // Default: time-based score for unknown challenges
+    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     }
 
