@@ -812,7 +812,7 @@ const AdminPage = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email">E-Mail *</Label>
+                          <Label htmlFor="email">E-Mail (optional)</Label>
                           <Input
                             id="email"
                             type="email"
