@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AdminRoleManager } from "@/components/AdminRoleManager";
+import { AdminMergeNotifications } from "@/components/AdminMergeNotifications";
 
 interface Challenge {
   id: string;
@@ -143,6 +144,10 @@ const AdminPage = () => {
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = selectedChallengeData?.slug === "kettlebell-swing";
   const isSpringChallenge = selectedChallengeData?.slug === "spring-challenge-2026";
+  const is10RoundsOfPain = selectedChallengeData?.slug === "10-rounds-of-pain";
+  const is1234Complex = selectedChallengeData?.slug === "1234-complex";
+  const isClassicComplex = selectedChallengeData?.slug === "the-classic-complex";
+  const isTheQuadrant = selectedChallengeData?.slug === "the-quadrant";
   const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
@@ -269,50 +274,41 @@ const AdminPage = () => {
     
     const updateData: any = {};
     
-    if (isMurphChallenge || isSimpleSinister) {
+    if (isMurphChallenge) {
+      updateData.score = timeStringToSeconds(values[registrationId] || "");
+    } else if (isSimpleSinister) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     } else if (isKettlebellSwing) {
       updateData.score = values[registrationId] === "pass" ? 1 : 0;
-    } else if (!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge) {
-      updateData.score = parseInt(values[registrationId] || "0", 10);
     }
+    // No score for challenges that use other fields
     
-    // Kettlebell specific fields
-    if (isKettlebellChallenge || isKettlebellSwing) {
+    // Weight fields
+    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) {
       const weight = kettlebellWeights[registrationId];
-      if (weight) {
-        updateData.kettlebell_weight_kg = parseInt(weight, 10);
-      }
-      
+      if (weight) updateData.kettlebell_weight_kg = parseInt(weight, 10);
+    }
+    
+    // Date fields
+    if (isKettlebellChallenge || isKettlebellSwing) {
       const date = completionDates[registrationId];
-      if (date) {
-        updateData.completion_date = date;
-      }
+      if (date) updateData.completion_date = date;
     }
     
-    // Kettlebell Swing total reps
-    if (isKettlebellSwing) {
+    // Reps/Rounds fields
+    if (isKettlebellSwing || isAnySnatchTest || is1234Complex || isClassicComplex) {
       const reps = totalReps[registrationId];
-      if (reps) {
-        updateData.total_reps = parseInt(reps, 10);
-      }
+      if (reps) updateData.total_reps = parseInt(reps, 10);
     }
     
-    if (isAnySnatchTest) {
-      const reps = totalReps[registrationId];
-      if (reps) {
-        updateData.total_reps = parseInt(reps, 10);
-      }
-    }
-    
-    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) {
+    // Time fields
+    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) {
       const time = totalTimes[registrationId];
-      if (time) {
-        updateData.total_time_seconds = timeStringToSeconds(time);
-      }
+      if (time) updateData.total_time_seconds = timeStringToSeconds(time);
     }
     
-    if (isSimpleSinister) {
+    // Default: time-based score for unknown challenges
+    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     }
 
@@ -436,24 +432,31 @@ const AdminPage = () => {
       }
     }
     
-    if (!participantName || !participantEmail) {
-      toast.error("Name und E-Mail sind erforderlich");
+    if (!participantName) {
+      toast.error("Name ist erforderlich");
       return;
+    }
+
+    // Generate placeholder email if not provided
+    if (!participantEmail) {
+      participantEmail = `admin-${crypto.randomUUID().slice(0, 8)}@placeholder.local`;
     }
 
     // Check if this participant already has a result for this year
     const yearToCheck = parseInt(newParticipantYear, 10);
-    const { data: existingResult } = await supabase
-      .from("registrations")
-      .select("id")
-      .eq("challenge_id", selectedChallenge)
-      .eq("email", participantEmail)
-      .eq("year", yearToCheck)
-      .maybeSingle();
-    
-    if (existingResult) {
-      toast.error(`Dieser Teilnehmer hat bereits ein Ergebnis für ${yearToCheck}`);
-      return;
+    if (!participantEmail.includes("@placeholder.local")) {
+      const { data: existingResult } = await supabase
+        .from("registrations")
+        .select("id")
+        .eq("challenge_id", selectedChallenge)
+        .eq("email", participantEmail)
+        .eq("year", yearToCheck)
+        .maybeSingle();
+      
+      if (existingResult) {
+        toast.error(`Dieser Teilnehmer hat bereits ein Ergebnis für ${yearToCheck}`);
+        return;
+      }
     }
 
     setAddingParticipant(true);
@@ -490,8 +493,19 @@ const AdminPage = () => {
     } else if (isMeetBetty) {
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is1234Complex) {
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (isClassicComplex) {
+      insertData.total_reps = newParticipantTotalReps ? parseInt(newParticipantTotalReps, 10) : null;
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is10RoundsOfPain || isTheQuadrant) {
+      insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
+      insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
     } else {
-      insertData.score = parseInt(newParticipantValue || "0", 10);
+      // Default: time-based
+      insertData.score = timeStringToSeconds(newParticipantValue || "");
     }
 
     const { error } = await supabase.from("registrations").insert(insertData);
@@ -525,8 +539,9 @@ const AdminPage = () => {
     if (isAnySnatchTest) return "Wiederholungen";
     if (isKettlebellSwing) return "Ergebnisse";
     if (isRiteOfPassage) return "Ergebnisse";
-    if (isEnduranceRun || isMeetBetty || isSpringChallenge) return "Zeiten";
-    return "Punktzahlen";
+    if (isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return "Zeiten";
+    if (is1234Complex || isClassicComplex) return "Runden & Gewicht";
+    return "Ergebnisse";
   };
 
   // Filter and sort registrations
@@ -620,6 +635,9 @@ const AdminPage = () => {
 
           {/* Admin Role Manager - nur für Webmaster */}
           {isWebmaster && <AdminRoleManager />}
+
+          {/* Merge Notifications */}
+          <AdminMergeNotifications />
 
           <div className="space-y-4">
             <Label>Challenge auswählen</Label>
@@ -798,7 +816,7 @@ const AdminPage = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email">E-Mail *</Label>
+                          <Label htmlFor="email">E-Mail (optional)</Label>
                           <Input
                             id="email"
                             type="email"
@@ -811,9 +829,10 @@ const AdminPage = () => {
                     )}
                     
                     {/* Challenge-specific fields */}
-                    {(isKettlebellChallenge || isKettlebellSwing) && (
+                    {/* Weight for applicable challenges */}
+                    {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
                       <div className="space-y-2">
-                        <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
+                        <Label htmlFor="kettlebellWeight">Gewicht (kg)</Label>
                         <Input
                           id="kettlebellWeight"
                           type="number"
@@ -826,6 +845,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
+                    {/* Swing pass/fail + total reps */}
                     {isKettlebellSwing && (
                       <>
                         <div className="space-y-2">
@@ -854,6 +874,7 @@ const AdminPage = () => {
                       </>
                     )}
                     
+                    {/* Snatch test reps */}
                     {isAnySnatchTest && (
                       <div className="space-y-2">
                         <Label htmlFor="totalReps">Wiederholungen gesamt</Label>
@@ -868,19 +889,36 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) && (
+                    {/* Rounds for 1234 Complex, Classic Complex */}
+                    {(is1234Complex || isClassicComplex) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="totalReps">Absolvierte Runden</Label>
+                        <Input
+                          id="totalReps"
+                          type="number"
+                          placeholder="z.B. 15"
+                          value={newParticipantTotalReps}
+                          onChange={(e) => setNewParticipantTotalReps(e.target.value)}
+                          min={1}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Time for applicable challenges */}
+                    {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
                       <div className="space-y-2">
                         <Label htmlFor="totalTime">Zeit (MM:SS)</Label>
                         <Input
                           id="totalTime"
                           type="text"
-                          placeholder="6:30"
+                          placeholder="z.B. 25:30"
                           value={newParticipantTotalTime}
                           onChange={(e) => setNewParticipantTotalTime(e.target.value)}
                         />
                       </div>
                     )}
                     
+                    {/* Simple Sinister time */}
                     {isSimpleSinister && (
                       <div className="space-y-2">
                         <Label htmlFor="value">Zeit (MM:SS)</Label>
@@ -894,6 +932,7 @@ const AdminPage = () => {
                       </div>
                     )}
                     
+                    {/* Kettlebell date */}
                     {isKettlebellChallenge && (
                       <div className="space-y-2">
                         <Label htmlFor="completionDate">Datum</Label>
@@ -906,14 +945,28 @@ const AdminPage = () => {
                       </div>
                     )}
                     
-                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && (
+                    {/* Murph time */}
+                    {isMurphChallenge && (
                       <div className="space-y-2">
-                        <Label htmlFor="value">{isMurphChallenge ? "Zeit (MM:SS oder H:MM:SS)" : "Punktzahl"}</Label>
+                        <Label htmlFor="value">Zeit (MM:SS oder H:MM:SS)</Label>
                         <Input
                           id="value"
-                          placeholder={isMurphChallenge ? "45:30" : "0"}
-                          type={isMurphChallenge ? "text" : "number"}
-                          min={isMurphChallenge ? undefined : 0}
+                          placeholder="45:30"
+                          type="text"
+                          value={newParticipantValue}
+                          onChange={(e) => setNewParticipantValue(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Default: time-based for other challenges */}
+                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                      <div className="space-y-2">
+                        <Label htmlFor="value">Gesamtzeit (MM:SS)</Label>
+                        <Input
+                          id="value"
+                          placeholder="45:30"
+                          type="text"
                           value={newParticipantValue}
                           onChange={(e) => setNewParticipantValue(e.target.value)}
                         />
@@ -1096,13 +1149,25 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
-                          {(isKettlebellChallenge || isKettlebellSwing) && registration.kettlebell_weight_kg && (
+                          {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Dumbbell className="w-3 h-3" />
                                 {registration.kettlebell_weight_kg} kg
                               </span>
+                            </>
+                          )}
+                          {(is1234Complex || isClassicComplex) && registration.total_reps && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.total_reps} Runden</span>
+                            </>
+                          )}
+                          {(is10RoundsOfPain || isTheQuadrant || is1234Complex) && registration.total_time_seconds && (
+                            <>
+                              <span>•</span>
+                              <span>{secondsToTimeString(registration.total_time_seconds)}</span>
                             </>
                           )}
                           {isKettlebellSwing && (
@@ -1131,7 +1196,8 @@ const AdminPage = () => {
                       
                       {/* Edit Fields */}
                       <div className="flex flex-wrap items-center gap-3">
-                        {(isKettlebellChallenge || isKettlebellSwing) && (
+                        {/* Weight fields */}
+                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="kg"
@@ -1151,6 +1217,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Swing fields */}
                         {isKettlebellSwing && (
                           <>
                             <div className="flex items-center gap-2">
@@ -1186,6 +1253,7 @@ const AdminPage = () => {
                           </>
                         )}
                         
+                        {/* Reps for snatch tests */}
                         {isAnySnatchTest && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1205,7 +1273,28 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge) && (
+                        {/* Rounds for 1234 Complex, Classic Complex */}
+                        {(is1234Complex || isClassicComplex) && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Runden"
+                              type="number"
+                              min={1}
+                              className="w-24"
+                              value={totalReps[registration.id] || ""}
+                              onChange={(e) =>
+                                setTotalReps((prev) => ({
+                                  ...prev,
+                                  [registration.id]: e.target.value,
+                                }))
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Runden</span>
+                          </div>
+                        )}
+                        
+                        {/* Time fields */}
+                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="MM:SS"
@@ -1223,6 +1312,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Simple Sinister time */}
                         {isSimpleSinister && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1238,6 +1328,7 @@ const AdminPage = () => {
                           </div>
                         )}
                         
+                        {/* Date for kettlebell challenges */}
                         {isKettlebellChallenge && (
                           <div className="flex items-center gap-2">
                             <Input
@@ -1254,19 +1345,35 @@ const AdminPage = () => {
                           </div>
                         )}
                         
-                        {!isKettlebellChallenge && !isEnduranceRun && !isKettlebellSwing && !isSpringChallenge && (
+                        {/* Murph time */}
+                        {isMurphChallenge && (
                           <div className="flex items-center gap-2">
                             <Input
-                              placeholder={isMurphChallenge ? "MM:SS" : "0"}
-                              type={isMurphChallenge ? "text" : "number"}
-                              min={isMurphChallenge ? undefined : 0}
+                              placeholder="MM:SS"
+                              type="text"
                               className="w-28"
                               value={values[registration.id] || ""}
                               onChange={(e) =>
                                 handleValueChange(registration.id, e.target.value)
                               }
                             />
-                            <span className="text-muted-foreground text-sm">{isMurphChallenge ? "Zeit" : "Punkte"}</span>
+                            <span className="text-muted-foreground text-sm">Zeit</span>
+                          </div>
+                        )}
+                        
+                        {/* Default: time-based for unknown challenges */}
+                        {!isKettlebellChallenge && !isEnduranceRun && !isKettlebellSwing && !isSpringChallenge && !isMurphChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="MM:SS"
+                              type="text"
+                              className="w-28"
+                              value={values[registration.id] || ""}
+                              onChange={(e) =>
+                                handleValueChange(registration.id, e.target.value)
+                              }
+                            />
+                            <span className="text-muted-foreground text-sm">Zeit</span>
                           </div>
                         )}
                         

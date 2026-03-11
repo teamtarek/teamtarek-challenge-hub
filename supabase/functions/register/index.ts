@@ -220,6 +220,44 @@ serve(async (req) => {
       logStep("WARNING: role assignment failed", { error: roleError.message });
     }
 
+    // Check for existing registrations with matching display name (for merge notification)
+    logStep("Checking for name matches in existing registrations", { displayName });
+    const { data: matchingRegs, error: matchError } = await supabaseAdmin
+      .from("registrations")
+      .select("id, participant_name, challenge_id, email")
+      .ilike("participant_name", displayName.trim())
+      .is("user_id", null);
+
+    if (!matchError && matchingRegs && matchingRegs.length > 0) {
+      logStep("Found matching registrations", { count: matchingRegs.length });
+      
+      // Get challenge names for better notification context
+      const challengeIds = [...new Set(matchingRegs.map(r => r.challenge_id))];
+      const { data: challengeData } = await supabaseAdmin
+        .from("challenges")
+        .select("id, name")
+        .in("id", challengeIds);
+      
+      const challengeMap = new Map((challengeData || []).map(c => [c.id, c.name]));
+      
+      await supabaseAdmin.from("admin_notifications").insert({
+        type: "merge_candidate",
+        data: {
+          new_user_id: userId,
+          new_user_name: displayName,
+          new_user_email: email,
+          matching_registrations: matchingRegs.map(r => ({
+            id: r.id,
+            name: r.participant_name,
+            challenge_id: r.challenge_id,
+            challenge_name: challengeMap.get(r.challenge_id) || "Unbekannt",
+            email: r.email,
+          })),
+        },
+      });
+      logStep("Merge notification created for admin");
+    }
+
     logStep("Registration complete", { userId, source: membershipSource });
 
     return new Response(
