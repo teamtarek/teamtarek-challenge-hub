@@ -284,7 +284,7 @@ const AdminPage = () => {
     // No score for challenges that use other fields
     
     // Weight fields
-    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) {
+    if (isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) {
       const weight = kettlebellWeights[registrationId];
       if (weight) updateData.kettlebell_weight_kg = parseInt(weight, 10);
     }
