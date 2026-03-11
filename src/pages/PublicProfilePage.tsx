@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, User, Trophy, Calendar, Lock, Zap } from "lucide-react";
-import { getMileLevel } from "@/lib/mileLevels";
+import { getMileLevel, getSsstLevel } from "@/lib/mileLevels";
+import snatchMasterBadge from "@/assets/badges/snatch-master.png";
 
 interface Profile {
   display_name: string | null;
