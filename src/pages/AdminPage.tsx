@@ -1200,7 +1200,7 @@ const AdminPage = () => {
                       {/* Edit Fields */}
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Weight fields */}
-                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant) && (
+                        {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="kg"
