@@ -148,9 +148,9 @@ const AdminPage = () => {
   const is1234Complex = selectedChallengeData?.slug === "1234-complex";
   const isClassicComplex = selectedChallengeData?.slug === "the-classic-complex";
   const isTheQuadrant = selectedChallengeData?.slug === "the-quadrant";
-  const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
-  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge;
+  const isAnySnatchTest = isSnatchTest; // Only 5-min uses reps
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || isSecretServiceSnatchTest;
 
   useEffect(() => {
     if (!authLoading && !user) {
