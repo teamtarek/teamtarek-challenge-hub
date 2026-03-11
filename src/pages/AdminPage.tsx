@@ -639,7 +639,7 @@ const AdminPage = () => {
           {/* Merge Notifications */}
           <AdminMergeNotifications />
 
-
+          <div className="space-y-4">
             <Label>Challenge auswählen</Label>
             <Select
               value={selectedChallenge}
