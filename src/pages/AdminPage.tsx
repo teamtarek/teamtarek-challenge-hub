@@ -1297,7 +1297,7 @@ const AdminPage = () => {
                         )}
                         
                         {/* Time fields */}
-                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) && (
+                        {(isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) && (
                           <div className="flex items-center gap-2">
                             <Input
                               placeholder="MM:SS"
