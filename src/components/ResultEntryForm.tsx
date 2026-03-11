@@ -70,11 +70,11 @@ export const ResultEntryForm = ({
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
-  const isAnySnatchTest = isSnatchTest || isSecretServiceSnatchTest;
-  const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
+  const isAnySnatchTest = isSnatchTest; // Only 5-min snatch test uses reps now
+  const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest;
   // Classic Complex uses rounds + weight only (no time)
 
   // Initialize from existing result
