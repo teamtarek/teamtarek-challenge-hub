@@ -282,6 +282,23 @@ const PublicProfilePage = () => {
           </div>
         </div>
 
+        {/* Snatch Master Badge */}
+        {completedChallenges.some((reg) => {
+          if (reg.challenges.slug !== "secret-service-snatch-test") return false;
+          const level = getSsstLevel(reg.total_time_seconds || 0, reg.kettlebell_weight_kg || 0, profile?.gender || null);
+          return level?.level === 4;
+        }) && (
+          <div className="challenge-card mb-4">
+            <div className="flex items-center gap-4">
+              <img src={snatchMasterBadge} alt="Snatch Master Badge" className="w-16 h-16" />
+              <div>
+                <h3 className="text-lg font-bold text-yellow-500">🏆 Snatch Master</h3>
+                <p className="text-sm text-muted-foreground">Level 4 im Secret Service Snatch Test erreicht!</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Achievements */}
         <div className="challenge-card">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
