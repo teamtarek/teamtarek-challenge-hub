@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AdminRoleManager } from "@/components/AdminRoleManager";
+import { AdminMergeNotifications } from "@/components/AdminMergeNotifications";
 
 interface Challenge {
   id: string;
