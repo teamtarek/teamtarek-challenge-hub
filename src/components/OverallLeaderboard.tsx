@@ -175,6 +175,10 @@ export const OverallLeaderboard = () => {
         if (ch.slug === "10-rounds-of-pain") {
           chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 1800);
         }
+        // SSST: only count entries under 10 minutes
+        if (ch.slug === "secret-service-snatch-test") {
+          chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 600);
+        }
 
         const withResults = chRegs.filter(e => hasResult(ch.slug, e));
         const sorted = sortEntries(ch.slug, withResults);
