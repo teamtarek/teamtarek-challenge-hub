@@ -302,7 +302,7 @@ const AdminPage = () => {
     }
     
     // Time fields
-    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant) {
+    if (isRiteOfPassage || isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) {
       const time = totalTimes[registrationId];
       if (time) updateData.total_time_seconds = timeStringToSeconds(time);
     }
