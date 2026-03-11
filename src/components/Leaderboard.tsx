@@ -365,7 +365,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           )}
         </div>
       );
-    } else if (isSnatchTest || isSecretServiceSnatchTest) {
+    } else if (isSnatchTest) {
       return (
         <div className="text-right">
           <div className="font-mono">
@@ -377,6 +377,38 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
               <Calendar className="w-3 h-3" />
               {formatDate(registration.completion_date)}
+            </div>
+          )}
+        </div>
+      );
+    } else if (isSecretServiceSnatchTest) {
+      const isPassed = registration.total_time_seconds && registration.total_time_seconds < 600;
+      const sstLevel = getSsstLevel(
+        registration.total_time_seconds || 0,
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {isPassed && (
+            <span className="text-xs font-semibold text-green-500">PASS ✓</span>
+          )}
+          {sstLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${sstLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {sstLevel.label}
+              {sstLevel.level === 4 && " 🏆 Snatch Master"}
+            </span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
             </div>
           )}
         </div>
