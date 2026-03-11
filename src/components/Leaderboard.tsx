@@ -401,10 +401,11 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         </div>
       );
     } else if (isTheQuadrant) {
+      const quadrantLevel = getQuadrantLevel(
         registration.total_time_seconds || 0,
         registration.kettlebell_weight_kg || 0,
         registration.gender
-      ) : null;
+      );
       return (
         <div className="text-right">
           <div className="font-mono">
