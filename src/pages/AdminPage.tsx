@@ -636,7 +636,10 @@ const AdminPage = () => {
           {/* Admin Role Manager - nur für Webmaster */}
           {isWebmaster && <AdminRoleManager />}
 
-          <div className="space-y-4">
+          {/* Merge Notifications */}
+          <AdminMergeNotifications />
+
+
             <Label>Challenge auswählen</Label>
             <Select
               value={selectedChallenge}
