@@ -40,13 +40,6 @@ export const useUserRole = () => {
       return;
     }
 
-    // Check roles in user_roles table
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id);
-
-    const roles = roleData?.map((r) => r.role) ?? [];
 
     if (roles.includes("admin")) {
       setMemberType("admin");
