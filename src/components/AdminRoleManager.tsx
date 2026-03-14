@@ -38,6 +38,7 @@ interface UserSearchResult {
 }
 
 const ROLE_CONFIG: Record<string, { label: string; icon: typeof Shield; className: string }> = {
+  webmaster: { label: "Webmaster", icon: Crown, className: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
   admin: { label: "Admin", icon: Shield, className: "bg-red-500/20 text-red-400 border-red-500/30" },
   coach: { label: "Coach", icon: Dumbbell, className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
 };
@@ -60,7 +61,7 @@ export const AdminRoleManager = () => {
     const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("id, user_id, role")
-      .in("role", ["admin", "coach"]);
+      .in("role", ["webmaster", "admin", "coach"]);
 
     if (roleError || !roleData) {
       setLoading(false);
@@ -218,6 +219,7 @@ export const AdminRoleManager = () => {
   };
 
   // Group by role for display
+  const webmasters = roleUsers.filter((u) => u.role === "webmaster");
   const admins = roleUsers.filter((u) => u.role === "admin");
   const coaches = roleUsers.filter((u) => u.role === "coach");
 
@@ -380,6 +382,14 @@ export const AdminRoleManager = () => {
         </p>
       ) : (
         <div className="space-y-6">
+          {webmasters.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Webmaster ({webmasters.length})
+              </h3>
+              <div className="space-y-2">{webmasters.map(renderUserRow)}</div>
+            </div>
+          )}
           {admins.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">

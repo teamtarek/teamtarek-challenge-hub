@@ -4,8 +4,6 @@ import { useAuth } from "./useAuth";
 
 export type MemberType = "webmaster" | "admin" | "coach" | "member" | "prospect" | null;
 
-const WEBMASTER_EMAIL = "tobias.gunst@googlemail.com";
-
 export const useUserRole = () => {
   const { user } = useAuth();
   const [memberType, setMemberType] = useState<MemberType>(null);
@@ -28,15 +26,6 @@ export const useUserRole = () => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    setIsFoundingMember(profileData?.is_founding_member ?? false);
-
-    // Check if webmaster first (by email)
-    if (user.email === WEBMASTER_EMAIL) {
-      setMemberType("webmaster");
-      setLoading(false);
-      return;
-    }
-
     // Check roles in user_roles table
     const { data: roleData } = await supabase
       .from("user_roles")
@@ -44,6 +33,13 @@ export const useUserRole = () => {
       .eq("user_id", user.id);
 
     const roles = roleData?.map((r) => r.role) ?? [];
+
+    if (roles.includes("webmaster")) {
+      setMemberType("webmaster");
+      setLoading(false);
+      return;
+    }
+
 
     if (roles.includes("admin")) {
       setMemberType("admin");
