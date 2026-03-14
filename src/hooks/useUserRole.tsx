@@ -4,8 +4,6 @@ import { useAuth } from "./useAuth";
 
 export type MemberType = "webmaster" | "admin" | "coach" | "member" | "prospect" | null;
 
-const WEBMASTER_EMAIL = "tobias.gunst@googlemail.com";
-
 export const useUserRole = () => {
   const { user } = useAuth();
   const [memberType, setMemberType] = useState<MemberType>(null);
