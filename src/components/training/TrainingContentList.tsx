@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useTrainingContent, useDeleteTrainingContent } from "@/hooks/useTrainingContent";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
