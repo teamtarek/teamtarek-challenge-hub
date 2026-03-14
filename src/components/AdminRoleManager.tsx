@@ -38,6 +38,7 @@ interface UserSearchResult {
 }
 
 const ROLE_CONFIG: Record<string, { label: string; icon: typeof Shield; className: string }> = {
+  webmaster: { label: "Webmaster", icon: Crown, className: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
   admin: { label: "Admin", icon: Shield, className: "bg-red-500/20 text-red-400 border-red-500/30" },
   coach: { label: "Coach", icon: Dumbbell, className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
 };
