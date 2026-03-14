@@ -129,10 +129,21 @@ const TrainingContentList = () => {
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {item.pdf_url && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <a href={item.pdf_url} target="_blank" rel="noopener noreferrer">
-                        <FileText className="w-4 h-4" />
-                      </a>
+                    <Button variant="ghost" size="icon" onClick={async () => {
+                      // Extract file path from pdf_url (handles both old public URLs and new paths)
+                      const filePath = item.pdf_url!.includes('/training-files/')
+                        ? item.pdf_url!.split('/training-files/').pop()!
+                        : item.pdf_url!;
+                      const { data, error } = await supabase.storage
+                        .from("training-files")
+                        .createSignedUrl(filePath, 3600);
+                      if (data?.signedUrl) {
+                        window.open(data.signedUrl, "_blank");
+                      } else {
+                        toast.error("Datei konnte nicht geladen werden");
+                      }
+                    }}>
+                      <FileText className="w-4 h-4" />
                     </Button>
                   )}
                   {item.video_url && (
