@@ -61,7 +61,7 @@ export const AdminRoleManager = () => {
     const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("id, user_id, role")
-      .in("role", ["admin", "coach"]);
+      .in("role", ["webmaster", "admin", "coach"]);
 
     if (roleError || !roleData) {
       setLoading(false);
