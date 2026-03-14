@@ -88,10 +88,8 @@ const TrainingAdminForm = () => {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from("training-files")
-          .getPublicUrl(fileName);
-        pdfUrl = urlData.publicUrl;
+        // Store just the file path, not a public URL
+        pdfUrl = fileName;
       }
 
       // Insert content
