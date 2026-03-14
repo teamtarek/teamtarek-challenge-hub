@@ -382,6 +382,14 @@ export const AdminRoleManager = () => {
         </p>
       ) : (
         <div className="space-y-6">
+          {webmasters.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Webmaster ({webmasters.length})
+              </h3>
+              <div className="space-y-2">{webmasters.map(renderUserRow)}</div>
+            </div>
+          )}
           {admins.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -390,7 +398,6 @@ export const AdminRoleManager = () => {
               <div className="space-y-2">{admins.map(renderUserRow)}</div>
             </div>
           )}
-          {coaches.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Coaches ({coaches.length})
