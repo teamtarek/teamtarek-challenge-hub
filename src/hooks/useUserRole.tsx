@@ -26,10 +26,15 @@ export const useUserRole = () => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    setIsFoundingMember(profileData?.is_founding_member ?? false);
+    // Check roles in user_roles table
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
 
-    // Check if webmaster first (by email)
-    if (user.email === WEBMASTER_EMAIL) {
+    const roles = roleData?.map((r) => r.role) ?? [];
+
+    if (roles.includes("webmaster")) {
       setMemberType("webmaster");
       setLoading(false);
       return;
