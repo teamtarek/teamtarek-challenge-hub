@@ -219,6 +219,7 @@ export const AdminRoleManager = () => {
   };
 
   // Group by role for display
+  const webmasters = roleUsers.filter((u) => u.role === "webmaster");
   const admins = roleUsers.filter((u) => u.role === "admin");
   const coaches = roleUsers.filter((u) => u.role === "coach");
 
