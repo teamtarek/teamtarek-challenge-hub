@@ -23,7 +23,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   advanced: "bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
-const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle }: WorkoutCardProps) => {
+const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showCategory }: WorkoutCardProps) => {
   const handlePdfClick = async () => {
     if (!workout.pdf_url) return;
     const filePath = workout.pdf_url.includes("/training-files/")
