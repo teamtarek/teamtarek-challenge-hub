@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkoutItem } from "@/hooks/useWorkoutLibrary";
-import { getEquipmentLabel } from "@/lib/workoutLibrary";
+import { getEquipmentLabel, getCategoryLabel, getSubcategoryLabel } from "@/lib/workoutLibrary";
 import { DIFFICULTY_LEVELS } from "@/lib/workoutLibrary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ interface WorkoutCardProps {
   onEdit: (workout: WorkoutItem) => void;
   onDelete: (id: string) => void;
   showDragHandle?: boolean;
+  showCategory?: boolean;
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
