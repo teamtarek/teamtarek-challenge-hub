@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWorkoutLibrary, useUnassignedWorkouts, WorkoutItem } from "@/hooks/useWorkoutLibrary";
+import { useWorkoutLibrary, useUnassignedWorkouts, useSearchWorkouts, WorkoutItem } from "@/hooks/useWorkoutLibrary";
 import { useDeleteTrainingContent } from "@/hooks/useTrainingContent";
 import { useUserRole } from "@/hooks/useUserRole";
 import { WORKOUT_CATEGORIES, getSubcategoryLabel, getCategoryLabel } from "@/lib/workoutLibrary";
@@ -8,7 +8,8 @@ import WorkoutCard from "./WorkoutCard";
 import WorkoutEditDialog from "./WorkoutEditDialog";
 import WorkoutCreateDialog from "./WorkoutCreateDialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, ArrowLeft, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 const WorkoutLibrary = () => {
