@@ -23,6 +23,24 @@ export interface WorkoutItem {
   equipment: string | null;
 }
 
+export const useSearchWorkouts = (searchTerm: string) => {
+  return useQuery({
+    queryKey: ["workout-library", "search", searchTerm],
+    queryFn: async () => {
+      if (!searchTerm.trim()) return [];
+      const term = `%${searchTerm.trim()}%`;
+      const { data, error } = await supabase
+        .from("training_content")
+        .select("*")
+        .or(`title.ilike.${term},description.ilike.${term},category.ilike.${term},subcategory.ilike.${term},equipment_tags.cs.{${searchTerm.trim().toLowerCase()}}`)
+        .order("workout_number", { ascending: true });
+      if (error) throw error;
+      return data as unknown as WorkoutItem[];
+    },
+    enabled: searchTerm.trim().length >= 2,
+  });
+};
+
 export const useUnassignedWorkouts = () => {
   return useQuery({
     queryKey: ["workout-library", "unassigned"],

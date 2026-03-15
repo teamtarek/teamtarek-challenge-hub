@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkoutItem } from "@/hooks/useWorkoutLibrary";
-import { getEquipmentLabel } from "@/lib/workoutLibrary";
+import { getEquipmentLabel, getCategoryLabel, getSubcategoryLabel } from "@/lib/workoutLibrary";
 import { DIFFICULTY_LEVELS } from "@/lib/workoutLibrary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ interface WorkoutCardProps {
   onEdit: (workout: WorkoutItem) => void;
   onDelete: (id: string) => void;
   showDragHandle?: boolean;
+  showCategory?: boolean;
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -22,7 +23,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   advanced: "bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
-const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle }: WorkoutCardProps) => {
+const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showCategory }: WorkoutCardProps) => {
   const handlePdfClick = async () => {
     if (!workout.pdf_url) return;
     const filePath = workout.pdf_url.includes("/training-files/")
@@ -64,6 +65,12 @@ const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle }: Wor
               </span>
             )}
           </div>
+          {showCategory && workout.category && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {getCategoryLabel(workout.category)}
+              {workout.subcategory && ` › ${getSubcategoryLabel(workout.subcategory)}`}
+            </p>
+          )}
           {workout.description && (
             <p className="text-sm text-muted-foreground mt-1">{workout.description}</p>
           )}

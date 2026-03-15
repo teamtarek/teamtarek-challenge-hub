@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWorkoutLibrary, useUnassignedWorkouts, WorkoutItem } from "@/hooks/useWorkoutLibrary";
+import { useWorkoutLibrary, useUnassignedWorkouts, useSearchWorkouts, WorkoutItem } from "@/hooks/useWorkoutLibrary";
 import { useDeleteTrainingContent } from "@/hooks/useTrainingContent";
 import { useUserRole } from "@/hooks/useUserRole";
 import { WORKOUT_CATEGORIES, getSubcategoryLabel, getCategoryLabel } from "@/lib/workoutLibrary";
@@ -8,7 +8,8 @@ import WorkoutCard from "./WorkoutCard";
 import WorkoutEditDialog from "./WorkoutEditDialog";
 import WorkoutCreateDialog from "./WorkoutCreateDialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, ArrowLeft, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 const WorkoutLibrary = () => {
@@ -18,6 +19,7 @@ const WorkoutLibrary = () => {
   const [equipmentFilter, setEquipmentFilter] = useState<string[]>([]);
   const [editingWorkout, setEditingWorkout] = useState<WorkoutItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: workouts, isLoading } = useWorkoutLibrary(
     selectedSubcategory ?? undefined,
@@ -25,6 +27,8 @@ const WorkoutLibrary = () => {
   );
   const deleteMutation = useDeleteTrainingContent();
   const { data: unassignedWorkouts } = useUnassignedWorkouts();
+  const { data: searchResults, isLoading: isSearching } = useSearchWorkouts(searchTerm);
+  const isSearchActive = searchTerm.trim().length >= 2;
 
   const handleDelete = async (id: string) => {
     if (!confirm("Dieses Workout wirklich löschen?")) return;
@@ -38,10 +42,73 @@ const WorkoutLibrary = () => {
 
   const activeCat = WORKOUT_CATEGORIES.find((c) => c.key === selectedCategory);
 
+  const searchBar = (
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <Input
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Workout suchen… (z.B. Kettlebell, Burpees, Mobility)"
+        className="pl-9 pr-9"
+      />
+      {searchTerm && (
+        <button
+          onClick={() => setSearchTerm("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+  );
+
+  // Search results view
+  if (isSearchActive) {
+    return (
+      <div className="space-y-4">
+        {searchBar}
+        {isSearching ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !searchResults || searchResults.length === 0 ? (
+          <p className="text-muted-foreground text-center py-12">
+            Keine Workouts gefunden für „{searchTerm}".
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {searchResults.length} Ergebnis{searchResults.length !== 1 ? "se" : ""} für „{searchTerm}"
+            </p>
+            <div className="space-y-2">
+              {searchResults.map((w) => (
+                <WorkoutCard
+                  key={w.id}
+                  workout={w}
+                  isAdmin={isAdmin || isCoach}
+                  onEdit={setEditingWorkout}
+                  onDelete={handleDelete}
+                  showDragHandle={false}
+                  showCategory
+                />
+              ))}
+            </div>
+          </>
+        )}
+        <WorkoutEditDialog
+          workout={editingWorkout}
+          open={!!editingWorkout}
+          onOpenChange={(open) => !open && setEditingWorkout(null)}
+        />
+      </div>
+    );
+  }
+
   // Category selection view
   if (!selectedCategory) {
     return (
       <div className="space-y-6">
+        {searchBar}
         {(isAdmin || isCoach) && (
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4 mr-1" /> Workout erstellen
