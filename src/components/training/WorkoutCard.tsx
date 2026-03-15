@@ -65,6 +65,12 @@ const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showC
               </span>
             )}
           </div>
+          {showCategory && workout.category && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {getCategoryLabel(workout.category)}
+              {workout.subcategory && ` › ${getSubcategoryLabel(workout.subcategory)}`}
+            </p>
+          )}
           {workout.description && (
             <p className="text-sm text-muted-foreground mt-1">{workout.description}</p>
           )}
