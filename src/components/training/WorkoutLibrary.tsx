@@ -24,6 +24,7 @@ const WorkoutLibrary = () => {
     equipmentFilter.length > 0 ? equipmentFilter : undefined
   );
   const deleteMutation = useDeleteTrainingContent();
+  const { data: unassignedWorkouts } = useUnassignedWorkouts();
 
   const handleDelete = async (id: string) => {
     if (!confirm("Dieses Workout wirklich löschen?")) return;
