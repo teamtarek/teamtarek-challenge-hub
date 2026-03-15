@@ -23,6 +23,21 @@ export interface WorkoutItem {
   equipment: string | null;
 }
 
+export const useUnassignedWorkouts = () => {
+  return useQuery({
+    queryKey: ["workout-library", "unassigned"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("training_content")
+        .select("*")
+        .or("category.is.null,subcategory.is.null")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as unknown as WorkoutItem[];
+    },
+  });
+};
+
 export const useWorkoutLibrary = (
   subcategory?: string,
   equipmentFilter?: string[]

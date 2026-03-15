@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWorkoutLibrary, WorkoutItem } from "@/hooks/useWorkoutLibrary";
+import { useWorkoutLibrary, useUnassignedWorkouts, WorkoutItem } from "@/hooks/useWorkoutLibrary";
 import { useDeleteTrainingContent } from "@/hooks/useTrainingContent";
 import { useUserRole } from "@/hooks/useUserRole";
 import { WORKOUT_CATEGORIES, getSubcategoryLabel, getCategoryLabel } from "@/lib/workoutLibrary";
