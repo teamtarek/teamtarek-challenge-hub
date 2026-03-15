@@ -19,6 +19,7 @@ const WorkoutLibrary = () => {
   const [equipmentFilter, setEquipmentFilter] = useState<string[]>([]);
   const [editingWorkout, setEditingWorkout] = useState<WorkoutItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: workouts, isLoading } = useWorkoutLibrary(
     selectedSubcategory ?? undefined,
@@ -26,6 +27,8 @@ const WorkoutLibrary = () => {
   );
   const deleteMutation = useDeleteTrainingContent();
   const { data: unassignedWorkouts } = useUnassignedWorkouts();
+  const { data: searchResults, isLoading: isSearching } = useSearchWorkouts(searchTerm);
+  const isSearchActive = searchTerm.trim().length >= 2;
 
   const handleDelete = async (id: string) => {
     if (!confirm("Dieses Workout wirklich löschen?")) return;
