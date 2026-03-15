@@ -63,6 +63,28 @@ const WorkoutLibrary = () => {
             </button>
           ))}
         </div>
+        {(isAdmin || isCoach) && unassignedWorkouts && unassignedWorkouts.length > 0 && (
+          <div className="border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+            <h3 className="font-semibold text-destructive flex items-center gap-2">
+              ⚠️ Nicht zugewiesene Workouts ({unassignedWorkouts.length})
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Diese Workouts haben keine Kategorie und erscheinen nicht in der Library. Klicke auf „Bearbeiten", um sie zuzuweisen.
+            </p>
+            <div className="space-y-2">
+              {unassignedWorkouts.map((w) => (
+                <WorkoutCard
+                  key={w.id}
+                  workout={w}
+                  isAdmin={true}
+                  onEdit={setEditingWorkout}
+                  onDelete={handleDelete}
+                  showDragHandle={false}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <WorkoutCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     );
