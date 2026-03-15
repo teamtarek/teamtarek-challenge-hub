@@ -85,6 +85,11 @@ const WorkoutLibrary = () => {
             </div>
           </div>
         )}
+        <WorkoutEditDialog
+          workout={editingWorkout}
+          open={!!editingWorkout}
+          onOpenChange={(open) => !open && setEditingWorkout(null)}
+        />
         <WorkoutCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     );
