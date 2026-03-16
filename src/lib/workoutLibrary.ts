@@ -42,6 +42,15 @@ export const WORKOUT_CATEGORIES = [
       { key: "standards", label: "Standards" },
     ],
   },
+  {
+    key: "programs",
+    label: "Programs",
+    subcategories: [
+      { key: "strength-programs", label: "Strength Programs" },
+      { key: "running-programs", label: "Running Programs" },
+      { key: "hybrid-programs", label: "Hybrid Programs" },
+    ],
+  },
 ] as const;
 
 export const EQUIPMENT_TAGS = [

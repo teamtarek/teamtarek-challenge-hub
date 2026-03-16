@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Dumbbell, Library, CalendarDays, Video, Lightbulb } from "lucide-react";
+import { Dumbbell, Library, Video, Lightbulb } from "lucide-react";
 import WorkoutLibrary from "@/components/training/WorkoutLibrary";
-import TrainingContentList from "@/components/training/TrainingContentList";
 
-type Section = "library" | "plans" | "videos" | "tips";
+type Section = "library" | "videos" | "tips";
 
 const SECTIONS: { key: Section; label: string; icon: React.ElementType }[] = [
   { key: "library", label: "Workout Library", icon: Library },
-  { key: "plans", label: "Trainingspläne", icon: CalendarDays },
   { key: "videos", label: "Videos", icon: Video },
   { key: "tips", label: "Tipps & Wissen", icon: Lightbulb },
 ];
@@ -45,7 +43,6 @@ const WorkoutClubPage = () => {
 
       {/* Section Content */}
       {activeSection === "library" && <WorkoutLibrary />}
-      {activeSection === "plans" && <TrainingContentList />}
       {activeSection === "videos" && (
         <div className="text-center py-16 text-muted-foreground">
           <Video className="w-10 h-10 mx-auto mb-3 opacity-40" />
