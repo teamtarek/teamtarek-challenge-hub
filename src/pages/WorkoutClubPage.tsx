@@ -43,7 +43,6 @@ const WorkoutClubPage = () => {
 
       {/* Section Content */}
       {activeSection === "library" && <WorkoutLibrary />}
-      {activeSection === "plans" && <TrainingContentList />}
       {activeSection === "videos" && (
         <div className="text-center py-16 text-muted-foreground">
           <Video className="w-10 h-10 mx-auto mb-3 opacity-40" />
