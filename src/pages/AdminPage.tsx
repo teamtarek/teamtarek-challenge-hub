@@ -311,7 +311,7 @@ const AdminPage = () => {
     }
     
     // Default: time-based score for unknown challenges
-    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
+    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !is1234Strength && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     }
 
