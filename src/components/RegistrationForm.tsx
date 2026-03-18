@@ -61,6 +61,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
+  const is1234Strength = challengeSlug === "1234-strength-challenge";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   const handleSubmit = async (e: React.FormEvent) => {
