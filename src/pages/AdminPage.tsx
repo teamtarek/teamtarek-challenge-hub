@@ -509,6 +509,9 @@ const AdminPage = () => {
     } else if (is10RoundsOfPain || isTheQuadrant) {
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is1234Strength) {
+      insertData.score = newParticipantValue === "pass" ? 1 : 0;
+      insertData.murph_version = newParticipantVersion;
     } else {
       // Default: time-based
       insertData.score = timeStringToSeconds(newParticipantValue || "");
