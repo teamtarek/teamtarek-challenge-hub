@@ -52,6 +52,9 @@ const getResultDisplay = (slug: string, entry: TopEntry) => {
   const roundBasedSlugs = ["1234-complex", "rite-of-passage"];
   const levelBasedSlugs = ["simple-sinister"];
 
+  if (slug === "1234-strength-challenge") {
+    return entry.score === 1 ? "Pass ✓" : "Fail ✗";
+  }
   if (timeBasedSlugs.includes(slug)) {
     return formatTime(entry.total_time_seconds);
   }
