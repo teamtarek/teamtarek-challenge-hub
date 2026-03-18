@@ -70,6 +70,7 @@ export const ResultEntryForm = ({
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
+  const is1234Strength = challengeSlug === "1234-strength-challenge";
   const isAnySnatchTest = isSnatchTest; // Only 5-min snatch test uses reps now
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
