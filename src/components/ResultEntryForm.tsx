@@ -676,8 +676,38 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* 1-2-3-4 Strength Challenge: pass/fail + version */}
+      {is1234Strength && (
+        <>
+          <div className="space-y-2">
+            <Label>Pass / Fail</Label>
+            <Select value={swingPassFail} onValueChange={setSwingPassFail}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pass">Pass ✓</SelectItem>
+                <SelectItem value="fail">Fail ✗</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Version</Label>
+            <Select value={strengthVersion} onValueChange={setStrengthVersion}>
+              <SelectTrigger>
+                <SelectValue placeholder="Version wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Standard">Standard</SelectItem>
+                <SelectItem value="Beginner">Beginner</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && !is1234Strength && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input
