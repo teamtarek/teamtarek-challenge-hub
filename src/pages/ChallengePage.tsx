@@ -336,6 +336,48 @@ const ChallengePage = () => {
               </div>
             </div>
 
+            {/* 1-2-3-4 Strength Challenge Info */}
+            {challenge.slug === "1234-strength-challenge" && (
+              <div className="challenge-card">
+                <div className="flex items-center gap-2 mb-2">
+                  <Dumbbell className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Gewichtsanforderungen</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Übung</th>
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Standard ♂</th>
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Standard ♀</th>
+                        <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Beginner ♂</th>
+                        <th className="text-left py-2 font-medium text-muted-foreground">Beginner ♀</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { lift: "1× Press", sm: "60 kg", sf: "40 kg", bm: "50 kg", bf: "30 kg" },
+                        { lift: "2× Bench Press", sm: "100 kg", sf: "60 kg", bm: "80 kg", bf: "40 kg" },
+                        { lift: "3× Back Squat", sm: "140 kg", sf: "80 kg", bm: "110 kg", bf: "50 kg" },
+                        { lift: "4× Deadlift", sm: "180 kg", sf: "100 kg", bm: "140 kg", bf: "60 kg" },
+                      ].map((row) => (
+                        <tr key={row.lift} className="border-b border-border/50">
+                          <td className="py-3 pr-4 font-medium">{row.lift}</td>
+                          <td className="py-3 pr-4 font-mono">{row.sm}</td>
+                          <td className="py-3 pr-4 font-mono">{row.sf}</td>
+                          <td className="py-3 pr-4 font-mono">{row.bm}</td>
+                          <td className="py-3 font-mono">{row.bf}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Die Zahlen 1-2-3-4 beziehen sich auf die Anzahl der Scheiben pro Seite auf der Langhantel.
+                </p>
+              </div>
+            )}
+
             {/* Mile Level Info Box */}
             {/* Snatch Test Level Info */}
             {challenge.slug === "5-minute-snatch-test" && (
