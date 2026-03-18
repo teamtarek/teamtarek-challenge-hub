@@ -94,6 +94,7 @@ export const ResultEntryForm = ({
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
   const [ssLevel, setSsLevel] = useState(isSimpleSinister ? (existingResult.score?.toString() || "") : "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
+  const [strengthVersion, setStrengthVersion] = useState(is1234Strength ? "" : "");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
   const [loading, setLoading] = useState(false);
 
