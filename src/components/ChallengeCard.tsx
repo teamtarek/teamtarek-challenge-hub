@@ -62,6 +62,7 @@ const challengeObjectPositions: Record<string, string> = {
   "1234-complex": "center 40%",
   "10-rounds-of-pain": "center 40%",
   "secret-service-snatch-test": "center 40%",
+  "1234-strength-challenge": "center 60%",
 };
 
 // Custom object fit for specific challenges (to show full image)

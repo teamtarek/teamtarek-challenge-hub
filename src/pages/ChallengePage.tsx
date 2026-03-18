@@ -86,6 +86,7 @@ const getChallengeBackgroundPosition = (slug: string): string => {
     "1234-complex": "center 40%",
     "10-rounds-of-pain": "center 40%",
     "secret-service-snatch-test": "center 40%",
+    "1234-strength-challenge": "center 60%",
   };
   return positionMap[slug] || "center";
 };
