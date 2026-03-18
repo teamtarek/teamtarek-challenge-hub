@@ -1158,6 +1158,14 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
+                          {is1234Strength && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.score === 1 ? "✓ Pass" : "✗ Fail"}</span>
+                              <span>•</span>
+                              <span>{registration.murph_version || "Standard"}</span>
+                            </>
+                          )}
                           {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
