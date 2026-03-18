@@ -224,6 +224,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
             </SelectContent>
           </Select>
         </div>
+      )}
 
       {isKettlebellChallenge && (
         <div className="space-y-2">
