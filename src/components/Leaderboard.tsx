@@ -310,6 +310,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   };
 
   const hasResult = (reg: Registration) => {
+    if (is1234Strength) return reg.score !== null && reg.score !== undefined;
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isSecretServiceSnatchTest) return reg.total_time_seconds && reg.total_time_seconds > 0;
