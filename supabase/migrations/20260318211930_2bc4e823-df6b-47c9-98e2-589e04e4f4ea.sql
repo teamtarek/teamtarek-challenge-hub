@@ -1,0 +1,1 @@
+UPDATE public.challenges SET category = 'gym-benchmark' WHERE slug = '1234-strength-challenge';
