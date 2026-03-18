@@ -209,7 +209,21 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   // Sorting logic based on challenge type
   const getSortedRegistrations = (regs: Registration[]) => {
-    if (isKettlebellSwing) {
+    if (is1234Strength) {
+      // 1) Pass before Fail, 2) Standard before Beginner, 3) Men before Women
+      return [...regs].sort((a, b) => {
+        const passDiff = (b.score || 0) - (a.score || 0);
+        if (passDiff !== 0) return passDiff;
+        // Standard before Beginner
+        const aIsStandard = a.murph_version === "Standard" ? 1 : 0;
+        const bIsStandard = b.murph_version === "Standard" ? 1 : 0;
+        if (bIsStandard !== aIsStandard) return bIsStandard - aIsStandard;
+        // Men before Women
+        const aIsMale = a.gender === "male" ? 1 : 0;
+        const bIsMale = b.gender === "male" ? 1 : 0;
+        return bIsMale - aIsMale;
+      });
+    } else if (isKettlebellSwing) {
       // Pass first, then total swings desc, then weight desc
       return [...regs].sort((a, b) => {
         const passDiff = (b.score || 0) - (a.score || 0);
