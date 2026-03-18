@@ -241,7 +241,7 @@ const AdminPage = () => {
           initialValues[reg.id] = secondsToTimeString(reg.score);
         } else if (isSimpleSinister) {
           initialValues[reg.id] = secondsToTimeString(reg.score);
-        } else if (isKettlebellSwing) {
+        } else if (isKettlebellSwing || is1234Strength) {
           initialValues[reg.id] = reg.score === 1 ? "pass" : "fail";
         } else {
           initialValues[reg.id] = reg.score?.toString() ?? "0";
