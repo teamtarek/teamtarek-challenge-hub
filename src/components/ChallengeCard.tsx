@@ -49,6 +49,7 @@ const challengeImages: Record<string, string> = {
   "1234-complex": complexImg,
   "the-quadrant": theQuadrantImg,
   "the-classic-complex": theClassicComplexImg,
+  "1234-strength-challenge": strengthChallengeImg,
 };
 
 // Custom object positions for specific challenges
