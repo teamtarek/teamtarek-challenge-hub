@@ -139,6 +139,14 @@ export const ResultEntryForm = ({
         if (isNaN(swings) || swings < 0) { toast.error("Bitte eine gültige Anzahl Swings eingeben"); setLoading(false); return; }
         updateData.total_reps = swings;
       }
+    } else if (is1234Strength) {
+      updateData.score = swingPassFail === "pass" ? 1 : 0;
+      if (!strengthVersion) { toast.error("Bitte eine Version (Standard/Beginner) wählen"); setLoading(false); return; }
+      updateData.murph_version = strengthVersion;
+        const swings = parseInt(totalSwings);
+        if (isNaN(swings) || swings < 0) { toast.error("Bitte eine gültige Anzahl Swings eingeben"); setLoading(false); return; }
+        updateData.total_reps = swings;
+      }
     } else if (isAnySnatchTest) {
       const repsNum = parseInt(reps);
       if (isNaN(repsNum) || repsNum <= 0) { toast.error("Bitte eine gültige Anzahl Wiederholungen eingeben"); setLoading(false); return; }
