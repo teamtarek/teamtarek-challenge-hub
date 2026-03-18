@@ -113,6 +113,10 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
       insertData.murph_version = murphVersion;
     }
 
+    if (is1234Strength) {
+      insertData.murph_version = strengthVersion;
+    }
+
     if (isKettlebellSwing) {
       insertData.score = swingPassFail === "pass" ? 1 : 0;
       insertData.kettlebell_weight_kg = kettlebellWeight ? parseInt(kettlebellWeight) : null;
