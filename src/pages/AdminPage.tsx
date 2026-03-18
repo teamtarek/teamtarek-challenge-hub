@@ -546,7 +546,7 @@ const AdminPage = () => {
   const getResultLabel = () => {
     if (isMurphChallenge || isSimpleSinister) return "Zeiten";
     if (isAnySnatchTest) return "Wiederholungen";
-    if (isKettlebellSwing) return "Ergebnisse";
+    if (isKettlebellSwing || is1234Strength) return "Ergebnisse";
     if (isRiteOfPassage) return "Ergebnisse";
     if (isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return "Zeiten";
     if (is1234Complex || isClassicComplex) return "Runden & Gewicht";
