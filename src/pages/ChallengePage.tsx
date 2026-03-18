@@ -35,6 +35,7 @@ import tenKRun from "@/assets/challenges/10-kilometer-run.jpg";
 import complex1234 from "@/assets/challenges/1234-complex.jpg";
 import theQuadrant from "@/assets/challenges/the-quadrant.jpg";
 import theClassicComplex from "@/assets/challenges/the-classic-complex.jpg";
+import strengthChallenge from "@/assets/challenges/1234-strength-challenge.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
