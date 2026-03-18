@@ -211,6 +211,20 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
         </div>
       )}
 
+      {is1234Strength && (
+        <div className="space-y-2">
+          <Label>Version</Label>
+          <Select value={strengthVersion} onValueChange={setStrengthVersion}>
+            <SelectTrigger>
+              <SelectValue placeholder="Version wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Standard">Standard</SelectItem>
+              <SelectItem value="Beginner">Beginner</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
       {isKettlebellChallenge && (
         <div className="space-y-2">
           <Label htmlFor="kettlebellWeight">Kettlebell Gewicht (kg)</Label>
