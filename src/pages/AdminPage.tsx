@@ -1270,6 +1270,24 @@ const AdminPage = () => {
                           </>
                         )}
                         
+                        {/* 1-2-3-4 Strength Challenge fields */}
+                        {is1234Strength && (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={values[registration.id] || "fail"}
+                              onValueChange={(v) => handleValueChange(registration.id, v)}
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pass">Pass ✓</SelectItem>
+                                <SelectItem value="fail">Fail ✗</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
                         {/* Reps for snatch tests */}
                         {isAnySnatchTest && (
                           <div className="flex items-center gap-2">
