@@ -109,7 +109,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   return [...entries].sort((a, b) => (a.score || 0) - (b.score || 0));
 };
 
-const isPassFailChallenge = (slug: string) => slug === "kettlebell-swing";
+const isPassFailChallenge = (slug: string) => slug === "kettlebell-swing" || slug === "1234-strength-challenge";
 
 const getPointsForRank = (rank: number, slug: string, entry: Registration): number => {
   if (isPassFailChallenge(slug)) {
