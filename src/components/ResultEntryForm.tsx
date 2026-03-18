@@ -100,6 +100,7 @@ export const ResultEntryForm = ({
 
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
+    if (is1234Strength) return existingResult.score !== null && existingResult.score !== undefined;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (isSecretServiceSnatchTest) return (existingResult.total_time_seconds ?? 0) > 0;
     if (is1234Complex || isClassicComplex) return (existingResult.total_reps ?? 0) > 0;
