@@ -70,6 +70,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "1234-complex": complex1234,
     "the-quadrant": theQuadrant,
     "the-classic-complex": theClassicComplex,
+    "1234-strength-challenge": strengthChallenge,
   };
   return imageMap[slug] || heroBg;
 };
