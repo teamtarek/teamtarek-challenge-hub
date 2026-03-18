@@ -62,7 +62,7 @@ const hasResult = (slug: string, entry: Registration): boolean => {
 
 const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "meet-betty"];
-  const isPassFail = slug === "kettlebell-swing";
+  const isPassFail = slug === "kettlebell-swing" || slug === "1234-strength-challenge";
 
   if (isPassFail) {
     return [...entries].sort((a, b) => {

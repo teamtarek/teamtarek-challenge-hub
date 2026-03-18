@@ -104,6 +104,11 @@ const sortEntries = (slug: string, entries: TopEntry[]) => {
       return (b.total_reps || 0) - (a.total_reps || 0);
     });
   }
+  if (slug === "1234-strength-challenge") {
+    return [...entries].sort((a, b) => {
+      return (b.score || 0) - (a.score || 0);
+    });
+  }
   if (slug === "simple-sinister") {
     return [...entries].sort((a, b) => {
       const levelDiff = (b.score || 0) - (a.score || 0);

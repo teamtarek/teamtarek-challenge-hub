@@ -360,7 +360,22 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
 
   const renderResultColumn = (registration: Registration) => {
-    if (isKettlebellSwing) {
+    if (is1234Strength) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className={`font-semibold text-lg ${registration.score === 1 ? "text-green-500" : "text-destructive"}`}>
+              {registration.score === 1 ? "Pass ✓" : "Fail ✗"}
+            </span>
+          </div>
+          {registration.murph_version && (
+            <span className={`text-xs px-2 py-0.5 rounded-full ${registration.murph_version === "Standard" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              {registration.murph_version}
+            </span>
+          )}
+        </div>
+      );
+    } else if (isKettlebellSwing) {
       return (
         <div className="text-right">
           <div className="font-mono">
