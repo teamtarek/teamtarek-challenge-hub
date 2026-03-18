@@ -969,7 +969,7 @@ const AdminPage = () => {
                     )}
                     
                     {/* Default: time-based for other challenges */}
-                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && !is1234Strength && (
                       <div className="space-y-2">
                         <Label htmlFor="value">Gesamtzeit (MM:SS)</Label>
                         <Input
