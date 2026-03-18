@@ -173,6 +173,7 @@ const Index = () => {
               ))}
           </div>
         )}
+      </section>
 
       {/* Benchmark Workouts - Kettlebell */}
       <section className="container py-24 pt-0">
