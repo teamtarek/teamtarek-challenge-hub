@@ -281,6 +281,8 @@ const AdminPage = () => {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     } else if (isKettlebellSwing) {
       updateData.score = values[registrationId] === "pass" ? 1 : 0;
+    } else if (is1234Strength) {
+      updateData.score = values[registrationId] === "pass" ? 1 : 0;
     }
     // No score for challenges that use other fields
     
