@@ -70,6 +70,7 @@ export const ResultEntryForm = ({
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
+  const is1234Strength = challengeSlug === "1234-strength-challenge";
   const isAnySnatchTest = isSnatchTest; // Only 5-min snatch test uses reps now
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
@@ -93,11 +94,13 @@ export const ResultEntryForm = ({
   const [ropLevel, setRopLevel] = useState(isRiteOfPassage ? (existingResult.score?.toString() || "") : "");
   const [ssLevel, setSsLevel] = useState(isSimpleSinister ? (existingResult.score?.toString() || "") : "");
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
+  const [strengthVersion, setStrengthVersion] = useState(is1234Strength ? "" : "");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
   const [loading, setLoading] = useState(false);
 
   const hasExistingResult = (): boolean => {
     if (isKettlebellSwing) return (existingResult.total_reps ?? 0) > 0;
+    if (is1234Strength) return existingResult.score !== null && existingResult.score !== undefined;
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (isSecretServiceSnatchTest) return (existingResult.total_time_seconds ?? 0) > 0;
     if (is1234Complex || isClassicComplex) return (existingResult.total_reps ?? 0) > 0;
@@ -136,6 +139,10 @@ export const ResultEntryForm = ({
         if (isNaN(swings) || swings < 0) { toast.error("Bitte eine gültige Anzahl Swings eingeben"); setLoading(false); return; }
         updateData.total_reps = swings;
       }
+    } else if (is1234Strength) {
+      updateData.score = swingPassFail === "pass" ? 1 : 0;
+      if (!strengthVersion) { toast.error("Bitte eine Version (Standard/Beginner) wählen"); setLoading(false); return; }
+      updateData.murph_version = strengthVersion;
     } else if (isAnySnatchTest) {
       const repsNum = parseInt(reps);
       if (isNaN(repsNum) || repsNum <= 0) { toast.error("Bitte eine gültige Anzahl Wiederholungen eingeben"); setLoading(false); return; }
@@ -669,8 +676,38 @@ export const ResultEntryForm = ({
         </>
       )}
 
+      {/* 1-2-3-4 Strength Challenge: pass/fail + version */}
+      {is1234Strength && (
+        <>
+          <div className="space-y-2">
+            <Label>Pass / Fail</Label>
+            <Select value={swingPassFail} onValueChange={setSwingPassFail}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pass">Pass ✓</SelectItem>
+                <SelectItem value="fail">Fail ✗</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Version</Label>
+            <Select value={strengthVersion} onValueChange={setStrengthVersion}>
+              <SelectTrigger>
+                <SelectValue placeholder="Version wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Standard">Standard</SelectItem>
+                <SelectItem value="Beginner">Beginner</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
       {/* Default time-based for other challenges (e.g. Deadly Dozen, etc.) */}
-      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && (
+      {!isMurphChallenge && !isEnduranceRun && !isSpringChallenge && !isSimpleSinister && !isMeetBetty && !isRiteOfPassage && !isAnySnatchTest && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isTheQuadrant && !isClassicComplex && !is1234Strength && (
         <div className="space-y-2">
           <Label htmlFor="time">Gesamtzeit (MM:SS oder H:MM:SS)</Label>
           <Input

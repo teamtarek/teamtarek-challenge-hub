@@ -88,6 +88,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const is1234Complex = challengeSlug === "1234-complex";
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
+  const is1234Strength = challengeSlug === "1234-strength-challenge";
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isSecretServiceSnatchTest;
 
@@ -208,7 +209,21 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   // Sorting logic based on challenge type
   const getSortedRegistrations = (regs: Registration[]) => {
-    if (isKettlebellSwing) {
+    if (is1234Strength) {
+      // 1) Pass before Fail, 2) Standard before Beginner, 3) Men before Women
+      return [...regs].sort((a, b) => {
+        const passDiff = (b.score || 0) - (a.score || 0);
+        if (passDiff !== 0) return passDiff;
+        // Standard before Beginner
+        const aIsStandard = a.murph_version === "Standard" ? 1 : 0;
+        const bIsStandard = b.murph_version === "Standard" ? 1 : 0;
+        if (bIsStandard !== aIsStandard) return bIsStandard - aIsStandard;
+        // Men before Women
+        const aIsMale = a.gender === "male" ? 1 : 0;
+        const bIsMale = b.gender === "male" ? 1 : 0;
+        return bIsMale - aIsMale;
+      });
+    } else if (isKettlebellSwing) {
       // Pass first, then total swings desc, then weight desc
       return [...regs].sort((a, b) => {
         const passDiff = (b.score || 0) - (a.score || 0);
@@ -295,6 +310,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   };
 
   const hasResult = (reg: Registration) => {
+    if (is1234Strength) return reg.score !== null && reg.score !== undefined;
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isSecretServiceSnatchTest) return reg.total_time_seconds && reg.total_time_seconds > 0;
@@ -344,7 +360,22 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
 
   const renderResultColumn = (registration: Registration) => {
-    if (isKettlebellSwing) {
+    if (is1234Strength) {
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className={`font-semibold text-lg ${registration.score === 1 ? "text-green-500" : "text-destructive"}`}>
+              {registration.score === 1 ? "Pass ✓" : "Fail ✗"}
+            </span>
+          </div>
+          {registration.murph_version && (
+            <span className={`text-xs px-2 py-0.5 rounded-full ${registration.murph_version === "Standard" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              {registration.murph_version}
+            </span>
+          )}
+        </div>
+      );
+    } else if (isKettlebellSwing) {
       return (
         <div className="text-right">
           <div className="font-mono">

@@ -40,6 +40,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [murphVersion, setMurphVersion] = useState<string>("Standard");
+  const [strengthVersion, setStrengthVersion] = useState<string>("Standard");
   const [validationType, setValidationType] = useState<string>("coach");
   const [videoUrl, setVideoUrl] = useState("");
   const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
@@ -61,6 +62,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const isEnduranceRun = isTheMile || is5k || is10k;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
+  const is1234Strength = challengeSlug === "1234-strength-challenge";
   const isKettlebellChallenge = isSnatchTest || isSecretServiceSnatchTest || isSimpleSinister || isRiteOfPassage;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +111,10 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
 
     if (isMurphChallenge) {
       insertData.murph_version = murphVersion;
+    }
+
+    if (is1234Strength) {
+      insertData.murph_version = strengthVersion;
     }
 
     if (isKettlebellSwing) {
@@ -200,6 +206,21 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
                   {version}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {is1234Strength && (
+        <div className="space-y-2">
+          <Label>Version</Label>
+          <Select value={strengthVersion} onValueChange={setStrengthVersion}>
+            <SelectTrigger>
+              <SelectValue placeholder="Version wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Standard">Standard</SelectItem>
+              <SelectItem value="Beginner">Beginner</SelectItem>
             </SelectContent>
           </Select>
         </div>

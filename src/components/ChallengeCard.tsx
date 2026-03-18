@@ -23,6 +23,7 @@ import tenRoundsImg from "@/assets/challenges/10-rounds-of-pain.jpg";
 import complexImg from "@/assets/challenges/1234-complex.jpg";
 import theQuadrantImg from "@/assets/challenges/the-quadrant.jpg";
 import theClassicComplexImg from "@/assets/challenges/the-classic-complex.jpg";
+import strengthChallengeImg from "@/assets/challenges/1234-strength-challenge.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -48,6 +49,7 @@ const challengeImages: Record<string, string> = {
   "1234-complex": complexImg,
   "the-quadrant": theQuadrantImg,
   "the-classic-complex": theClassicComplexImg,
+  "1234-strength-challenge": strengthChallengeImg,
 };
 
 // Custom object positions for specific challenges
@@ -60,6 +62,7 @@ const challengeObjectPositions: Record<string, string> = {
   "1234-complex": "center 40%",
   "10-rounds-of-pain": "center 40%",
   "secret-service-snatch-test": "center 40%",
+  "1234-strength-challenge": "center 60%",
 };
 
 // Custom object fit for specific challenges (to show full image)

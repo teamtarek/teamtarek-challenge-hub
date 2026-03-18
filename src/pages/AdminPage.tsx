@@ -148,6 +148,7 @@ const AdminPage = () => {
   const is1234Complex = selectedChallengeData?.slug === "1234-complex";
   const isClassicComplex = selectedChallengeData?.slug === "the-classic-complex";
   const isTheQuadrant = selectedChallengeData?.slug === "the-quadrant";
+  const is1234Strength = selectedChallengeData?.slug === "1234-strength-challenge";
   const isAnySnatchTest = isSnatchTest; // Only 5-min uses reps
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
   const isTimeChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || isSecretServiceSnatchTest;
@@ -240,7 +241,7 @@ const AdminPage = () => {
           initialValues[reg.id] = secondsToTimeString(reg.score);
         } else if (isSimpleSinister) {
           initialValues[reg.id] = secondsToTimeString(reg.score);
-        } else if (isKettlebellSwing) {
+        } else if (isKettlebellSwing || is1234Strength) {
           initialValues[reg.id] = reg.score === 1 ? "pass" : "fail";
         } else {
           initialValues[reg.id] = reg.score?.toString() ?? "0";
@@ -280,6 +281,8 @@ const AdminPage = () => {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     } else if (isKettlebellSwing) {
       updateData.score = values[registrationId] === "pass" ? 1 : 0;
+    } else if (is1234Strength) {
+      updateData.score = values[registrationId] === "pass" ? 1 : 0;
     }
     // No score for challenges that use other fields
     
@@ -308,7 +311,7 @@ const AdminPage = () => {
     }
     
     // Default: time-based score for unknown challenges
-    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
+    if (!isMurphChallenge && !isSimpleSinister && !isKettlebellSwing && !is1234Strength && !isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant) {
       updateData.score = timeStringToSeconds(values[registrationId] || "");
     }
 
@@ -506,6 +509,9 @@ const AdminPage = () => {
     } else if (is10RoundsOfPain || isTheQuadrant) {
       insertData.total_time_seconds = timeStringToSeconds(newParticipantTotalTime);
       insertData.kettlebell_weight_kg = newParticipantKettlebellWeight ? parseInt(newParticipantKettlebellWeight, 10) : null;
+    } else if (is1234Strength) {
+      insertData.score = newParticipantValue === "pass" ? 1 : 0;
+      insertData.murph_version = newParticipantVersion;
     } else {
       // Default: time-based
       insertData.score = timeStringToSeconds(newParticipantValue || "");
@@ -540,7 +546,7 @@ const AdminPage = () => {
   const getResultLabel = () => {
     if (isMurphChallenge || isSimpleSinister) return "Zeiten";
     if (isAnySnatchTest) return "Wiederholungen";
-    if (isKettlebellSwing) return "Ergebnisse";
+    if (isKettlebellSwing || is1234Strength) return "Ergebnisse";
     if (isRiteOfPassage) return "Ergebnisse";
     if (isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return "Zeiten";
     if (is1234Complex || isClassicComplex) return "Runden & Gewicht";
@@ -877,6 +883,36 @@ const AdminPage = () => {
                       </>
                     )}
                     
+                    {/* 1-2-3-4 Strength Challenge */}
+                    {is1234Strength && (
+                      <>
+                        <div className="space-y-2">
+                          <Label>Pass / Fail</Label>
+                          <Select value={newParticipantValue || "fail"} onValueChange={setNewParticipantValue}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Status wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pass">Pass ✓</SelectItem>
+                              <SelectItem value="fail">Fail ✗</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Version</Label>
+                          <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Version wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Standard">Standard</SelectItem>
+                              <SelectItem value="Beginner">Beginner</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
+
                     {/* Snatch test reps */}
                     {isAnySnatchTest && (
                       <div className="space-y-2">
@@ -963,7 +999,7 @@ const AdminPage = () => {
                     )}
                     
                     {/* Default: time-based for other challenges */}
-                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && (
+                    {!isKettlebellChallenge && !isEnduranceRun && !isSpringChallenge && !isMurphChallenge && !isKettlebellSwing && !is10RoundsOfPain && !is1234Complex && !isClassicComplex && !isTheQuadrant && !is1234Strength && (
                       <div className="space-y-2">
                         <Label htmlFor="value">Gesamtzeit (MM:SS)</Label>
                         <Input
@@ -1152,6 +1188,14 @@ const AdminPage = () => {
                               <span>{registration.murph_version || "Standard"}</span>
                             </>
                           )}
+                          {is1234Strength && (
+                            <>
+                              <span>•</span>
+                              <span>{registration.score === 1 ? "✓ Pass" : "✗ Fail"}</span>
+                              <span>•</span>
+                              <span>{registration.murph_version || "Standard"}</span>
+                            </>
+                          )}
                           {(isKettlebellChallenge || isKettlebellSwing || is10RoundsOfPain || is1234Complex || isClassicComplex || isTheQuadrant || isSecretServiceSnatchTest) && registration.kettlebell_weight_kg && (
                             <>
                               <span>•</span>
@@ -1256,6 +1300,24 @@ const AdminPage = () => {
                           </>
                         )}
                         
+                        {/* 1-2-3-4 Strength Challenge fields */}
+                        {is1234Strength && (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={values[registration.id] || "fail"}
+                              onValueChange={(v) => handleValueChange(registration.id, v)}
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pass">Pass ✓</SelectItem>
+                                <SelectItem value="fail">Fail ✗</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
                         {/* Reps for snatch tests */}
                         {isAnySnatchTest && (
                           <div className="flex items-center gap-2">

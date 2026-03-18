@@ -49,7 +49,9 @@ const hasResult = (slug: string, entry: Registration): boolean => {
   const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty", "secret-service-snatch-test"];
   const repSlugs = ["5-minute-snatch-test", "kettlebell-swing"];
   const roundSlugs = ["1234-complex", "the-classic-complex"];
+  const passFail = ["1234-strength-challenge"];
 
+  if (passFail.includes(slug)) return entry.score !== null && entry.score !== undefined;
   if (timeSlugs.includes(slug)) return (entry.total_time_seconds ?? 0) > 0;
   if (repSlugs.includes(slug)) return (entry.total_reps ?? 0) > 0;
   if (roundSlugs.includes(slug)) return (entry.total_reps ?? 0) > 0;
@@ -60,7 +62,7 @@ const hasResult = (slug: string, entry: Registration): boolean => {
 
 const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "meet-betty"];
-  const isPassFail = slug === "kettlebell-swing";
+  const isPassFail = slug === "kettlebell-swing" || slug === "1234-strength-challenge";
 
   if (isPassFail) {
     return [...entries].sort((a, b) => {
@@ -109,7 +111,7 @@ const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
   return [...entries].sort((a, b) => (a.score || 0) - (b.score || 0));
 };
 
-const isPassFailChallenge = (slug: string) => slug === "kettlebell-swing";
+const isPassFailChallenge = (slug: string) => slug === "kettlebell-swing" || slug === "1234-strength-challenge";
 
 const getPointsForRank = (rank: number, slug: string, entry: Registration): number => {
   if (isPassFailChallenge(slug)) {
