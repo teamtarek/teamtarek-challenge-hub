@@ -116,7 +116,9 @@ const hasResult = (slug: string, entry: TopEntry) => {
   const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
   const repSlugs = ["5-minute-snatch-test", "secret-service-snatch-test", "kettlebell-swing"];
   const roundSlugs = ["1234-complex"];
+  const passFail = ["1234-strength-challenge"];
 
+  if (passFail.includes(slug)) return entry.score !== null && entry.score !== undefined;
   if (timeSlugs.includes(slug)) return entry.total_time_seconds && entry.total_time_seconds > 0;
   if (repSlugs.includes(slug)) return entry.total_reps && entry.total_reps > 0;
   if (roundSlugs.includes(slug)) return entry.total_reps && entry.total_reps > 0;
