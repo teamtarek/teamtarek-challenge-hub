@@ -883,6 +883,36 @@ const AdminPage = () => {
                       </>
                     )}
                     
+                    {/* 1-2-3-4 Strength Challenge */}
+                    {is1234Strength && (
+                      <>
+                        <div className="space-y-2">
+                          <Label>Pass / Fail</Label>
+                          <Select value={newParticipantValue || "fail"} onValueChange={setNewParticipantValue}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Status wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pass">Pass ✓</SelectItem>
+                              <SelectItem value="fail">Fail ✗</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Version</Label>
+                          <Select value={newParticipantVersion} onValueChange={setNewParticipantVersion}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Version wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Standard">Standard</SelectItem>
+                              <SelectItem value="Beginner">Beginner</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
+
                     {/* Snatch test reps */}
                     {isAnySnatchTest && (
                       <div className="space-y-2">
