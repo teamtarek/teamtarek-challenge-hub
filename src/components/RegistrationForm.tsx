@@ -40,6 +40,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [murphVersion, setMurphVersion] = useState<string>("Standard");
+  const [strengthVersion, setStrengthVersion] = useState<string>("Standard");
   const [validationType, setValidationType] = useState<string>("coach");
   const [videoUrl, setVideoUrl] = useState("");
   const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
