@@ -175,7 +175,7 @@ const WorkoutLibrary = () => {
             <button
               key={sub.key}
               onClick={() => setSelectedSubcategory(sub.key)}
-              className="bg-card border border-border p-5 text-left hover:border-primary/40 transition-colors"
+              className="bg-card border border-border rounded-lg p-5 text-left hover:border-primary/40 transition-colors"
             >
               <h3 className="font-semibold">{sub.label}</h3>
             </button>
