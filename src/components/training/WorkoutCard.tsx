@@ -43,7 +43,7 @@ const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showC
   const diffLabel = DIFFICULTY_LEVELS.find((d) => d.key === difficultyLevel)?.label ?? difficultyLevel;
 
   return (
-    <div className="bg-card border border-border p-4 space-y-2 group">
+    <div className="bg-card border border-border rounded-lg p-4 space-y-2 group">
       <div className="flex items-start gap-3">
         {showDragHandle && (
           <GripVertical className="w-4 h-4 text-muted-foreground mt-1 cursor-grab flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
