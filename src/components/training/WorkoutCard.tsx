@@ -60,7 +60,7 @@ const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showC
               {diffLabel}
             </span>
             {workout.visibility === "draft" && isAdmin && (
-              <span className="text-xs uppercase tracking-wider text-destructive bg-destructive/10 px-2 py-0.5">
+              <span className="text-xs uppercase tracking-wider text-destructive bg-destructive/10 px-2 py-0.5 rounded-md">
                 Entwurf
               </span>
             )}
