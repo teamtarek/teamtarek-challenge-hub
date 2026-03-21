@@ -119,7 +119,7 @@ const WorkoutLibrary = () => {
             <button
               key={cat.key}
               onClick={() => setSelectedCategory(cat.key)}
-              className="bg-card border border-border p-5 text-left hover:border-primary/40 transition-colors group"
+              className="bg-card border border-border rounded-lg p-5 text-left hover:border-primary/40 transition-colors group"
             >
               <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
                 {cat.label}
