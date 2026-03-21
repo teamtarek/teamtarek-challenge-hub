@@ -131,7 +131,7 @@ const WorkoutLibrary = () => {
           ))}
         </div>
         {(isAdmin || isCoach) && unassignedWorkouts && unassignedWorkouts.length > 0 && (
-          <div className="border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+          <div className="border border-destructive/30 bg-destructive/5 rounded-lg p-4 space-y-3">
             <h3 className="font-semibold text-destructive flex items-center gap-2">
               ⚠️ Nicht zugewiesene Workouts ({unassignedWorkouts.length})
             </h3>
