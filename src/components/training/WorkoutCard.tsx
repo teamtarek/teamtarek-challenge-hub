@@ -56,7 +56,7 @@ const WorkoutCard = ({ workout, isAdmin, onEdit, onDelete, showDragHandle, showC
               </span>
             )}
             <h3 className="font-semibold">{workout.title}</h3>
-            <span className={`text-xs px-2 py-0.5 rounded-sm ${DIFFICULTY_COLORS[difficultyLevel] || ""}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-md ${DIFFICULTY_COLORS[difficultyLevel] || ""}`}>
               {diffLabel}
             </span>
             {workout.visibility === "draft" && isAdmin && (
