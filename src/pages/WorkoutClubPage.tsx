@@ -10,6 +10,11 @@ const SECTIONS: { key: Section; label: string; icon: React.ElementType }[] = [
   { key: "tips", label: "Tipps & Wissen", icon: Lightbulb },
 ];
 
+const CATEGORIES = [
+  "Alle", "Kettlebell", "Strength", "Conditioning",
+  "Running", "Mobility", "Recovery", "Ernährung"
+];
+
 const WorkoutClubPage = () => {
   const [activeSection, setActiveSection] = useState<Section>("library");
 
@@ -29,7 +34,7 @@ const WorkoutClubPage = () => {
           <button
             key={key}
             onClick={() => setActiveSection(key)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-colors ${
               activeSection === key
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
@@ -43,20 +48,70 @@ const WorkoutClubPage = () => {
 
       {/* Section Content */}
       {activeSection === "library" && <WorkoutLibrary />}
-      {activeSection === "videos" && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Video className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">Videos – Coming Soon</p>
-          <p className="text-sm mt-1">Hier findest du bald Trainingsvideos und Tutorials.</p>
-        </div>
-      )}
-      {activeSection === "tips" && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Lightbulb className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">Tipps & Wissen – Coming Soon</p>
-          <p className="text-sm mt-1">Hier findest du bald Tipps, Guides und Fachwissen rund ums Training.</p>
-        </div>
-      )}
+      {activeSection === "videos" && <VideosSection />}
+      {activeSection === "tips" && <TipsSection />}
+    </div>
+  );
+};
+
+// --- Videos Section ---
+const VideosSection = () => {
+  const [activeCategory, setActiveCategory] = useState("Alle");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2 flex-wrap">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+              activeCategory === cat
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-muted-foreground border-border hover:border-primary/40"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="text-center py-16 text-muted-foreground">
+        <Video className="w-10 h-10 mx-auto mb-3 opacity-40" />
+        <p className="font-medium">Noch keine Videos vorhanden</p>
+        <p className="text-sm mt-1">Videos werden vom Coach hier hinterlegt.</p>
+      </div>
+    </div>
+  );
+};
+
+// --- Tips Section ---
+const TipsSection = () => {
+  const [activeCategory, setActiveCategory] = useState("Alle");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2 flex-wrap">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+              activeCategory === cat
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-muted-foreground border-border hover:border-primary/40"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="text-center py-16 text-muted-foreground">
+        <Lightbulb className="w-10 h-10 mx-auto mb-3 opacity-40" />
+        <p className="font-medium">Noch keine Tipps vorhanden</p>
+        <p className="text-sm mt-1">Tipps & Wissen werden vom Coach hier hinterlegt.</p>
+      </div>
     </div>
   );
 };
