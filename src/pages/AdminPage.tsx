@@ -649,6 +649,9 @@ const AdminPage = () => {
           {/* Merge Notifications */}
           <AdminMergeNotifications />
 
+          {/* Invite Tokens */}
+          <AdminInviteTokens />
+
           <div className="space-y-4">
             <Label>Challenge auswählen</Label>
             <Select
