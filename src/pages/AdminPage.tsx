@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { AdminRoleManager } from "@/components/AdminRoleManager";
 import { AdminMergeNotifications } from "@/components/AdminMergeNotifications";
+import AdminInviteTokens from "@/components/AdminInviteTokens";
 
 interface Challenge {
   id: string;
@@ -647,6 +648,9 @@ const AdminPage = () => {
 
           {/* Merge Notifications */}
           <AdminMergeNotifications />
+
+          {/* Invite Tokens */}
+          <AdminInviteTokens />
 
           <div className="space-y-4">
             <Label>Challenge auswählen</Label>
