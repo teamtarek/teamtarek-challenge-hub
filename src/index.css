@@ -67,11 +67,11 @@
 
 @layer components {
   .challenge-card {
-    @apply bg-card border border-border p-6 transition-all duration-300 hover:border-foreground/20;
+    @apply bg-card border border-border rounded-lg p-6 transition-all duration-300 hover:border-foreground/20;
   }
 
   .challenge-badge {
-    @apply inline-flex items-center px-3 py-1 text-xs font-medium uppercase tracking-wider bg-secondary text-muted-foreground;
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium uppercase tracking-wider bg-secondary text-muted-foreground rounded-md;
   }
 
   .challenge-badge-active {
@@ -79,11 +79,11 @@
   }
 
   .input-minimal {
-    @apply bg-secondary border-0 focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground;
+    @apply bg-secondary border-0 rounded-lg focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground;
   }
 
   .forum-category {
-    @apply bg-card border border-border p-5 transition-all duration-200 hover:border-primary/40 cursor-pointer;
+    @apply bg-card border border-border rounded-lg p-5 transition-all duration-200 hover:border-primary/40 cursor-pointer;
   }
 
   .nav-link-active {
