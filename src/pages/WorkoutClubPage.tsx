@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Dumbbell, Library, Video, Lightbulb } from "lucide-react";
+import { Dumbbell, Library, Video, Lightbulb, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useUserRole } from "@/hooks/useUserRole";
 import WorkoutLibrary from "@/components/training/WorkoutLibrary";
 
 type Section = "library" | "videos" | "tips";
@@ -16,7 +18,9 @@ const CATEGORIES = [
 ];
 
 const WorkoutClubPage = () => {
+  const { isAdmin, isCoach } = useUserRole();
   const [activeSection, setActiveSection] = useState<Section>("library");
+  const canManage = isAdmin || isCoach;
 
   return (
     <div className="container py-8 max-w-4xl">
@@ -48,18 +52,27 @@ const WorkoutClubPage = () => {
 
       {/* Section Content */}
       {activeSection === "library" && <WorkoutLibrary />}
-      {activeSection === "videos" && <VideosSection />}
-      {activeSection === "tips" && <TipsSection />}
+      {activeSection === "videos" && <VideosSection canManage={canManage} />}
+      {activeSection === "tips" && <TipsSection canManage={canManage} />}
     </div>
   );
 };
 
 // --- Videos Section ---
-const VideosSection = () => {
+const VideosSection = ({ canManage }: { canManage: boolean }) => {
   const [activeCategory, setActiveCategory] = useState("Alle");
 
   return (
     <div className="space-y-6">
+      {canManage && (
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => {/* open create dialog */}}>
+            <Plus className="w-4 h-4" />
+            Video hinzufügen
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-2 flex-wrap">
         {CATEGORIES.map((cat) => (
           <button
@@ -86,11 +99,20 @@ const VideosSection = () => {
 };
 
 // --- Tips Section ---
-const TipsSection = () => {
+const TipsSection = ({ canManage }: { canManage: boolean }) => {
   const [activeCategory, setActiveCategory] = useState("Alle");
 
   return (
     <div className="space-y-6">
+      {canManage && (
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => {/* open create dialog */}}>
+            <Plus className="w-4 h-4" />
+            Tipp erstellen
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-2 flex-wrap">
         {CATEGORIES.map((cat) => (
           <button
