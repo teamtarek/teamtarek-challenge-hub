@@ -121,8 +121,9 @@ const AuthPage = () => {
       return;
     }
 
-    toast.success("Erfolgreich registriert!");
-    navigate("/dashboard");
+    // Show email verification message
+    setShowVerificationMessage(true);
+    toast.success("Registrierung erfolgreich! Bitte bestätige deine E-Mail-Adresse.");
   };
 
   if (authLoading) {
