@@ -18,6 +18,7 @@ import PostPage from "./pages/PostPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import WorkoutClubPage from "./pages/WorkoutClubPage";
 import FoundingCrewPage from "./pages/FoundingCrewPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
             {/* Authenticated routes with AppLayout */}
             <Route element={<AppLayout />}>
