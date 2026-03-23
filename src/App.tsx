@@ -34,6 +34,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
             {/* Authenticated routes with AppLayout */}
             <Route element={<AppLayout />}>
