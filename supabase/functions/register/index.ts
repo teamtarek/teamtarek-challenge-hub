@@ -113,7 +113,7 @@ serve(async (req) => {
     }
 
     // Create user via admin API (bypasses disabled signup)
-    // email_confirm: false means user must confirm via email link
+    // email_confirm: true so the account exists but we'll generate a confirmation link separately
     logStep("Creating user account", { email, displayName });
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase().trim(),
