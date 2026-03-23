@@ -18,6 +18,7 @@ import PostPage from "./pages/PostPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import WorkoutClubPage from "./pages/WorkoutClubPage";
 import FoundingCrewPage from "./pages/FoundingCrewPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
