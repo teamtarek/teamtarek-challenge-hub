@@ -8,14 +8,30 @@ const AuthCallbackPage = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Supabase automatically exchanges the token from the URL hash
-      const { error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Auth callback error:", error);
-        navigate("/auth");
-        return;
+      // Check for hash params (Supabase sends tokens via hash fragment)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) {
+          console.error("Auth callback error:", error);
+          navigate("/auth");
+          return;
+        }
       }
-      navigate("/dashboard");
+
+      // Wait briefly for session to propagate
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      } else {
+        navigate("/auth");
+      }
     };
 
     handleCallback();
