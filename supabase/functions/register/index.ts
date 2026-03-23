@@ -142,6 +142,23 @@ serve(async (req) => {
     const userId = newUser.user.id;
     logStep("User created successfully", { userId });
 
+    // Generate confirmation email link with correct redirect URL
+    const redirectTo = "https://teamtarek-challenge-hub.lovable.app/auth/callback";
+    logStep("Generating confirmation link", { redirectTo });
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "signup",
+      email: email.toLowerCase().trim(),
+      options: {
+        redirectTo,
+      },
+    });
+
+    if (linkError) {
+      logStep("WARNING: Could not generate confirmation link", { error: linkError.message });
+    } else {
+      logStep("Confirmation email sent", { email });
+    }
+
     // Mark token or authorization as used
     if (token) {
       await supabaseAdmin
