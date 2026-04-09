@@ -22,23 +22,25 @@ export const RecoveryEmail = ({
   siteName,
   confirmationUrl,
 }: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="de" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Passwort zurücksetzen – Team Tarek</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
+        <Text style={brand}>TEAM TAREK</Text>
+        <Heading style={h1}>Passwort zurücksetzen</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          Du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.
+          Klicke auf den Button, um ein neues Passwort zu wählen.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset Password
+          Neues Passwort wählen
         </Button>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          Falls du das nicht angefordert hast, kannst du diese E-Mail ignorieren.
+          Dein Passwort bleibt unverändert.
         </Text>
+        <Text style={footerBrand}>Team Tarek</Text>
       </Container>
     </Body>
   </Html>
@@ -46,26 +48,35 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Montserrat', Arial, sans-serif" }
+const container = { padding: '32px 28px' }
+const brand = {
+  fontSize: '13px',
+  fontWeight: '700' as const,
+  color: '#c8872b',
+  letterSpacing: '2px',
+  margin: '0 0 24px',
+}
 const h1 = {
-  fontSize: '22px',
+  fontSize: '24px',
   fontWeight: 'bold' as const,
-  color: '#000000',
+  color: '#1a1a1a',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  fontSize: '15px',
+  color: '#555555',
+  lineHeight: '1.6',
+  margin: '0 0 28px',
 }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#c8872b',
   color: '#ffffff',
-  fontSize: '14px',
+  fontSize: '15px',
+  fontWeight: '600' as const,
   borderRadius: '8px',
-  padding: '12px 20px',
+  padding: '14px 24px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0' }
+const footerBrand = { fontSize: '12px', color: '#c8872b', fontWeight: '600' as const, margin: '8px 0 0' }
