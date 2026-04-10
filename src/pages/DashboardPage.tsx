@@ -239,37 +239,54 @@ const DashboardPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            {CHALLENGE_SECTIONS.map((section) => {
-              const sectionChallenges = userChallenges.filter(
-                (ch) => ch.challenge_category === section.key
-              );
-              if (sectionChallenges.length === 0) return null;
+          <div className="space-y-2">
+            {/* Deduplicate by challenge_slug, keep latest */}
+            {(() => {
+              const seen = new Set<string>();
+              const unique = userChallenges.filter((ch) => {
+                if (seen.has(ch.challenge_slug)) return false;
+                seen.add(ch.challenge_slug);
+                return true;
+              });
+              const displayed = unique.slice(0, 3);
               return (
-                <div key={section.key}>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
-                    {section.label}
-                  </p>
-                  <div className="space-y-2">
-                    {sectionChallenges.map((ch) => (
-                      <Link
-                        key={ch.id}
-                        to={`/challenge/${ch.challenge_slug}`}
-                        className="flex items-center justify-between bg-card border border-border p-4 hover:border-primary/30 transition-colors"
-                      >
-                        <div>
-                          <p className="font-medium">{ch.challenge_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {ch.is_verified ? "✓ Verifiziert" : "Ausstehend"}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                <>
+                  {displayed.map((ch) => (
+                    <Link
+                      key={ch.id}
+                      to={`/challenge/${ch.challenge_slug}`}
+                      className="flex items-center justify-between bg-card border border-border p-4 rounded-lg hover:border-primary/30 transition-colors"
+                    >
+                      <div>
+                        <p className="font-medium">{ch.challenge_name}</p>
+                        <p className={`text-xs flex items-center gap-1 ${ch.is_verified ? "text-green-500" : "text-muted-foreground"}`}>
+                          {ch.is_verified ? (
+                            <>
+                              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                              Verifiziert
+                            </>
+                          ) : (
+                            <>
+                              <span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
+                              Ausstehend
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    </Link>
+                  ))}
+                  {unique.length > 3 && (
+                    <Link
+                      to="/challenges"
+                      className="block text-center text-sm text-primary hover:underline py-3 bg-card border border-border rounded-lg"
+                    >
+                      Alle Challenges anzeigen →
+                    </Link>
+                  )}
+                </>
               );
-            })}
+            })()}
           </div>
         )}
       </section>
