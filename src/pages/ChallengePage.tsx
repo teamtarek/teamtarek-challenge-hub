@@ -254,8 +254,8 @@ const ChallengePage = () => {
 
   const now = new Date();
   const start = new Date(challenge.start_date);
-  const end = challenge.end_date ? new Date(challenge.end_date) : start;
-  const isActive = now >= start && now <= end;
+  const end = challenge.end_date ? new Date(challenge.end_date) : null;
+  const isActive = now >= start && (end === null || now <= end);
   const isUpcoming = now < start;
   const heroImage = getChallengeHeroImage(challenge.slug);
   const backgroundPosition = getChallengeBackgroundPosition(challenge.slug);
