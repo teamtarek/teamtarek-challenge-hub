@@ -71,18 +71,19 @@ export const ResultEntryForm = ({
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
   const is1234Strength = challengeSlug === "1234-strength-challenge";
+  const isTheSoldier = challengeSlug === "the-soldier";
   const isAnySnatchTest = isSnatchTest; // Only 5-min snatch test uses reps now
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest || isTheSoldier;
   // Classic Complex uses rounds + weight only (no time)
 
   // Initialize from existing result
   const getInitialTime = (): string => {
     if (isMurphChallenge) return secondsToTimeString(existingResult.score);
     if (isSimpleSinister) return secondsToTimeString(existingResult.total_time_seconds);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest || isTheSoldier) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
@@ -104,7 +105,7 @@ export const ResultEntryForm = ({
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (isSecretServiceSnatchTest) return (existingResult.total_time_seconds ?? 0) > 0;
     if (is1234Complex || isClassicComplex) return (existingResult.total_reps ?? 0) > 0;
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant) return (existingResult.total_time_seconds ?? 0) > 0;
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant || isTheSoldier) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isRiteOfPassage) return (existingResult.score ?? 0) > 0 || (existingResult.total_reps ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
