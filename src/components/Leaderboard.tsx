@@ -504,6 +504,36 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           )}
         </div>
       );
+    } else if (isTheSoldier) {
+      const soldierLevel = getSoldierLevel(
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
+      const isPassed = registration.total_time_seconds && registration.total_time_seconds < 1500;
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {isPassed && (
+            <span className="text-xs font-semibold text-green-500">PASS ✓</span>
+          )}
+          {soldierLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${soldierLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {soldierLevel.label}
+            </span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
+        </div>
+      );
     } else if (is1234Complex) {
       const complexLevel = getComplexLevel(
         registration.total_reps || 0,
