@@ -112,9 +112,9 @@ export const ChallengeCard = ({
 }: ChallengeCardProps) => {
   const now = new Date();
   const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : start;
+  const end = endDate ? new Date(endDate) : null;
   
-  const isActive = now >= start && now <= end;
+  const isActive = now >= start && (end === null || now <= end);
   const isUpcoming = now < start;
 
   const heroImage = challengeImages[slug];
