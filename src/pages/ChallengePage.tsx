@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
+import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS, SOLDIER_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
 
 // Import challenge hero images
 import springChallenge from "@/assets/challenges/spring-challenge.jpg";
@@ -394,7 +394,7 @@ const ChallengePage = () => {
               </div>
             )}
 
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant" || challenge.slug === "the-classic-complex" || challenge.slug === "secret-service-snatch-test") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant" || challenge.slug === "the-classic-complex" || challenge.slug === "secret-service-snatch-test" || challenge.slug === "the-soldier") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
@@ -411,9 +411,11 @@ const ChallengePage = () => {
                             ? QUADRANT_LEVEL_DESCRIPTIONS
                             : challenge.slug === "the-classic-complex"
                               ? CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS
-                              : challenge.slug === "secret-service-snatch-test"
+                               : challenge.slug === "secret-service-snatch-test"
                                 ? SSST_LEVEL_DESCRIPTIONS
-                                : MILE_LEVEL_DESCRIPTIONS;
+                                : challenge.slug === "the-soldier"
+                                  ? SOLDIER_LEVEL_DESCRIPTIONS
+                                  : MILE_LEVEL_DESCRIPTIONS;
               const isComplex = challenge.slug === "1234-complex";
               const isBetty = challenge.slug === "meet-betty";
               const isRoP = challenge.slug === "rite-of-passage";
@@ -421,6 +423,7 @@ const ChallengePage = () => {
               const isQuadrant = challenge.slug === "the-quadrant";
               const isClassicComplex = challenge.slug === "the-classic-complex";
               const isSSST = challenge.slug === "secret-service-snatch-test";
+              const isSoldier = challenge.slug === "the-soldier";
               return (
                 <div className="challenge-card">
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -428,7 +431,9 @@ const ChallengePage = () => {
                     Level-Stufen
                   </h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {isSSST
+                    {isSoldier
+                      ? "Dein Level richtet sich nach dem verwendeten Gewicht. Timecap: 25 Minuten."
+                      : isSSST
                       ? "Dein Level wird automatisch aus Gesamtzeit und verwendetem Gewicht berechnet. Nur Zeiten unter 10 Minuten zählen als PASS. Level 4 = Snatch Master Badge!"
                       : isBetty
                       ? "Wähle dein Level basierend auf Übungsvarianten und Gewicht. 5 Runden auf Zeit – Zielzeit: 10 Minuten."
