@@ -172,6 +172,11 @@ export const ResultEntryForm = ({
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (isTheSoldier) {
+      const seconds = timeStringToSeconds(timeValue);
+      if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
+      updateData.total_time_seconds = seconds;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isEnduranceRun || isSpringChallenge) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
