@@ -352,6 +352,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (is10RoundsOfPain && r.total_time_seconds && r.total_time_seconds >= 1800) return false;
     // SSST: only show entries under 10 minutes (600 seconds)
     if (isSecretServiceSnatchTest && r.total_time_seconds && r.total_time_seconds >= 600) return false;
+    // The Soldier: only show entries under 25 minutes (1500 seconds)
+    if (isTheSoldier && r.total_time_seconds && r.total_time_seconds >= 1500) return false;
     return true;
   });
 
