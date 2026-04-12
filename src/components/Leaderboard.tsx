@@ -249,7 +249,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         const timeB = b.total_time_seconds || Infinity;
         return timeA - timeB;
       });
-    } else if (is10RoundsOfPain || isTheQuadrant) {
+    } else if (is10RoundsOfPain || isTheQuadrant || isTheSoldier) {
       // Primary: fastest time, Secondary: heavier weight is better
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
@@ -315,7 +315,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isSecretServiceSnatchTest) return reg.total_time_seconds && reg.total_time_seconds > 0;
-    if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return reg.total_time_seconds && reg.total_time_seconds > 0;
+    if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isTheSoldier) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex || isClassicComplex) return reg.total_reps && reg.total_reps > 0;
     if (isRiteOfPassage) return (reg.total_reps && reg.total_reps > 0) || (reg.score && reg.score > 0);
     if (isSimpleSinister) return reg.score && reg.score > 0;
