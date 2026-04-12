@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
-import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName, getSsstLevel } from "@/lib/mileLevels";
+import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName, getSsstLevel, getSoldierLevel } from "@/lib/mileLevels";
 import {
   Select,
   SelectContent,
@@ -89,8 +89,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
   const is1234Strength = challengeSlug === "1234-strength-challenge";
+  const isTheSoldier = challengeSlug === "the-soldier";
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
-  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isSecretServiceSnatchTest;
+  const isTimeSortedChallenge = isEnduranceRun || isMeetBetty || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isSecretServiceSnatchTest || isTheSoldier;
 
   useEffect(() => {
     const fetchRegistrations = async () => {
@@ -248,7 +249,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
         const timeB = b.total_time_seconds || Infinity;
         return timeA - timeB;
       });
-    } else if (is10RoundsOfPain || isTheQuadrant) {
+    } else if (is10RoundsOfPain || isTheQuadrant || isTheSoldier) {
       // Primary: fastest time, Secondary: heavier weight is better
       return [...regs].sort((a, b) => {
         const timeA = a.total_time_seconds || Infinity;
@@ -314,7 +315,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (isKettlebellSwing) return reg.total_reps && reg.total_reps > 0;
     if (isSnatchTest) return reg.total_reps && reg.total_reps > 0;
     if (isSecretServiceSnatchTest) return reg.total_time_seconds && reg.total_time_seconds > 0;
-    if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant) return reg.total_time_seconds && reg.total_time_seconds > 0;
+    if (isEnduranceRun || isSpringChallenge || is10RoundsOfPain || isTheQuadrant || isTheSoldier) return reg.total_time_seconds && reg.total_time_seconds > 0;
     if (is1234Complex || isClassicComplex) return reg.total_reps && reg.total_reps > 0;
     if (isRiteOfPassage) return (reg.total_reps && reg.total_reps > 0) || (reg.score && reg.score > 0);
     if (isSimpleSinister) return reg.score && reg.score > 0;
@@ -351,6 +352,8 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
     if (is10RoundsOfPain && r.total_time_seconds && r.total_time_seconds >= 1800) return false;
     // SSST: only show entries under 10 minutes (600 seconds)
     if (isSecretServiceSnatchTest && r.total_time_seconds && r.total_time_seconds >= 600) return false;
+    // The Soldier: only show entries under 25 minutes (1500 seconds)
+    if (isTheSoldier && r.total_time_seconds && r.total_time_seconds >= 1500) return false;
     return true;
   });
 
@@ -491,6 +494,36 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${quadrantLevel.className}`}>
               <Zap className="w-3 h-3" />
               {quadrantLevel.label}
+            </span>
+          )}
+          {registration.kettlebell_weight_kg && (
+            <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+              <Dumbbell className="w-3 h-3" />
+              {registration.kettlebell_weight_kg} kg
+            </div>
+          )}
+        </div>
+      );
+    } else if (isTheSoldier) {
+      const soldierLevel = getSoldierLevel(
+        registration.kettlebell_weight_kg || 0,
+        registration.gender
+      );
+      const isPassed = registration.total_time_seconds && registration.total_time_seconds < 1500;
+      return (
+        <div className="text-right">
+          <div className="font-mono">
+            <span className="text-primary font-semibold text-lg">
+              {formatTime(registration.total_time_seconds)}
+            </span>
+          </div>
+          {isPassed && (
+            <span className="text-xs font-semibold text-green-500">PASS ✓</span>
+          )}
+          {soldierLevel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${soldierLevel.className}`}>
+              <Zap className="w-3 h-3" />
+              {soldierLevel.label}
             </span>
           )}
           {registration.kettlebell_weight_kg && (

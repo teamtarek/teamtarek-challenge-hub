@@ -24,6 +24,7 @@ import complexImg from "@/assets/challenges/1234-complex.jpg";
 import theQuadrantImg from "@/assets/challenges/the-quadrant.jpg";
 import theClassicComplexImg from "@/assets/challenges/the-classic-complex.jpg";
 import strengthChallengeImg from "@/assets/challenges/1234-strength-challenge.jpg";
+import theSoldierImg from "@/assets/challenges/the-soldier.jpg";
 
 const challengeImages: Record<string, string> = {
   "spring-challenge-2026": springImg,
@@ -50,6 +51,7 @@ const challengeImages: Record<string, string> = {
   "the-quadrant": theQuadrantImg,
   "the-classic-complex": theClassicComplexImg,
   "1234-strength-challenge": strengthChallengeImg,
+  "the-soldier": theSoldierImg,
 };
 
 // Custom object positions for specific challenges

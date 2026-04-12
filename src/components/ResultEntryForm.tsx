@@ -71,18 +71,19 @@ export const ResultEntryForm = ({
   const isTheQuadrant = challengeSlug === "the-quadrant";
   const isClassicComplex = challengeSlug === "the-classic-complex";
   const is1234Strength = challengeSlug === "1234-strength-challenge";
+  const isTheSoldier = challengeSlug === "the-soldier";
   const isAnySnatchTest = isSnatchTest; // Only 5-min snatch test uses reps now
   const isKettlebellChallenge = isSnatchTest || isSimpleSinister || isRiteOfPassage || isMeetBetty;
 
   // Determine if this is a time-based challenge
-  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest;
+  const isTimeChallenge = isMurphChallenge || isEnduranceRun || isSpringChallenge || isMeetBetty || isSimpleSinister || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest || isTheSoldier;
   // Classic Complex uses rounds + weight only (no time)
 
   // Initialize from existing result
   const getInitialTime = (): string => {
     if (isMurphChallenge) return secondsToTimeString(existingResult.score);
     if (isSimpleSinister) return secondsToTimeString(existingResult.total_time_seconds);
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest) return secondsToTimeString(existingResult.total_time_seconds);
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || isRiteOfPassage || is10RoundsOfPain || is1234Complex || isTheQuadrant || isSecretServiceSnatchTest || isTheSoldier) return secondsToTimeString(existingResult.total_time_seconds);
     return "";
   };
 
@@ -104,7 +105,7 @@ export const ResultEntryForm = ({
     if (isAnySnatchTest) return (existingResult.total_reps ?? 0) > 0;
     if (isSecretServiceSnatchTest) return (existingResult.total_time_seconds ?? 0) > 0;
     if (is1234Complex || isClassicComplex) return (existingResult.total_reps ?? 0) > 0;
-    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant) return (existingResult.total_time_seconds ?? 0) > 0;
+    if (isEnduranceRun || isSpringChallenge || isMeetBetty || is10RoundsOfPain || isTheQuadrant || isTheSoldier) return (existingResult.total_time_seconds ?? 0) > 0;
     if (isRiteOfPassage) return (existingResult.score ?? 0) > 0 || (existingResult.total_reps ?? 0) > 0;
     if (isSimpleSinister) return (existingResult.score ?? 0) > 0;
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
@@ -167,6 +168,11 @@ export const ResultEntryForm = ({
       updateData.total_reps = roundsNum;
       if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
     } else if (isTheQuadrant) {
+      const seconds = timeStringToSeconds(timeValue);
+      if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
+      updateData.total_time_seconds = seconds;
+      if (kettlebellWeight) updateData.kettlebell_weight_kg = parseInt(kettlebellWeight);
+    } else if (isTheSoldier) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
       updateData.total_time_seconds = seconds;
@@ -261,6 +267,40 @@ export const ResultEntryForm = ({
               onChange={(e) => setTimeValue(e.target.value)}
               className="input-minimal"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="weight" className="flex items-center gap-1">
+              <Dumbbell className="w-3 h-3" />
+              Verwendetes Gewicht (kg)
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Frauen: 16, Männer: 24"
+              value={kettlebellWeight}
+              onChange={(e) => setKettlebellWeight(e.target.value)}
+              className="input-minimal"
+              min={4}
+              max={92}
+            />
+          </div>
+        </>
+      )}
+
+      {/* The Soldier: time + weight */}
+      {isTheSoldier && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="time">Gesamtzeit (MM:SS)</Label>
+            <Input
+              id="time"
+              type="text"
+              placeholder="z.B. 22:30"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="input-minimal"
+            />
+            <p className="text-xs text-muted-foreground">Timecap: 25 Minuten. Zeiten darüber gelten als Fail.</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="weight" className="flex items-center gap-1">

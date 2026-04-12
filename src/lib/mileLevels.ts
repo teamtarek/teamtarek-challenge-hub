@@ -269,4 +269,32 @@ export const getComplexLevel = (rounds: number, timeSeconds: number, weightKg: n
   return null;
 };
 
+export const SOLDIER_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "20 kg", female: "12 kg" },
+  { level: 2, male: "24 kg", female: "16 kg" },
+  { level: 3, male: "28 kg", female: "20 kg" },
+  { level: 4, male: "32 kg", female: "24 kg" },
+];
+
+// Calculate The Soldier level from weight and gender
+export const getSoldierLevel = (weightKg: number, gender: string | null): MileLevel | null => {
+  if (!weightKg || weightKg <= 0) return null;
+  const isFemale = gender === "female";
+
+  if (weightKg >= (isFemale ? 24 : 32)) {
+    return { level: 4, label: "Level 4", className: getLevelClassName(4) };
+  }
+  if (weightKg >= (isFemale ? 20 : 28)) {
+    return { level: 3, label: "Level 3", className: getLevelClassName(3) };
+  }
+  if (weightKg >= (isFemale ? 16 : 24)) {
+    return { level: 2, label: "Level 2", className: getLevelClassName(2) };
+  }
+  if (weightKg >= (isFemale ? 12 : 20)) {
+    return { level: 1, label: "Level 1", className: getLevelClassName(1) };
+  }
+
+  return null;
+};
+
 
