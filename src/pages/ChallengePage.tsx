@@ -36,6 +36,7 @@ import complex1234 from "@/assets/challenges/1234-complex.jpg";
 import theQuadrant from "@/assets/challenges/the-quadrant.jpg";
 import theClassicComplex from "@/assets/challenges/the-classic-complex.jpg";
 import strengthChallenge from "@/assets/challenges/1234-strength-challenge.jpg";
+import theSoldier from "@/assets/challenges/the-soldier.jpg";
 import heroBg from "@/assets/hero-bg.jpg";
 
 interface Challenge {
@@ -71,6 +72,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "the-quadrant": theQuadrant,
     "the-classic-complex": theClassicComplex,
     "1234-strength-challenge": strengthChallenge,
+    "the-soldier": theSoldier,
   };
   return imageMap[slug] || heroBg;
 };
