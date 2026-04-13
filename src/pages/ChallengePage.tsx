@@ -118,6 +118,7 @@ const formatDateRange = (start: string, end: string | null) => {
 const ChallengePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
+  useBenchmarkDeadlineCheck();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
