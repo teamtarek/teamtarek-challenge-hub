@@ -41,6 +41,41 @@ export type Database = {
         }
         Relationships: []
       }
+      benchmark_cooldowns: {
+        Row: {
+          blocked_until: string
+          challenge_id: string
+          created_at: string | null
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked_until: string
+          challenge_id: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked_until?: string
+          challenge_id?: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benchmark_cooldowns_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           category: string
@@ -48,6 +83,15 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
+          is_benchmark: boolean | null
+          level_1_criteria: string | null
+          level_1_label: string | null
+          level_2_criteria: string | null
+          level_2_label: string | null
+          level_3_criteria: string | null
+          level_3_label: string | null
+          level_4_criteria: string | null
+          level_4_label: string | null
           name: string
           slug: string
           start_date: string
@@ -58,6 +102,15 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          is_benchmark?: boolean | null
+          level_1_criteria?: string | null
+          level_1_label?: string | null
+          level_2_criteria?: string | null
+          level_2_label?: string | null
+          level_3_criteria?: string | null
+          level_3_label?: string | null
+          level_4_criteria?: string | null
+          level_4_label?: string | null
           name: string
           slug: string
           start_date: string
@@ -68,6 +121,15 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          is_benchmark?: boolean | null
+          level_1_criteria?: string | null
+          level_1_label?: string | null
+          level_2_criteria?: string | null
+          level_2_label?: string | null
+          level_3_criteria?: string | null
+          level_3_label?: string | null
+          level_4_criteria?: string | null
+          level_4_label?: string | null
           name?: string
           slug?: string
           start_date?: string
@@ -456,12 +518,16 @@ export type Database = {
           challenge_id: string
           completion_date: string | null
           created_at: string
+          deadline_at: string | null
           email: string | null
           id: string
           is_verified: boolean | null
           kettlebell_weight_kg: number | null
+          level_achieved: number | null
           murph_version: string | null
           participant_name: string
+          registered_at: string | null
+          registration_status: string | null
           score: number | null
           total_reps: number | null
           total_time_seconds: number | null
@@ -474,12 +540,16 @@ export type Database = {
           challenge_id: string
           completion_date?: string | null
           created_at?: string
+          deadline_at?: string | null
           email?: string | null
           id?: string
           is_verified?: boolean | null
           kettlebell_weight_kg?: number | null
+          level_achieved?: number | null
           murph_version?: string | null
           participant_name: string
+          registered_at?: string | null
+          registration_status?: string | null
           score?: number | null
           total_reps?: number | null
           total_time_seconds?: number | null
@@ -492,12 +562,16 @@ export type Database = {
           challenge_id?: string
           completion_date?: string | null
           created_at?: string
+          deadline_at?: string | null
           email?: string | null
           id?: string
           is_verified?: boolean | null
           kettlebell_weight_kg?: number | null
+          level_achieved?: number | null
           murph_version?: string | null
           participant_name?: string
+          registered_at?: string | null
+          registration_status?: string | null
           score?: number | null
           total_reps?: number | null
           total_time_seconds?: number | null
