@@ -588,7 +588,7 @@ const ChallengePage = () => {
             })()}
 
             {/* Registration */}
-            {!isRegistered ? (
+            {!isRegistered && !(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date()) ? (
               <div className="challenge-card">
                 <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
                 {!user && (
