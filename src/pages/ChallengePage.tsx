@@ -11,7 +11,7 @@ import { useBenchmarkDeadlineCheck } from "@/hooks/useBenchmarkDeadlineCheck";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2, Clock, AlertTriangle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS, SOLDIER_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
