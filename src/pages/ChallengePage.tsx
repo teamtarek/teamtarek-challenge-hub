@@ -122,6 +122,7 @@ const ChallengePage = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
+  const [userGender, setUserGender] = useState<string | null>(null);
   const [existingResult, setExistingResult] = useState<{
     score: number | null;
     total_time_seconds: number | null;
@@ -146,6 +147,14 @@ const ChallengePage = () => {
         
         // Check if already registered (for logged-in user or localStorage)
         if (user) {
+          // Fetch user gender from profile
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("gender")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (profileData) setUserGender(profileData.gender);
+
           const { data: regData } = await supabase
             .from("registrations")
             .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
@@ -510,6 +519,7 @@ const ChallengePage = () => {
                       challengeName={challenge.name}
                       existingResult={existingResult}
                       isVerified={isVerified}
+                      gender={userGender}
                       onSuccess={handleResultSuccess}
                     />
                   </div>
