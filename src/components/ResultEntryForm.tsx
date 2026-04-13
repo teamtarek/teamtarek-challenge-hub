@@ -44,6 +44,7 @@ interface ResultEntryFormProps {
   challengeName: string;
   existingResult: ExistingResult;
   isVerified: boolean;
+  gender?: string | null;
   onSuccess: () => void;
 }
 
@@ -53,6 +54,7 @@ export const ResultEntryForm = ({
   challengeName,
   existingResult,
   isVerified,
+  gender = null,
   onSuccess,
 }: ResultEntryFormProps) => {
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
