@@ -353,6 +353,58 @@ const ChallengePage = () => {
         </div>
       </section>
 
+      {/* Benchmark Warning Banners */}
+      {benchmarkStatus.isBenchmark && (() => {
+        const now = new Date();
+        const formatDate = (d: string) => new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
+
+        // Active cooldown (blocked)
+        if (benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > now) {
+          if (benchmarkStatus.registrationStatus === "fail") {
+            return (
+              <div className="container pt-6">
+                <Alert className="border-destructive/50 bg-destructive/10 max-w-2xl">
+                  <XCircle className="h-5 w-5 text-destructive" />
+                  <AlertDescription className="text-destructive font-medium ml-2">
+                    Frist abgelaufen – kein Ergebnis eingereicht. Nächster Versuch ab {formatDate(benchmarkStatus.blockedUntil)}.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            );
+          }
+          return (
+            <div className="container pt-6">
+              <Alert className="border-destructive/50 bg-destructive/10 max-w-2xl">
+                <Lock className="h-5 w-5 text-destructive" />
+                <AlertDescription className="text-destructive font-medium ml-2">
+                  Du kannst diese Challenge erst wieder am {formatDate(benchmarkStatus.blockedUntil)} absolvieren.
+                </AlertDescription>
+              </Alert>
+            </div>
+          );
+        }
+
+        // Registered with deadline in the future
+        if (benchmarkStatus.registrationStatus === "registered" && benchmarkStatus.deadlineAt) {
+          const deadlineDate = new Date(benchmarkStatus.deadlineAt);
+          if (deadlineDate > now) {
+            const daysLeft = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return (
+              <div className="container pt-6">
+                <Alert className="border-amber-500/50 bg-amber-500/10 max-w-2xl">
+                  <Clock className="h-5 w-5 text-amber-500" />
+                  <AlertDescription className="text-amber-600 dark:text-amber-400 font-medium ml-2">
+                    Du hast noch {daysLeft} {daysLeft === 1 ? "Tag" : "Tage"} um dein Ergebnis einzureichen.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            );
+          }
+        }
+
+        return null;
+      })()}
+
       {/* Content */}
       <div className="container py-12">
         {/* Tabs */}
