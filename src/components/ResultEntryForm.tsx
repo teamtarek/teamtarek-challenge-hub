@@ -12,6 +12,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, Clock, Dumbbell, Hash } from "lucide-react";
+import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getSsstLevel, getSoldierLevel } from "@/lib/mileLevels";
 
 const timeStringToSeconds = (timeStr: string): number => {
   if (!timeStr.trim()) return 0;
@@ -118,6 +119,7 @@ export const ResultEntryForm = ({
 
     const updateData: Record<string, unknown> = {
       is_verified: false, // Reset verification when result changes
+      registration_status: 'completed',
     };
 
     if (isMurphChallenge) {
@@ -211,9 +213,15 @@ export const ResultEntryForm = ({
       updateData.score = seconds;
     }
 
+    // Calculate level_achieved based on challenge type
+    const calculatedLevel = calculateLevelAchieved(updateData);
+    if (calculatedLevel) {
+      updateData.level_achieved = calculatedLevel;
+    }
+
     const { error } = await supabase
       .from("registrations")
-      .update(updateData)
+      .update(updateData as any)
       .eq("id", registrationId);
 
     setLoading(false);
