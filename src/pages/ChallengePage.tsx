@@ -166,7 +166,7 @@ const ChallengePage = () => {
 
           const { data: regData } = await supabase
             .from("registrations")
-            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
+            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
             .maybeSingle();
@@ -182,6 +182,40 @@ const ChallengePage = () => {
               kettlebell_weight_kg: regData.kettlebell_weight_kg,
             });
             setActiveTab("leaderboard");
+
+            // Fetch cooldown if benchmark
+            if (data.is_benchmark) {
+              const { data: cooldownData } = await supabase
+                .from("benchmark_cooldowns")
+                .select("blocked_until")
+                .eq("user_id", user.id)
+                .eq("challenge_id", data.id)
+                .maybeSingle();
+
+              setBenchmarkStatus({
+                isBenchmark: true,
+                registrationStatus: regData.registration_status,
+                deadlineAt: regData.deadline_at,
+                blockedUntil: cooldownData?.blocked_until ?? null,
+              });
+            }
+          } else if (data.is_benchmark) {
+            // Not registered but check for active cooldown
+            const { data: cooldownData } = await supabase
+              .from("benchmark_cooldowns")
+              .select("blocked_until")
+              .eq("user_id", user.id)
+              .eq("challenge_id", data.id)
+              .maybeSingle();
+
+            if (cooldownData && new Date(cooldownData.blocked_until) > new Date()) {
+              setBenchmarkStatus({
+                isBenchmark: true,
+                registrationStatus: null,
+                deadlineAt: null,
+                blockedUntil: cooldownData.blocked_until,
+              });
+            }
           }
         } else {
           const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
