@@ -3,8 +3,26 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberBadge } from "@/components/MemberBadge";
-import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap } from "lucide-react";
+import { Trophy, Medal, Award, CheckCircle, Video, User, Dumbbell, Calendar, Zap, Shield } from "lucide-react";
 import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getLevelClassName, getSsstLevel, getSoldierLevel } from "@/lib/mileLevels";
+
+const getLevelBadge = (level: number | null) => {
+  if (!level) return null;
+  const config: Record<number, { label: string; className: string }> = {
+    1: { label: "Level 1", className: "bg-amber-700/20 text-amber-600 border-amber-700/30" },
+    2: { label: "Level 2", className: "bg-gray-400/20 text-gray-300 border-gray-400/30" },
+    3: { label: "Level 3", className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+    4: { label: "Level 4", className: "bg-primary/20 text-primary border-primary/30" },
+  };
+  const c = config[level];
+  if (!c) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${c.className}`}>
+      <Shield className="w-3 h-3" />
+      {c.label}
+    </span>
+  );
+};
 import {
   Select,
   SelectContent,
@@ -798,6 +816,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  {getLevelBadge(registration.level_achieved)}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   {isKettlebellChallenge && registration.kettlebell_weight_kg && !isSnatchTest && (
@@ -884,6 +903,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  {getLevelBadge(registration.level_achieved)}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   {isKettlebellChallenge && registration.kettlebell_weight_kg && (
