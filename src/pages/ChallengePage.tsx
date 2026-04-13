@@ -9,8 +9,9 @@ import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
 import { useBenchmarkDeadlineCheck } from "@/hooks/useBenchmarkDeadlineCheck";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2, Clock, AlertTriangle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS, SOLDIER_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
@@ -133,6 +134,12 @@ const ChallengePage = () => {
   }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null });
   const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [benchmarkStatus, setBenchmarkStatus] = useState<{
+    isBenchmark: boolean;
+    registrationStatus: string | null;
+    deadlineAt: string | null;
+    blockedUntil: string | null;
+  }>({ isBenchmark: false, registrationStatus: null, deadlineAt: null, blockedUntil: null });
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -159,7 +166,7 @@ const ChallengePage = () => {
 
           const { data: regData } = await supabase
             .from("registrations")
-            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
+            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
             .maybeSingle();
@@ -175,6 +182,40 @@ const ChallengePage = () => {
               kettlebell_weight_kg: regData.kettlebell_weight_kg,
             });
             setActiveTab("leaderboard");
+
+            // Fetch cooldown if benchmark
+            if (data.is_benchmark) {
+              const { data: cooldownData } = await supabase
+                .from("benchmark_cooldowns")
+                .select("blocked_until")
+                .eq("user_id", user.id)
+                .eq("challenge_id", data.id)
+                .maybeSingle();
+
+              setBenchmarkStatus({
+                isBenchmark: true,
+                registrationStatus: regData.registration_status,
+                deadlineAt: regData.deadline_at,
+                blockedUntil: cooldownData?.blocked_until ?? null,
+              });
+            }
+          } else if (data.is_benchmark) {
+            // Not registered but check for active cooldown
+            const { data: cooldownData } = await supabase
+              .from("benchmark_cooldowns")
+              .select("blocked_until")
+              .eq("user_id", user.id)
+              .eq("challenge_id", data.id)
+              .maybeSingle();
+
+            if (cooldownData && new Date(cooldownData.blocked_until) > new Date()) {
+              setBenchmarkStatus({
+                isBenchmark: true,
+                registrationStatus: null,
+                deadlineAt: null,
+                blockedUntil: cooldownData.blocked_until,
+              });
+            }
           }
         } else {
           const registeredChallenges = JSON.parse(localStorage.getItem("registeredChallenges") || "{}");
@@ -311,6 +352,58 @@ const ChallengePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Benchmark Warning Banners */}
+      {benchmarkStatus.isBenchmark && (() => {
+        const now = new Date();
+        const formatDate = (d: string) => new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
+
+        // Active cooldown (blocked)
+        if (benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > now) {
+          if (benchmarkStatus.registrationStatus === "fail") {
+            return (
+              <div className="container pt-6">
+                <Alert className="border-destructive/50 bg-destructive/10 max-w-2xl">
+                  <XCircle className="h-5 w-5 text-destructive" />
+                  <AlertDescription className="text-destructive font-medium ml-2">
+                    Frist abgelaufen – kein Ergebnis eingereicht. Nächster Versuch ab {formatDate(benchmarkStatus.blockedUntil)}.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            );
+          }
+          return (
+            <div className="container pt-6">
+              <Alert className="border-destructive/50 bg-destructive/10 max-w-2xl">
+                <Lock className="h-5 w-5 text-destructive" />
+                <AlertDescription className="text-destructive font-medium ml-2">
+                  Du kannst diese Challenge erst wieder am {formatDate(benchmarkStatus.blockedUntil)} absolvieren.
+                </AlertDescription>
+              </Alert>
+            </div>
+          );
+        }
+
+        // Registered with deadline in the future
+        if (benchmarkStatus.registrationStatus === "registered" && benchmarkStatus.deadlineAt) {
+          const deadlineDate = new Date(benchmarkStatus.deadlineAt);
+          if (deadlineDate > now) {
+            const daysLeft = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return (
+              <div className="container pt-6">
+                <Alert className="border-amber-500/50 bg-amber-500/10 max-w-2xl">
+                  <Clock className="h-5 w-5 text-amber-500" />
+                  <AlertDescription className="text-amber-600 dark:text-amber-400 font-medium ml-2">
+                    Du hast noch {daysLeft} {daysLeft === 1 ? "Tag" : "Tage"} um dein Ergebnis einzureichen.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            );
+          }
+        }
+
+        return null;
+      })()}
 
       {/* Content */}
       <div className="container py-12">
