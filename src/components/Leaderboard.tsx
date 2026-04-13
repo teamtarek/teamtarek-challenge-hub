@@ -37,6 +37,8 @@ interface Registration {
   total_time_seconds: number | null;
   completion_date: string | null;
   total_reps: number | null;
+  level_achieved: number | null;
+  registration_status: string | null;
 }
 
 type MemberType = "webmaster" | "admin" | "member" | "prospect";
@@ -111,7 +113,9 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
           kettlebell_weight_kg,
           total_time_seconds,
           completion_date,
-          total_reps
+          total_reps,
+          level_achieved,
+          registration_status
         `)
         .eq("challenge_id", challengeId)
         .order("score", { ascending: true })

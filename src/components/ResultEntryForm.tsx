@@ -12,6 +12,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, Clock, Dumbbell, Hash } from "lucide-react";
+import { getMileLevel, getComplexLevel, getQuadrantLevel, getClassicComplexLevel, getSsstLevel, getSoldierLevel } from "@/lib/mileLevels";
 
 const timeStringToSeconds = (timeStr: string): number => {
   if (!timeStr.trim()) return 0;
@@ -43,6 +44,7 @@ interface ResultEntryFormProps {
   challengeName: string;
   existingResult: ExistingResult;
   isVerified: boolean;
+  gender?: string | null;
   onSuccess: () => void;
 }
 
@@ -52,6 +54,7 @@ export const ResultEntryForm = ({
   challengeName,
   existingResult,
   isVerified,
+  gender = null,
   onSuccess,
 }: ResultEntryFormProps) => {
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
@@ -111,6 +114,51 @@ export const ResultEntryForm = ({
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
     return (existingResult.score ?? 0) > 0;
   };
+  // Calculate level_achieved based on challenge-specific logic
+  const calculateLevelAchieved = (data: Record<string, unknown>): number | null => {
+    // Manually selected levels
+    if (isMeetBetty || isRiteOfPassage || isSimpleSinister) {
+      const level = data.score as number;
+      return (level >= 1 && level <= 4) ? level : null;
+    }
+    // Auto-calculated from weight + gender
+    if (isTheSoldier) {
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getSoldierLevel(weight, gender);
+      return result?.level ?? null;
+    }
+    if (isSecretServiceSnatchTest) {
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getSsstLevel(time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isEnduranceRun) {
+      const time = (data.total_time_seconds as number) || 0;
+      const result = getMileLevel(time, gender, challengeSlug);
+      return result?.level ?? null;
+    }
+    if (is1234Complex) {
+      const rounds = (data.total_reps as number) || 0;
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getComplexLevel(rounds, time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isTheQuadrant) {
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getQuadrantLevel(time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isClassicComplex) {
+      const rounds = (data.total_reps as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getClassicComplexLevel(rounds, weight, gender);
+      return result?.level ?? null;
+    }
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +166,7 @@ export const ResultEntryForm = ({
 
     const updateData: Record<string, unknown> = {
       is_verified: false, // Reset verification when result changes
+      registration_status: 'completed',
     };
 
     if (isMurphChallenge) {
@@ -211,9 +260,15 @@ export const ResultEntryForm = ({
       updateData.score = seconds;
     }
 
+    // Calculate level_achieved based on challenge type
+    const calculatedLevel = calculateLevelAchieved(updateData);
+    if (calculatedLevel) {
+      updateData.level_achieved = calculatedLevel;
+    }
+
     const { error } = await supabase
       .from("registrations")
-      .update(updateData)
+      .update(updateData as any)
       .eq("id", registrationId);
 
     setLoading(false);
