@@ -903,6 +903,7 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  {getLevelBadge(registration.level_achieved)}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   {isKettlebellChallenge && registration.kettlebell_weight_kg && (
