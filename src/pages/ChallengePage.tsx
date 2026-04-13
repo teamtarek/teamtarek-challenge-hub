@@ -7,6 +7,7 @@ import { ResultEntryForm } from "@/components/ResultEntryForm";
 import { VideoEmbed, isValidVideoUrl } from "@/components/VideoEmbed";
 import { Leaderboard } from "@/components/Leaderboard";
 // Header removed - using AppLayout
+import { useBenchmarkDeadlineCheck } from "@/hooks/useBenchmarkDeadlineCheck";
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2 } from "lucide-react";
@@ -117,6 +118,7 @@ const formatDateRange = (start: string, end: string | null) => {
 const ChallengePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
+  useBenchmarkDeadlineCheck();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);

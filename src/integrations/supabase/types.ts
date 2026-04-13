@@ -827,6 +827,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_benchmark_deadlines: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       deactivate_inactive_memberships: { Args: never; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }

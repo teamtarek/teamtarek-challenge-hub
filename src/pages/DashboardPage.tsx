@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock, Check, X, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { StarterJourneyPanel } from "@/components/StarterJourneyPanel";
+import { useBenchmarkDeadlineCheck } from "@/hooks/useBenchmarkDeadlineCheck";
 import { de } from "date-fns/locale";
 
 
@@ -57,6 +58,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 const DashboardPage = () => {
   const { user } = useAuth();
   const { memberType } = useUserRole();
+  useBenchmarkDeadlineCheck();
   const [threads, setThreads] = useState<RecentThread[]>([]);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
