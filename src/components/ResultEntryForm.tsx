@@ -114,8 +114,53 @@ export const ResultEntryForm = ({
     if (isMurphChallenge) return (existingResult.score ?? 0) > 0;
     return (existingResult.score ?? 0) > 0;
   };
+  // Calculate level_achieved based on challenge-specific logic
+  const calculateLevelAchieved = (data: Record<string, unknown>): number | null => {
+    // Manually selected levels
+    if (isMeetBetty || isRiteOfPassage || isSimpleSinister) {
+      const level = data.score as number;
+      return (level >= 1 && level <= 4) ? level : null;
+    }
+    // Auto-calculated from weight + gender
+    if (isTheSoldier) {
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getSoldierLevel(weight, gender);
+      return result?.level ?? null;
+    }
+    if (isSecretServiceSnatchTest) {
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getSsstLevel(time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isEnduranceRun) {
+      const time = (data.total_time_seconds as number) || 0;
+      const result = getMileLevel(time, gender, challengeSlug);
+      return result?.level ?? null;
+    }
+    if (is1234Complex) {
+      const rounds = (data.total_reps as number) || 0;
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getComplexLevel(rounds, time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isTheQuadrant) {
+      const time = (data.total_time_seconds as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getQuadrantLevel(time, weight, gender);
+      return result?.level ?? null;
+    }
+    if (isClassicComplex) {
+      const rounds = (data.total_reps as number) || 0;
+      const weight = (data.kettlebell_weight_kg as number) || 0;
+      const result = getClassicComplexLevel(rounds, weight, gender);
+      return result?.level ?? null;
+    }
+    return null;
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     setLoading(true);
 
