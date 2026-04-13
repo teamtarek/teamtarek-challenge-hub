@@ -120,12 +120,21 @@ const getPointsForRank = (rank: number, slug: string, entry: Registration): numb
   return POINTS_BY_RANK[rank] ?? PARTICIPATION_POINTS;
 };
 
+const getRankAccent = (rank: number) => {
+  switch (rank) {
+    case 1: return "border-yellow-500/60 bg-yellow-500/5";
+    case 2: return "border-gray-400/50 bg-gray-400/5";
+    case 3: return "border-amber-600/40 bg-amber-600/5";
+    default: return "border-border bg-card";
+  }
+};
+
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1: return <Trophy className="w-5 h-5 text-yellow-500" />;
     case 2: return <Medal className="w-5 h-5 text-gray-400" />;
     case 3: return <Award className="w-5 h-5 text-amber-600" />;
-    default: return <span className="w-5 h-5 text-center font-mono text-muted-foreground">{rank}</span>;
+    default: return null;
   }
 };
 
@@ -137,14 +146,12 @@ export const OverallLeaderboard = () => {
 
   useEffect(() => {
     const compute = async () => {
-      // 1) Fetch challenges
       const { data: challenges } = await supabase
         .from("challenges")
         .select("id, name, slug, category");
 
       if (!challenges || challenges.length === 0) { setLoading(false); return; }
 
-      // 2) Fetch all verified registrations
       const { data: registrations } = await supabase
         .from("registrations")
         .select("id, participant_name, user_id, challenge_id, score, total_time_seconds, total_reps, kettlebell_weight_kg, is_verified, murph_version")
@@ -152,7 +159,6 @@ export const OverallLeaderboard = () => {
 
       if (!registrations) { setLoading(false); return; }
 
-      // 3) Avatars
       const userIds = [...new Set(registrations.filter(r => r.user_id).map(r => r.user_id as string))];
       let avatarMap: Record<string, string | null> = {};
       if (userIds.length > 0) {
@@ -165,7 +171,6 @@ export const OverallLeaderboard = () => {
         }
       }
 
-      // 4) For each challenge, rank entries and assign points
       const pointsMap: Record<string, { participant_name: string; user_id: string | null; avatar_url: string | null; totalPoints: number; breakdown: { challengeName: string; rank: number; points: number }[] }> = {};
 
       for (const ch of challenges) {
@@ -173,11 +178,9 @@ export const OverallLeaderboard = () => {
           .filter(r => r.challenge_id === ch.id)
           .map(r => ({ ...r, score: r.score ?? 0 }));
 
-        // 10 Rounds of Pain: only count entries under 30 minutes
         if (ch.slug === "10-rounds-of-pain") {
           chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 1800);
         }
-        // SSST: only count entries under 10 minutes
         if (ch.slug === "secret-service-snatch-test") {
           chRegs = chRegs.filter(r => (r.total_time_seconds ?? 0) > 0 && (r.total_time_seconds ?? 0) < 600);
         }
@@ -205,7 +208,6 @@ export const OverallLeaderboard = () => {
         });
       }
 
-      // 5) Sort by total points desc
       const sorted = Object.entries(pointsMap)
         .map(([key, val]) => ({ participantKey: key, ...val, challengeBreakdown: val.breakdown }))
         .sort((a, b) => b.totalPoints - a.totalPoints);
@@ -216,7 +218,6 @@ export const OverallLeaderboard = () => {
 
     compute();
 
-    // Realtime: recompute when any registration changes
     const channel = supabase
       .channel("overall-leaderboard")
       .on("postgres_changes", { event: "*", schema: "public", table: "registrations" }, () => {
@@ -245,112 +246,58 @@ export const OverallLeaderboard = () => {
     );
   }
 
-  const renderAvatar = (entry: OverallEntry, size: string) => {
-    const sizeClass = size === "lg" ? "w-12 h-12" : size === "md" ? "w-10 h-10" : "w-8 h-8";
-    const textSize = size === "lg" ? "text-sm" : size === "md" ? "text-xs" : "text-[10px]";
-    if (entry.user_id) {
-      return (
-        <Link to={`/profil/${entry.user_id}`}>
-          <Avatar className={`${sizeClass} border border-border hover:ring-2 hover:ring-primary transition-all`}>
-            <AvatarImage src={entry.avatar_url || undefined} />
-            <AvatarFallback className={`bg-muted ${textSize}`}>{getInitials(entry.participant_name)}</AvatarFallback>
-          </Avatar>
-        </Link>
-      );
-    }
-    return (
-      <Avatar className={`${sizeClass} border border-border`}>
-        <AvatarFallback className={`bg-muted ${textSize}`}>{getInitials(entry.participant_name)}</AvatarFallback>
-      </Avatar>
-    );
-  };
-
-  const renderName = (entry: OverallEntry, className = "text-sm") => {
-    if (entry.user_id) {
-      return (
-        <Link to={`/profil/${entry.user_id}`} className={`${className} font-medium hover:text-primary transition-colors truncate block`}>
-          {entry.participant_name}
-        </Link>
-      );
-    }
-    return <span className={`${className} text-muted-foreground truncate block`}>{entry.participant_name}</span>;
-  };
-
-  const top3 = entries.slice(0, 3);
-  const rest = entries.slice(3);
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <p className="text-xs text-muted-foreground mb-4">
         Punkte: 1. Platz = 15 · 2. = 12 · 3. = 10 · 4. = 8 · 5. = 5 · weitere = 1 · Pass/Fail = 10
       </p>
 
-      {/* Podium for top 3 */}
-      {top3.length > 0 && (
-        <div className="flex items-end justify-center gap-3 mb-6 pt-4">
-          {/* 2nd place */}
-          {top3[1] && (
-            <div className="flex flex-col items-center w-1/3">
-              {renderAvatar(top3[1], "md")}
-              {renderName(top3[1], "text-xs")}
-              <div className="flex items-center gap-1 mt-1">
-                <Medal className="w-4 h-4 text-gray-400" />
-                <span className="text-xl font-bold font-mono text-primary">{top3[1].totalPoints}</span>
-              </div>
-              <div className="w-full h-16 bg-muted/50 border border-border rounded-t-lg mt-2 flex items-center justify-center">
-                <span className="text-2xl font-bold text-muted-foreground">2</span>
-              </div>
-            </div>
-          )}
-          {/* 1st place */}
-          {top3[0] && (
-            <div className="flex flex-col items-center w-1/3">
-              {renderAvatar(top3[0], "lg")}
-              {renderName(top3[0], "text-sm")}
-              <div className="flex items-center gap-1 mt-1">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <span className="text-2xl font-bold font-mono text-primary">{top3[0].totalPoints}</span>
-              </div>
-              <div className="w-full h-24 bg-primary/10 border border-primary/30 rounded-t-lg mt-2 flex items-center justify-center">
-                <span className="text-3xl font-bold text-primary">1</span>
-              </div>
-            </div>
-          )}
-          {/* 3rd place */}
-          {top3[2] && (
-            <div className="flex flex-col items-center w-1/3">
-              {renderAvatar(top3[2], "sm")}
-              {renderName(top3[2], "text-xs")}
-              <div className="flex items-center gap-1 mt-1">
-                <Award className="w-4 h-4 text-amber-600" />
-                <span className="text-lg font-bold font-mono text-primary">{top3[2].totalPoints}</span>
-              </div>
-              <div className="w-full h-12 bg-muted/30 border border-border rounded-t-lg mt-2 flex items-center justify-center">
-                <span className="text-xl font-bold text-muted-foreground">3</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {entries.map((entry, idx) => {
+        const rank = idx + 1;
+        const accent = getRankAccent(rank);
+        const icon = getRankIcon(rank);
 
-      {/* Separator after podium */}
-      {rest.length > 0 && <div className="border-t border-border" />}
-
-      {/* Remaining entries */}
-      {rest.map((entry, idx) => {
-        const rank = idx + 4;
         return (
-          <div key={entry.participantKey} className="flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3">
-            <div className="w-6 flex justify-center flex-shrink-0">
-              <span className="w-5 h-5 text-center font-mono text-muted-foreground">{rank}</span>
+          <div
+            key={entry.participantKey}
+            className={`flex items-center gap-3 border rounded-lg px-4 py-3 ${accent}`}
+          >
+            {/* Rank */}
+            <div className="w-8 flex-shrink-0 flex items-center justify-center">
+              {icon || (
+                <span className="text-lg font-bold font-mono text-muted-foreground">{rank}</span>
+              )}
             </div>
-            {renderAvatar(entry, "sm")}
-            <div className="flex-1 min-w-0">
-              {renderName(entry)}
-              <span className="text-[10px] text-muted-foreground">
-                {entry.challengeBreakdown.length} Challenge{entry.challengeBreakdown.length !== 1 ? "s" : ""}
-              </span>
+
+            {/* Avatar + Name */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {entry.user_id ? (
+                <Link to={`/profil/${entry.user_id}`}>
+                  <Avatar className="w-9 h-9 border border-border hover:ring-2 hover:ring-primary transition-all">
+                    <AvatarImage src={entry.avatar_url || undefined} />
+                    <AvatarFallback className="bg-muted text-[10px]">{getInitials(entry.participant_name)}</AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <Avatar className="w-9 h-9 border border-border">
+                  <AvatarFallback className="bg-muted text-[10px]">{getInitials(entry.participant_name)}</AvatarFallback>
+                </Avatar>
+              )}
+              <div className="min-w-0">
+                {entry.user_id ? (
+                  <Link to={`/profil/${entry.user_id}`} className="text-sm font-medium hover:text-primary transition-colors truncate block">
+                    {entry.participant_name}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground truncate block">{entry.participant_name}</span>
+                )}
+                <span className="text-[10px] text-muted-foreground">
+                  {entry.challengeBreakdown.length} Challenge{entry.challengeBreakdown.length !== 1 ? "s" : ""}
+                </span>
+              </div>
             </div>
+
+            {/* Points */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <Star className="w-4 h-4 text-primary" />
               <span className="text-xl font-bold font-mono text-primary">{entry.totalPoints}</span>
@@ -360,7 +307,7 @@ export const OverallLeaderboard = () => {
         );
       })}
 
-      {/* Motivational CTA if few entries */}
+      {/* Motivational CTA */}
       <div className="text-center py-8 border border-dashed border-border rounded-lg mt-4">
         <Trophy className="w-10 h-10 mx-auto mb-3 text-primary/40" />
         <p className="text-muted-foreground mb-2">Mach eine Challenge und erscheine im Leaderboard</p>
