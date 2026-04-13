@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { MemberBadge } from "@/components/MemberBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock } from "lucide-react";
+import { MessageSquare, Trophy, Dumbbell, ArrowRight, Clock, Check, X, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { StarterJourneyPanel } from "@/components/StarterJourneyPanel";
 import { de } from "date-fns/locale";
@@ -29,6 +29,9 @@ interface UserChallenge {
   challenge_category: string;
   is_verified: boolean;
   score: number | null;
+  registration_status: string | null;
+  deadline_at: string | null;
+  blocked_until: string | null;
 }
 
 interface LeaderboardEntry {
@@ -110,9 +113,20 @@ const DashboardPage = () => {
       // Fetch user's challenges
       const { data: regData } = await supabase
         .from("registrations")
-        .select("id, score, is_verified, challenges(name, slug, category)")
+        .select("id, score, is_verified, registration_status, deadline_at, challenge_id, challenges(name, slug, category)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+
+      // Fetch cooldowns
+      const { data: cooldownData } = await supabase
+        .from("benchmark_cooldowns")
+        .select("challenge_id, blocked_until")
+        .eq("user_id", user.id);
+
+      const cooldownMap = (cooldownData || []).reduce(
+        (acc, c) => ({ ...acc, [c.challenge_id]: c.blocked_until }),
+        {} as Record<string, string>
+      );
 
       if (regData) {
         setUserChallenges(
@@ -123,6 +137,9 @@ const DashboardPage = () => {
             challenge_category: r.challenges?.category || "",
             is_verified: r.is_verified || false,
             score: r.score,
+            registration_status: r.registration_status || "registered",
+            deadline_at: r.deadline_at,
+            blocked_until: cooldownMap[r.challenge_id] || null,
           }))
         );
       }
@@ -259,17 +276,38 @@ const DashboardPage = () => {
                     >
                       <div>
                         <p className="font-medium">{ch.challenge_name}</p>
-                        <p className={`text-xs flex items-center gap-1 ${ch.is_verified ? "text-green-500" : "text-muted-foreground"}`}>
-                          {ch.is_verified ? (
-                            <>
-                              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                              Verifiziert
-                            </>
+                        <p className="text-xs flex items-center gap-1">
+                          {ch.registration_status === "completed" ? (
+                            <span className="flex items-center gap-1 text-green-500">
+                              <Check className="w-3.5 h-3.5" />
+                              Abgeschlossen
+                              {ch.is_verified && " · Verifiziert"}
+                            </span>
+                          ) : ch.registration_status === "fail" ? (
+                            <span className="flex items-center gap-1 text-red-500">
+                              <X className="w-3.5 h-3.5" />
+                              Nicht bestanden
+                            </span>
+                          ) : ch.registration_status === "blocked" || (ch.blocked_until && new Date(ch.blocked_until) > new Date()) ? (
+                            <span className="flex items-center gap-1 text-red-500">
+                              <Lock className="w-3.5 h-3.5" />
+                              Gesperrt
+                              {ch.blocked_until && (
+                                <span className="text-muted-foreground ml-1">
+                                  bis {new Date(ch.blocked_until).toLocaleDateString("de-DE")}
+                                </span>
+                              )}
+                            </span>
                           ) : (
-                            <>
-                              <span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
-                              Ausstehend
-                            </>
+                            <span className="flex items-center gap-1 text-amber-500">
+                              <Clock className="w-3.5 h-3.5" />
+                              Registriert
+                              {ch.deadline_at && (
+                                <span className="text-muted-foreground ml-1">
+                                  · Frist: {new Date(ch.deadline_at).toLocaleDateString("de-DE")}
+                                </span>
+                              )}
+                            </span>
                           )}
                         </p>
                       </div>
