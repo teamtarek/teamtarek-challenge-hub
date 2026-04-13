@@ -134,6 +134,12 @@ const ChallengePage = () => {
   }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null });
   const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [benchmarkStatus, setBenchmarkStatus] = useState<{
+    isBenchmark: boolean;
+    registrationStatus: string | null;
+    deadlineAt: string | null;
+    blockedUntil: string | null;
+  }>({ isBenchmark: false, registrationStatus: null, deadlineAt: null, blockedUntil: null });
 
   useEffect(() => {
     const fetchChallenge = async () => {
