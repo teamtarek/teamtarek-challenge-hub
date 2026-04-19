@@ -32,10 +32,11 @@ interface RegistrationFormProps {
   challengeId: string;
   challengeName: string;
   challengeSlug?: string;
+  isBenchmark?: boolean;
   onSuccess: () => void;
 }
 
-export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, onSuccess }: RegistrationFormProps) => {
+export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, isBenchmark = false, onSuccess }: RegistrationFormProps) => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -46,6 +47,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
   const [swingPassFail, setSwingPassFail] = useState<string>("pass");
   const [totalSwings, setTotalSwings] = useState<string>("");
+  const [completionMonth, setCompletionMonth] = useState<string>("");
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
   const [loading, setLoading] = useState(false);
