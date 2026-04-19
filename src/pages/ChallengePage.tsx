@@ -170,7 +170,7 @@ const ChallengePage = () => {
           // For non-benchmarks: keep single-row behaviour (latest entry).
           const { data: openReg } = await supabase
             .from("registrations")
-            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
+            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at, completion_date")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
             .eq("registration_status", "registered")
@@ -183,7 +183,7 @@ const ChallengePage = () => {
             // Non-benchmark: fall back to most recent entry of any status
             const { data: anyReg } = await supabase
               .from("registrations")
-              .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
+              .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at, completion_date")
               .eq("challenge_id", data.id)
               .eq("user_id", user.id)
               .order("created_at", { ascending: false })
@@ -201,6 +201,7 @@ const ChallengePage = () => {
               total_time_seconds: regData.total_time_seconds,
               total_reps: regData.total_reps,
               kettlebell_weight_kg: regData.kettlebell_weight_kg,
+              completion_date: (regData as { completion_date?: string | null }).completion_date ?? null,
             });
             setActiveTab("leaderboard");
 
@@ -260,11 +261,11 @@ const ChallengePage = () => {
   const handleResultSuccess = async () => {
     if (!challenge || !user) return;
     // Refresh registration data
+    if (!registrationId) return;
     const { data: regData } = await supabase
       .from("registrations")
-      .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
-      .eq("challenge_id", challenge.id)
-      .eq("user_id", user.id)
+      .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, completion_date")
+      .eq("id", registrationId)
       .maybeSingle();
     if (regData) {
       setIsVerified(regData.is_verified ?? false);
@@ -273,6 +274,7 @@ const ChallengePage = () => {
         total_time_seconds: regData.total_time_seconds,
         total_reps: regData.total_reps,
         kettlebell_weight_kg: regData.kettlebell_weight_kg,
+        completion_date: (regData as { completion_date?: string | null }).completion_date ?? null,
       });
     }
   };
