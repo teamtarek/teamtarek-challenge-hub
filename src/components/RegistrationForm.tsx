@@ -32,10 +32,11 @@ interface RegistrationFormProps {
   challengeId: string;
   challengeName: string;
   challengeSlug?: string;
+  isBenchmark?: boolean;
   onSuccess: () => void;
 }
 
-export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, onSuccess }: RegistrationFormProps) => {
+export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, isBenchmark = false, onSuccess }: RegistrationFormProps) => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -46,6 +47,7 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
   const [kettlebellWeight, setKettlebellWeight] = useState<string>("");
   const [swingPassFail, setSwingPassFail] = useState<string>("pass");
   const [totalSwings, setTotalSwings] = useState<string>("");
+  const [completionMonth, setCompletionMonth] = useState<string>("");
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
   const [loading, setLoading] = useState(false);
@@ -109,6 +111,10 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
       is_verified: false,
     };
 
+    if (isBenchmark && completionMonth) {
+      insertData.completion_date = `${currentYear}-${completionMonth}-01`;
+    }
+
     if (isMurphChallenge) {
       insertData.murph_version = murphVersion;
     }
@@ -130,7 +136,11 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
     setLoading(false);
 
     if (error) {
-      if (error.code === "23505") {
+      // Trigger error messages (e.g. cooldown, open attempt, monthly limit) come through `message`
+      const msg = (error as { message?: string }).message ?? "";
+      if (msg.includes("Cooldown") || msg.includes("absolvieren") || msg.includes("offene Registrierung") || msg.includes("Monat")) {
+        toast.error(msg.replace(/^.*?:\s*/, ""));
+      } else if (error.code === "23505") {
         toast.error("Du bist bereits für diese Challenge registriert.");
       } else {
         toast.error("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
@@ -351,6 +361,28 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, on
           </div>
         )}
       </div>
+
+      {isBenchmark && (
+        <div className="space-y-2">
+          <Label>Monat des Versuchs (optional)</Label>
+          <Select value={completionMonth || "none"} onValueChange={(v) => setCompletionMonth(v === "none" ? "" : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Monat wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">— Kein Monat —</SelectItem>
+              {[
+                ["01","Januar"],["02","Februar"],["03","März"],["04","April"],
+                ["05","Mai"],["06","Juni"],["07","Juli"],["08","August"],
+                ["09","September"],["10","Oktober"],["11","November"],["12","Dezember"],
+              ].map(([v,l]) => (
+                <SelectItem key={v} value={v}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">Pro Monat ist max. 1 Eintrag möglich.</p>
+        </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? (

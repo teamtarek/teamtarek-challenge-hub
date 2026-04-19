@@ -381,8 +381,21 @@ export const Leaderboard = ({ challengeId, challengeSlug }: LeaderboardProps) =>
 
   // Re-rank after filtering (only those with results)
   const sortedRegistrations = getSortedRegistrations(filteredRegistrations);
-  const rankedRegistrations = sortedRegistrations.filter(hasResult);
-  const unrankedRegistrations = sortedRegistrations.filter((r) => !hasResult(r));
+  // For benchmark challenges: only keep the best (= first after sorting) entry per user
+  const isBenchmarkChallenge = isMeetBetty || isSimpleSinister || isRiteOfPassage || isSnatchTest || isSecretServiceSnatchTest || is1234Complex || isTheQuadrant || isClassicComplex || isTheSoldier || isEnduranceRun || is1234Strength;
+  const dedupedRegistrations = isBenchmarkChallenge
+    ? (() => {
+        const seen = new Set<string>();
+        return sortedRegistrations.filter((r) => {
+          const key = r.user_id || `anon-${r.id}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      })()
+    : sortedRegistrations;
+  const rankedRegistrations = dedupedRegistrations.filter(hasResult);
+  const unrankedRegistrations = dedupedRegistrations.filter((r) => !hasResult(r));
 
   const renderResultColumn = (registration: Registration) => {
     if (is1234Strength) {

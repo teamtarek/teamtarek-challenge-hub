@@ -49,6 +49,7 @@ interface Challenge {
   start_date: string;
   end_date: string | null;
   category: string;
+  is_benchmark?: boolean | null;
 }
 
 const getChallengeHeroImage = (slug: string): string => {
@@ -131,7 +132,8 @@ const ChallengePage = () => {
     total_time_seconds: number | null;
     total_reps: number | null;
     kettlebell_weight_kg: number | null;
-  }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null });
+    completion_date: string | null;
+  }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null, completion_date: null });
   const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [benchmarkStatus, setBenchmarkStatus] = useState<{
@@ -164,13 +166,32 @@ const ChallengePage = () => {
             .maybeSingle();
           if (profileData) setUserGender(profileData.gender);
 
-          const { data: regData } = await supabase
+          // For benchmarks: prefer the OPEN ("registered") attempt; otherwise allow new registration.
+          // For non-benchmarks: keep single-row behaviour (latest entry).
+          const { data: openReg } = await supabase
             .from("registrations")
-            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
+            .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at, completion_date")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
+            .eq("registration_status", "registered")
+            .order("registered_at", { ascending: false })
+            .limit(1)
             .maybeSingle();
-          
+
+          let regData = openReg;
+          if (!regData && !data.is_benchmark) {
+            // Non-benchmark: fall back to most recent entry of any status
+            const { data: anyReg } = await supabase
+              .from("registrations")
+              .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at, completion_date")
+              .eq("challenge_id", data.id)
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            regData = anyReg;
+          }
+
           if (regData) {
             setIsRegistered(true);
             setRegistrationId(regData.id);
@@ -180,6 +201,7 @@ const ChallengePage = () => {
               total_time_seconds: regData.total_time_seconds,
               total_reps: regData.total_reps,
               kettlebell_weight_kg: regData.kettlebell_weight_kg,
+              completion_date: (regData as { completion_date?: string | null }).completion_date ?? null,
             });
             setActiveTab("leaderboard");
 
@@ -239,11 +261,11 @@ const ChallengePage = () => {
   const handleResultSuccess = async () => {
     if (!challenge || !user) return;
     // Refresh registration data
+    if (!registrationId) return;
     const { data: regData } = await supabase
       .from("registrations")
-      .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg")
-      .eq("challenge_id", challenge.id)
-      .eq("user_id", user.id)
+      .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, completion_date")
+      .eq("id", registrationId)
       .maybeSingle();
     if (regData) {
       setIsVerified(regData.is_verified ?? false);
@@ -252,6 +274,7 @@ const ChallengePage = () => {
         total_time_seconds: regData.total_time_seconds,
         total_reps: regData.total_reps,
         kettlebell_weight_kg: regData.kettlebell_weight_kg,
+        completion_date: (regData as { completion_date?: string | null }).completion_date ?? null,
       });
     }
   };
@@ -587,68 +610,90 @@ const ChallengePage = () => {
               );
             })()}
 
-            {/* Registration */}
-            {!isRegistered && !(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date()) ? (
-              <div className="challenge-card">
-                <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
-                {!user && (
-                  <p className="text-sm text-muted-foreground mb-4">
-                    <Link to="/auth" className="text-foreground hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
-                  </p>
-                )}
-                <RegistrationForm
-                  challengeId={challenge.id}
-                  challengeName={challenge.name}
-                  challengeSlug={challenge.slug}
-                  onSuccess={handleRegistrationSuccess}
-                />
-              </div>
-            ) : (
-              <>
-                {/* Result Entry Form */}
-                {user && registrationId && (
-                  <div className="challenge-card">
-                    <ResultEntryForm
-                      registrationId={registrationId}
-                      challengeSlug={challenge.slug}
-                      challengeName={challenge.name}
-                      existingResult={existingResult}
-                      isVerified={isVerified}
-                      gender={userGender}
-                      onSuccess={handleResultSuccess}
-                    />
-                  </div>
-                )}
-
-                <div className="challenge-card text-center py-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Button onClick={() => setActiveTab("leaderboard")}>
-                      Zum Leaderboard
-                    </Button>
-                    {user && !isVerified && (
-                      <Button
-                        variant="outline"
-                        onClick={handleUnregister}
-                        disabled={unregistering}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        {unregistering ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <LogOut className="w-4 h-4 mr-2" />
-                        )}
-                        Abmelden
-                      </Button>
-                    )}
-                  </div>
-                  {isVerified && (
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
+            {/* Registration: show form when no OPEN attempt exists and no active cooldown.
+                For benchmarks users can register again after a previous completed attempt. */}
+            {(() => {
+              const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
+              const hasOpenAttempt = isRegistered && benchmarkStatus.registrationStatus === "registered";
+              const showRegistration = !cooldownActive && (
+                challenge.is_benchmark ? !hasOpenAttempt : !isRegistered
+              );
+              if (!showRegistration) return null;
+              return (
+                <div className="challenge-card">
+                  <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
+                  {!user && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      <Link to="/auth" className="text-foreground hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
                     </p>
                   )}
+                  {challenge.is_benchmark && isRegistered && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Du hast diese Challenge bereits absolviert. Du kannst einen neuen Versuch starten – maximal ein Eintrag pro Monat ist möglich.
+                    </p>
+                  )}
+                  <RegistrationForm
+                    challengeId={challenge.id}
+                    challengeName={challenge.name}
+                    challengeSlug={challenge.slug}
+                    isBenchmark={!!challenge.is_benchmark}
+                    onSuccess={handleRegistrationSuccess}
+                  />
                 </div>
-              </>
-            )}
+              );
+            })()}
+            {(() => {
+              const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
+              const hasOpenAttempt = isRegistered && (challenge.is_benchmark ? benchmarkStatus.registrationStatus === "registered" : true);
+              if (cooldownActive || !hasOpenAttempt) return null;
+              return (
+                <>
+                  {/* Result Entry Form */}
+                  {user && registrationId && (
+                    <div className="challenge-card">
+                      <ResultEntryForm
+                        registrationId={registrationId}
+                        challengeSlug={challenge.slug}
+                        challengeName={challenge.name}
+                        existingResult={existingResult}
+                        isVerified={isVerified}
+                        gender={userGender}
+                        isBenchmark={!!challenge.is_benchmark}
+                        onSuccess={handleResultSuccess}
+                      />
+                    </div>
+                  )}
+
+                  <div className="challenge-card text-center py-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Button onClick={() => setActiveTab("leaderboard")}>
+                        Zum Leaderboard
+                      </Button>
+                      {user && !isVerified && (
+                        <Button
+                          variant="outline"
+                          onClick={handleUnregister}
+                          disabled={unregistering}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          {unregistering ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <LogOut className="w-4 h-4 mr-2" />
+                          )}
+                          Abmelden
+                        </Button>
+                      )}
+                    </div>
+                    {isVerified && (
+                      <p className="text-xs text-muted-foreground mt-3">
+                        Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
+                      </p>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="leaderboard">
