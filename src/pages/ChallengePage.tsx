@@ -164,13 +164,32 @@ const ChallengePage = () => {
             .maybeSingle();
           if (profileData) setUserGender(profileData.gender);
 
-          const { data: regData } = await supabase
+          // For benchmarks: prefer the OPEN ("registered") attempt; otherwise allow new registration.
+          // For non-benchmarks: keep single-row behaviour (latest entry).
+          const { data: openReg } = await supabase
             .from("registrations")
             .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
             .eq("challenge_id", data.id)
             .eq("user_id", user.id)
+            .eq("registration_status", "registered")
+            .order("registered_at", { ascending: false })
+            .limit(1)
             .maybeSingle();
-          
+
+          let regData = openReg;
+          if (!regData && !data.is_benchmark) {
+            // Non-benchmark: fall back to most recent entry of any status
+            const { data: anyReg } = await supabase
+              .from("registrations")
+              .select("id, is_verified, score, total_time_seconds, total_reps, kettlebell_weight_kg, registration_status, deadline_at")
+              .eq("challenge_id", data.id)
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            regData = anyReg;
+          }
+
           if (regData) {
             setIsRegistered(true);
             setRegistrationId(regData.id);
