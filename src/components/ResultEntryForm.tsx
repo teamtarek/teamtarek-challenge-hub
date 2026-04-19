@@ -103,6 +103,10 @@ export const ResultEntryForm = ({
   const [swingPassFail, setSwingPassFail] = useState(existingResult.score === 1 ? "pass" : "fail");
   const [strengthVersion, setStrengthVersion] = useState(is1234Strength ? "" : "");
   const [totalSwings, setTotalSwings] = useState(existingResult.total_reps?.toString() || "");
+  const initialMonth = existingResult.completion_date
+    ? String(new Date(existingResult.completion_date).getMonth() + 1).padStart(2, "0")
+    : "";
+  const [completionMonth, setCompletionMonth] = useState<string>(initialMonth);
   const [loading, setLoading] = useState(false);
 
   const hasExistingResult = (): boolean => {
