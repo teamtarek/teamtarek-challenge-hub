@@ -132,7 +132,8 @@ const ChallengePage = () => {
     total_time_seconds: number | null;
     total_reps: number | null;
     kettlebell_weight_kg: number | null;
-  }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null });
+    completion_date: string | null;
+  }>({ score: null, total_time_seconds: null, total_reps: null, kettlebell_weight_kg: null, completion_date: null });
   const [unregistering, setUnregistering] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [benchmarkStatus, setBenchmarkStatus] = useState<{
