@@ -641,9 +641,6 @@ const ChallengePage = () => {
               const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
               const hasOpenAttempt = isRegistered && (challenge.is_benchmark ? benchmarkStatus.registrationStatus === "registered" : true);
               if (cooldownActive || !hasOpenAttempt) return null;
-              const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
-              const hasOpenAttempt = isRegistered && (challenge.is_benchmark ? benchmarkStatus.registrationStatus === "registered" : true);
-              if (cooldownActive || !hasOpenAttempt) return null;
               return (
                 <>
                   {/* Result Entry Form */}
@@ -691,52 +688,6 @@ const ChallengePage = () => {
                 </>
               );
             })()}
-          </TabsContent>
-              <>
-                {/* Result Entry Form */}
-                {user && registrationId && (
-                  <div className="challenge-card">
-                    <ResultEntryForm
-                      registrationId={registrationId}
-                      challengeSlug={challenge.slug}
-                      challengeName={challenge.name}
-                      existingResult={existingResult}
-                      isVerified={isVerified}
-                      gender={userGender}
-                      onSuccess={handleResultSuccess}
-                    />
-                  </div>
-                )}
-
-                <div className="challenge-card text-center py-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Button onClick={() => setActiveTab("leaderboard")}>
-                      Zum Leaderboard
-                    </Button>
-                    {user && !isVerified && (
-                      <Button
-                        variant="outline"
-                        onClick={handleUnregister}
-                        disabled={unregistering}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        {unregistering ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <LogOut className="w-4 h-4 mr-2" />
-                        )}
-                        Abmelden
-                      </Button>
-                    )}
-                  </div>
-                  {isVerified && (
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Dein Ergebnis wurde verifiziert und kann nicht mehr gelöscht werden.
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
           </TabsContent>
 
           <TabsContent value="leaderboard">
