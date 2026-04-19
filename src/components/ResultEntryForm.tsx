@@ -36,6 +36,7 @@ interface ExistingResult {
   total_time_seconds: number | null;
   total_reps: number | null;
   kettlebell_weight_kg: number | null;
+  completion_date?: string | null;
 }
 
 interface ResultEntryFormProps {
@@ -45,6 +46,7 @@ interface ResultEntryFormProps {
   existingResult: ExistingResult;
   isVerified: boolean;
   gender?: string | null;
+  isBenchmark?: boolean;
   onSuccess: () => void;
 }
 
@@ -55,6 +57,7 @@ export const ResultEntryForm = ({
   existingResult,
   isVerified,
   gender = null,
+  isBenchmark = false,
   onSuccess,
 }: ResultEntryFormProps) => {
   const isMurphChallenge = challengeName.toLowerCase().includes("murph");
