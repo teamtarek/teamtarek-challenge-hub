@@ -143,7 +143,8 @@ serve(async (req) => {
     logStep("User created successfully", { userId });
 
     // Generate confirmation email link with correct redirect URL
-    const redirectTo = "https://teamtarek-challenge-hub.lovable.app/auth/callback";
+    const siteUrl = Deno.env.get("SITE_URL") ?? "https://teamtarek-challenge-hub.lovable.app";
+    const redirectTo = `${siteUrl.replace(/\/$/, "")}/auth/callback`;
     logStep("Generating confirmation link", { redirectTo });
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "signup",
