@@ -657,6 +657,7 @@ const ChallengePage = () => {
                         existingResult={existingResult}
                         isVerified={isVerified}
                         gender={userGender}
+                        isBenchmark={!!challenge.is_benchmark}
                         onSuccess={handleResultSuccess}
                       />
                     </div>
