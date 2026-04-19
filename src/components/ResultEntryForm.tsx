@@ -176,6 +176,12 @@ export const ResultEntryForm = ({
       registration_status: 'completed',
     };
 
+    // Optional completion month → completion_date (1st of selected month, current year)
+    if (completionMonth) {
+      const year = new Date().getFullYear();
+      updateData.completion_date = `${year}-${completionMonth}-01`;
+    }
+
     if (isMurphChallenge) {
       const seconds = timeStringToSeconds(timeValue);
       if (!seconds) { toast.error("Bitte eine gültige Zeit eingeben (MM:SS)"); setLoading(false); return; }
