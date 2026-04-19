@@ -49,6 +49,7 @@ interface Challenge {
   start_date: string;
   end_date: string | null;
   category: string;
+  is_benchmark?: boolean | null;
 }
 
 const getChallengeHeroImage = (slug: string): string => {
