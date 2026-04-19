@@ -606,23 +606,42 @@ const ChallengePage = () => {
               );
             })()}
 
-            {/* Registration */}
-            {!isRegistered && !(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date()) ? (
-              <div className="challenge-card">
-                <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
-                {!user && (
-                  <p className="text-sm text-muted-foreground mb-4">
-                    <Link to="/auth" className="text-foreground hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
-                  </p>
-                )}
-                <RegistrationForm
-                  challengeId={challenge.id}
-                  challengeName={challenge.name}
-                  challengeSlug={challenge.slug}
-                  onSuccess={handleRegistrationSuccess}
-                />
-              </div>
-            ) : (
+            {/* Registration: show form when no OPEN attempt exists and no active cooldown.
+                For benchmarks users can register again after a previous completed attempt. */}
+            {(() => {
+              const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
+              const hasOpenAttempt = isRegistered && benchmarkStatus.registrationStatus === "registered";
+              const showRegistration = !cooldownActive && (
+                challenge.is_benchmark ? !hasOpenAttempt : !isRegistered
+              );
+              if (!showRegistration) return null;
+              return (
+                <div className="challenge-card">
+                  <h2 className="text-xl font-semibold mb-4">Jetzt teilnehmen</h2>
+                  {!user && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      <Link to="/auth" className="text-foreground hover:underline">Melde dich an</Link> um deine Fortschritte zu tracken, oder registriere dich als Gast.
+                    </p>
+                  )}
+                  {challenge.is_benchmark && isRegistered && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Du hast diese Challenge bereits absolviert. Du kannst einen neuen Versuch starten – maximal ein Eintrag pro Monat ist möglich.
+                    </p>
+                  )}
+                  <RegistrationForm
+                    challengeId={challenge.id}
+                    challengeName={challenge.name}
+                    challengeSlug={challenge.slug}
+                    onSuccess={handleRegistrationSuccess}
+                  />
+                </div>
+              );
+            })()}
+            {(() => {
+              const cooldownActive = !!(benchmarkStatus.blockedUntil && new Date(benchmarkStatus.blockedUntil) > new Date());
+              const hasOpenAttempt = isRegistered && (challenge.is_benchmark ? benchmarkStatus.registrationStatus === "registered" : true);
+              if (cooldownActive || !hasOpenAttempt) return null;
+              return (
               <>
                 {/* Result Entry Form */}
                 {user && registrationId && (
