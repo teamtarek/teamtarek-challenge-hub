@@ -111,6 +111,10 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, is
       is_verified: false,
     };
 
+    if (isBenchmark && completionMonth) {
+      insertData.completion_date = `${currentYear}-${completionMonth}-01`;
+    }
+
     if (isMurphChallenge) {
       insertData.murph_version = murphVersion;
     }
@@ -132,7 +136,11 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, is
     setLoading(false);
 
     if (error) {
-      if (error.code === "23505") {
+      // Trigger error messages (e.g. cooldown, open attempt, monthly limit) come through `message`
+      const msg = (error as { message?: string }).message ?? "";
+      if (msg.includes("Cooldown") || msg.includes("absolvieren") || msg.includes("offene Registrierung") || msg.includes("Monat")) {
+        toast.error(msg.replace(/^.*?:\s*/, ""));
+      } else if (error.code === "23505") {
         toast.error("Du bist bereits für diese Challenge registriert.");
       } else {
         toast.error("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
