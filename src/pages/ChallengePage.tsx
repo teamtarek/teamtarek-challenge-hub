@@ -636,6 +636,7 @@ const ChallengePage = () => {
                     challengeId={challenge.id}
                     challengeName={challenge.name}
                     challengeSlug={challenge.slug}
+                    isBenchmark={!!challenge.is_benchmark}
                     onSuccess={handleRegistrationSuccess}
                   />
                 </div>
