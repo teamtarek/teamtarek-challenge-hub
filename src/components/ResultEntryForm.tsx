@@ -829,6 +829,28 @@ export const ResultEntryForm = ({
         </div>
       )}
 
+      {isBenchmark && (
+        <div className="space-y-2">
+          <Label>Monat des Versuchs (optional)</Label>
+          <Select value={completionMonth || "none"} onValueChange={(v) => setCompletionMonth(v === "none" ? "" : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Monat wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">— Kein Monat —</SelectItem>
+              {[
+                ["01","Januar"],["02","Februar"],["03","März"],["04","April"],
+                ["05","Mai"],["06","Juni"],["07","Juli"],["08","August"],
+                ["09","September"],["10","Oktober"],["11","November"],["12","Dezember"],
+              ].map(([v,l]) => (
+                <SelectItem key={v} value={v}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">Hilft dir, mehrere Versuche pro Jahr zu unterscheiden. Pro Monat ist max. 1 Eintrag möglich.</p>
+        </div>
+      )}
+
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>
