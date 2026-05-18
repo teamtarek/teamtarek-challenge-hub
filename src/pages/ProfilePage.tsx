@@ -96,7 +96,7 @@ const formatChallengeResult = (reg: Registration, userGender: string | null): { 
   const slug = reg.challenges.slug?.toLowerCase() || "";
   
   // Endurance runs - Zeit und Level
-  if (slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run") {
+  if (slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run" || slug === "half-marathon") {
     const parts: string[] = [];
     if (reg.total_time_seconds && reg.total_time_seconds > 0) {
       parts.push(formatTimeFromSeconds(reg.total_time_seconds));
