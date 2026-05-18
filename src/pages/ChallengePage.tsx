@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Dumbbell, Users, Lock, Zap, LogOut, Loader2, Clock, AlertTriangle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS, SOLDIER_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
+import { MILE_LEVEL_DESCRIPTIONS, FIVE_K_LEVEL_DESCRIPTIONS, TEN_K_LEVEL_DESCRIPTIONS, HALF_MARATHON_LEVEL_DESCRIPTIONS, COMPLEX_1234_LEVEL_DESCRIPTIONS, MEET_BETTY_LEVEL_DESCRIPTIONS, RITE_OF_PASSAGE_LEVEL_DESCRIPTIONS, SIMPLE_SINISTER_LEVEL_DESCRIPTIONS, QUADRANT_LEVEL_DESCRIPTIONS, CLASSIC_COMPLEX_LEVEL_DESCRIPTIONS, SNATCH_TEST_INFO, SSST_LEVEL_DESCRIPTIONS, SOLDIER_LEVEL_DESCRIPTIONS } from "@/lib/mileLevels";
 
 // Import challenge hero images
 import springChallenge from "@/assets/challenges/spring-challenge.jpg";
@@ -523,12 +523,14 @@ const ChallengePage = () => {
               </div>
             )}
 
-            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant" || challenge.slug === "the-classic-complex" || challenge.slug === "secret-service-snatch-test" || challenge.slug === "the-soldier") && (() => {
+            {(challenge.slug === "the-mile" || challenge.slug === "5-kilometer-run" || challenge.slug === "10-kilometer-run" || challenge.slug === "half-marathon" || challenge.slug === "1234-complex" || challenge.slug === "meet-betty" || challenge.slug === "rite-of-passage" || challenge.slug === "simple-sinister" || challenge.slug === "the-quadrant" || challenge.slug === "the-classic-complex" || challenge.slug === "secret-service-snatch-test" || challenge.slug === "the-soldier") && (() => {
               const levelDescriptions = challenge.slug === "5-kilometer-run" 
                 ? FIVE_K_LEVEL_DESCRIPTIONS 
                 : challenge.slug === "10-kilometer-run" 
                   ? TEN_K_LEVEL_DESCRIPTIONS 
-                  : challenge.slug === "1234-complex"
+                  : challenge.slug === "half-marathon"
+                    ? HALF_MARATHON_LEVEL_DESCRIPTIONS
+                    : challenge.slug === "1234-complex"
                     ? COMPLEX_1234_LEVEL_DESCRIPTIONS
                     : challenge.slug === "meet-betty"
                       ? MEET_BETTY_LEVEL_DESCRIPTIONS
