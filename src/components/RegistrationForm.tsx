@@ -61,7 +61,8 @@ export const RegistrationForm = ({ challengeId, challengeName, challengeSlug, is
   const isTheMile = challengeSlug === "the-mile";
   const is5k = challengeSlug === "5-kilometer-run";
   const is10k = challengeSlug === "10-kilometer-run";
-  const isEnduranceRun = isTheMile || is5k || is10k;
+  const isHalfMarathon = challengeSlug === "half-marathon";
+  const isEnduranceRun = isTheMile || is5k || is10k || isHalfMarathon;
   const isKettlebellSwing = challengeSlug === "kettlebell-swing";
   const isSpringChallenge = challengeSlug === "spring-challenge-2026";
   const is1234Strength = challengeSlug === "1234-strength-challenge";
