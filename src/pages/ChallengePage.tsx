@@ -34,6 +34,7 @@ import theMile from "@/assets/challenges/the-mile.jpg";
 import secretServiceSnatchTest from "@/assets/challenges/secret-service-snatch-test.jpg";
 import fiveKRun from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKRun from "@/assets/challenges/10-kilometer-run.jpg";
+import halfMarathon from "@/assets/challenges/half-marathon.jpg";
 import complex1234 from "@/assets/challenges/1234-complex.jpg";
 import theQuadrant from "@/assets/challenges/the-quadrant.jpg";
 import theClassicComplex from "@/assets/challenges/the-classic-complex.jpg";
