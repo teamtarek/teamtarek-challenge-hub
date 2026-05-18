@@ -47,7 +47,7 @@ const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
 
 // Determine the primary result display for a challenge
 const getResultDisplay = (slug: string, entry: TopEntry) => {
-  const timeBasedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
+  const timeBasedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "half-marathon", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
   const repBasedSlugs = ["5-minute-snatch-test", "secret-service-snatch-test", "kettlebell-swing"];
   const roundBasedSlugs = ["1234-complex", "rite-of-passage"];
   const levelBasedSlugs = ["simple-sinister"];
@@ -73,7 +73,7 @@ const getResultDisplay = (slug: string, entry: TopEntry) => {
 
 // Sort entries based on challenge type
 const sortEntries = (slug: string, entries: TopEntry[]) => {
-  const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "meet-betty"];
+  const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "half-marathon", "spring-challenge-2026", "meet-betty"];
 
   if (timeSortedSlugs.includes(slug)) {
     return [...entries].sort((a, b) => (a.total_time_seconds || Infinity) - (b.total_time_seconds || Infinity));
@@ -121,7 +121,7 @@ const sortEntries = (slug: string, entries: TopEntry[]) => {
 };
 
 const hasResult = (slug: string, entry: TopEntry) => {
-  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
+  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "half-marathon", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty"];
   const repSlugs = ["5-minute-snatch-test", "secret-service-snatch-test", "kettlebell-swing"];
   const roundSlugs = ["1234-complex"];
   const passFail = ["1234-strength-challenge"];

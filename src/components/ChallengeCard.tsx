@@ -19,6 +19,7 @@ import theMileImg from "@/assets/challenges/the-mile.jpg";
 import ssstImg from "@/assets/challenges/secret-service-snatch-test.jpg";
 import fiveKImg from "@/assets/challenges/5-kilometer-run.jpg";
 import tenKImg from "@/assets/challenges/10-kilometer-run.jpg";
+import halfMarathonImg from "@/assets/challenges/half-marathon.jpg";
 import tenRoundsImg from "@/assets/challenges/10-rounds-of-pain.jpg";
 import complexImg from "@/assets/challenges/1234-complex.jpg";
 import theQuadrantImg from "@/assets/challenges/the-quadrant.jpg";
@@ -46,6 +47,7 @@ const challengeImages: Record<string, string> = {
   "secret-service-snatch-test": ssstImg,
   "5-kilometer-run": fiveKImg,
   "10-kilometer-run": tenKImg,
+  "half-marathon": halfMarathonImg,
   "10-rounds-of-pain": tenRoundsImg,
   "1234-complex": complexImg,
   "the-quadrant": theQuadrantImg,

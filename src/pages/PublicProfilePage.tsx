@@ -121,7 +121,7 @@ const PublicProfilePage = () => {
   const formatResult = (reg: Registration): { value: string; mileLevel?: ReturnType<typeof getMileLevel> } => {
     const slug = reg.challenges.slug;
     
-    if ((slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run") && reg.total_time_seconds) {
+    if ((slug === "the-mile" || slug === "5-kilometer-run" || slug === "10-kilometer-run" || slug === "half-marathon") && reg.total_time_seconds) {
       const mins = Math.floor(reg.total_time_seconds / 60);
       const secs = reg.total_time_seconds % 60;
       const mileLevel = getMileLevel(reg.total_time_seconds, profile?.gender || null, slug);

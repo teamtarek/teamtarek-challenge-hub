@@ -54,6 +54,20 @@ const TEN_K_LEVELS_FEMALE: LevelThreshold[] = [
   { level: 1, maxSeconds: 70 * 60 },       // ≤ 70:00
 ];
 
+const HALF_MARATHON_LEVELS_MALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 80 * 60 },        // ≤ 1:20:00
+  { level: 3, maxSeconds: 90 * 60 },        // ≤ 1:30:00
+  { level: 2, maxSeconds: 105 * 60 },       // ≤ 1:45:00
+  { level: 1, maxSeconds: 120 * 60 },       // ≤ 2:00:00
+];
+
+const HALF_MARATHON_LEVELS_FEMALE: LevelThreshold[] = [
+  { level: 4, maxSeconds: 90 * 60 },        // ≤ 1:30:00
+  { level: 3, maxSeconds: 100 * 60 },       // ≤ 1:40:00
+  { level: 2, maxSeconds: 120 * 60 },       // ≤ 2:00:00
+  { level: 1, maxSeconds: 135 * 60 },       // ≤ 2:15:00
+];
+
 const getLevelsForChallenge = (challengeSlug: string, gender: string | null): LevelThreshold[] => {
   const isFemale = gender === "female";
   switch (challengeSlug) {
@@ -61,6 +75,8 @@ const getLevelsForChallenge = (challengeSlug: string, gender: string | null): Le
       return isFemale ? FIVE_K_LEVELS_FEMALE : FIVE_K_LEVELS_MALE;
     case "10-kilometer-run":
       return isFemale ? TEN_K_LEVELS_FEMALE : TEN_K_LEVELS_MALE;
+    case "half-marathon":
+      return isFemale ? HALF_MARATHON_LEVELS_FEMALE : HALF_MARATHON_LEVELS_MALE;
     case "the-mile":
     default:
       return isFemale ? MILE_LEVELS_FEMALE : MILE_LEVELS_MALE;
@@ -114,6 +130,13 @@ export const TEN_K_LEVEL_DESCRIPTIONS = [
   { level: 2, male: "≤ 50:00", female: "≤ 57:00" },
   { level: 3, male: "≤ 45:00", female: "≤ 50:00" },
   { level: 4, male: "≤ 40:00", female: "≤ 43:00" },
+];
+
+export const HALF_MARATHON_LEVEL_DESCRIPTIONS = [
+  { level: 1, male: "≤ 2:00:00", female: "≤ 2:15:00" },
+  { level: 2, male: "≤ 1:45:00", female: "≤ 2:00:00" },
+  { level: 3, male: "≤ 1:30:00", female: "≤ 1:40:00" },
+  { level: 4, male: "≤ 1:20:00", female: "≤ 1:30:00" },
 ];
 
 export const COMPLEX_1234_LEVEL_DESCRIPTIONS = [

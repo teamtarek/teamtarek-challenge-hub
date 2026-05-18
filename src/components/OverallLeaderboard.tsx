@@ -46,7 +46,7 @@ const PASS_FAIL_POINTS = 10;
 // ---- Sorting logic mirrored from Top3Summary / Leaderboard ----
 
 const hasResult = (slug: string, entry: Registration): boolean => {
-  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty", "secret-service-snatch-test", "the-soldier"];
+  const timeSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "half-marathon", "spring-challenge-2026", "10-rounds-of-pain", "the-quadrant", "meet-betty", "secret-service-snatch-test", "the-soldier"];
   const repSlugs = ["5-minute-snatch-test", "kettlebell-swing"];
   const roundSlugs = ["1234-complex", "the-classic-complex"];
   const passFail = ["1234-strength-challenge"];
@@ -61,7 +61,7 @@ const hasResult = (slug: string, entry: Registration): boolean => {
 };
 
 const sortEntries = (slug: string, entries: Registration[]): Registration[] => {
-  const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "spring-challenge-2026", "meet-betty"];
+  const timeSortedSlugs = ["the-mile", "5-kilometer-run", "10-kilometer-run", "half-marathon", "spring-challenge-2026", "meet-betty"];
   const isPassFail = slug === "kettlebell-swing" || slug === "1234-strength-challenge";
 
   if (isPassFail) {
