@@ -72,6 +72,7 @@ const getChallengeHeroImage = (slug: string): string => {
     "secret-service-snatch-test": secretServiceSnatchTest,
     "5-kilometer-run": fiveKRun,
     "10-kilometer-run": tenKRun,
+    "half-marathon": halfMarathon,
     "1234-complex": complex1234,
     "the-quadrant": theQuadrant,
     "the-classic-complex": theClassicComplex,
