@@ -142,7 +142,8 @@ const AdminPage = () => {
   const isTheMile = selectedChallengeData?.slug === "the-mile";
   const is5k = selectedChallengeData?.slug === "5-kilometer-run";
   const is10k = selectedChallengeData?.slug === "10-kilometer-run";
-  const isEnduranceRun = isTheMile || is5k || is10k;
+  const isHalfMarathon = selectedChallengeData?.slug === "half-marathon";
+  const isEnduranceRun = isTheMile || is5k || is10k || isHalfMarathon;
   const isKettlebellSwing = selectedChallengeData?.slug === "kettlebell-swing";
   const isSpringChallenge = selectedChallengeData?.slug === "spring-challenge-2026";
   const is10RoundsOfPain = selectedChallengeData?.slug === "10-rounds-of-pain";
